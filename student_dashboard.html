@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>PractiCore - Dashboard</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="app-shell">
+  <aside class="sidebar">
+    <div class="sidebar-brand">PractiCore</div>
+    <div class="profile-mini">
+      <div class="avatar">JD</div>
+      <div><strong>John Dela Cruz</strong><span>BSIT — 4th Year</span></div>
+    </div>
+
+    <nav class="nav">
+      <a class="active" href="student_dashboard.html"><span class="nav-icon">⌁</span><span>Dashboard</span><b>›</b></a>
+      <a href="#"><span class="nav-icon">♙</span><span>Profile</span></a>
+      <a href="#"><span class="nav-icon">▤</span><span>My Resume</span></a>
+      <a href="#"><span class="nav-icon">▣</span><span>Assessment</span></a>
+      <a href="#"><span class="nav-icon">☆</span><span>Recommendations</span></a>
+      <a href="#"><span class="nav-icon">▥</span><span>My Applications</span></a>
+      <a href="#"><span class="nav-icon">□</span><span>Messages</span></a>
+      <a href="#"><span class="nav-icon">⚙</span><span>Settings</span></a>
+    </nav>
+
+    <div class="logout"><a href="login.html"><span>⇥</span><span>Logout</span></a></div>
+  </aside>
+
+  <main class="main">
+    <header class="topbar">
+      <div class="welcome">
+        <h1>Welcome back, John! 👋</h1>
+        <p>Let's find your dream internship</p>
+      </div>
+      <button class="notify" title="Notifications">♟</button>
+    </header>
+
+    <section class="stat-grid">
+      <article class="stat-card">
+        <div class="stat-label">Assessment Score</div>
+        <div class="stat-value" style="color:#7c45df">91%</div>
+        <div class="stat-note">Excellent standing</div>
+        <div class="stat-icon">▣</div>
+      </article>
+      <article class="stat-card">
+        <div class="stat-label">Resume Match</div>
+        <div class="stat-value" style="color:#138dcc">85%</div>
+        <div class="stat-note">Good match rate</div>
+        <div class="stat-icon" style="color:#2298d0;background:#e9f6ff">▤</div>
+      </article>
+      <article class="stat-card">
+        <div class="stat-label">Applications</div>
+        <div class="stat-value" style="color:#e99a18">3</div>
+        <div class="stat-note">In progress</div>
+        <div class="stat-icon" style="color:#e99a18;background:#fff2dc">▥</div>
+      </article>
+    </section>
+
+    <div class="section-head">
+      <div>
+        <h2>Recommended for You</h2>
+        <p>Based on your skills &amp; assessment</p>
+      </div>
+      <a class="view-all" href="#">View All ›</a>
+    </div>
+
+    <section class="recommendations">
+      <article class="job-card">
+        <div class="job-logo">IT</div>
+        <div class="job-info">
+          <div class="job-title">IT Support Intern</div>
+          <div class="job-meta">♙ Tech Solution Inc. &nbsp;•&nbsp; ◉ Cebu City</div>
+        </div>
+        <div class="job-match"><span>Match</span><strong>89%</strong></div>
+        <button class="apply-btn" onclick="alert('Application opened')">Apply</button>
+      </article>
+
+      <article class="job-card">
+        <div class="job-logo" style="background:#5a329d">WD</div>
+        <div class="job-info">
+          <div class="job-title">Web Development Intern</div>
+          <div class="job-meta">♙ DevPro Lab &nbsp;•&nbsp; ◉ Remote</div>
+        </div>
+        <div class="job-match"><span>Match</span><strong>79%</strong></div>
+        <button class="apply-btn" onclick="alert('Application opened')">Apply</button>
+      </article>
+
+      <article class="job-card">
+        <div class="job-logo" style="background:#7846df">SA</div>
+        <div class="job-info">
+          <div class="job-title">Systems Analyst Intern</div>
+          <div class="job-meta">♙ InnovaTech Solutions Inc. &nbsp;•&nbsp; ◉ Makati City</div>
+        </div>
+        <div class="job-match green"><span>Match</span><strong>93%</strong></div>
+        <button class="apply-btn" onclick="alert('Application opened')">Apply</button>
+      </article>
+    </section>
+  </main>
+</div>
+</body>
+</html>
