@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+
+{% block title %}PractiCore - Dashboard{% endblock %}
+
+{% block content %}
+<header class="topbar">
+  <div class="welcome">
+    <h1>Welcome back, {{ session.get('username', 'John') }}! 👋</h1>
+    <p class="subtitle">Let's find your dream internship</p>
+  </div>
+  <button class="notify" title="Notifications">♟</button>
+</header>
+
+<section class="stat-grid">
+  <article class="stat-card">
+    <div class="stat-label">ASSESSMENT SCORE</div>
+    <div class="stat-value" style="color: #635bff;">91%</div>
+    <div class="stat-note">Excellent standing</div>
+    <div class="stat-icon" style="background: #f0edff; color: #635bff;">▣</div>
+  </article>
+
+  <article class="stat-card">
+    <div class="stat-label">RESUME MATCH</div>
+    <div class="stat-value" style="color: #0088cc;">85%</div>
+    <div class="stat-note">Good match rate</div>
+    <div class="stat-icon" style="background: #e6f7ff; color: #0088cc;">▤</div>
+  </article>
+
+  <article class="stat-card">
+    <div class="stat-label">APPLICATIONS</div>
+    <div class="stat-value" style="color: #f59e0b;">3</div>
+    <div class="stat-note">In progress</div>
+    <div class="stat-icon" style="background: #fffbeb; color: #f59e0b;">▥</div>
+  </article>
+</section>
+
+<div class="section-head">
+  <div>
+    <h2>Recommended for You</h2>
+    <p class="subtitle">Based on your skills &amp; assessment</p>
+  </div>
+  <a class="view-all" href="#">View All &rsaquo;</a>
+</div>
+
+<section class="recommendations">
+  <!-- Card 1 -->
+  <article class="job-card">
+    <div class="job-left">
+      <div class="job-logo">IT</div>
+      <div class="job-info">
+        <h3 class="job-title">IT Support Intern</h3>
+        <span class="job-meta">♟ Tech Solution Inc. &bull; ◉ Cebu City</span>
+      </div>
+    </div>
+    <div class="job-right">
+      <div class="job-match">
+        <span class="match-label">Match</span>
+        <strong class="match-val amber">89%</strong>
+      </div>
+      <button class="apply-btn" onclick="alert('Application opened')">Apply</button>
+    </div>
+  </article>
+
+  <!-- Card 2 -->
+  <article class="job-card">
+    <div class="job-left">
+      <div class="job-logo">WD</div>
+      <div class="job-info">
+        <h3 class="job-title">Web Development Intern</h3>
+        <span class="job-meta">♟ DevPro Lab &bull; ◉ Remote</span>
+      </div>
+    </div>
+    <div class="job-right">
+      <div class="job-match">
+        <span class="match-label">Match</span>
+        <strong class="match-val amber">79%</strong>
+      </div>
+      <button class="apply-btn" onclick="alert('Application opened')">Apply</button>
+    </div>
+  </article>
+
+  <!-- Card 3 -->
+  <article class="job-card">
+    <div class="job-left">
+      <div class="job-logo">SA</div>
+      <div class="job-info">
+        <h3 class="job-title">Systems Analyst Intern</h3>
+        <span class="job-meta">♟ InnovaTech Solutions Inc. &bull; ◉ Makati City</span>
+      </div>
+    </div>
+    <div class="job-right">
+      <div class="job-match">
+        <span class="match-label">Match</span>
+        <strong class="match-val green">93%</strong>
+      </div>
+      <button class="apply-btn" onclick="alert('Application opened')">Apply</button>
+    </div>
+  </article>
+</section>
+{% endblock %}

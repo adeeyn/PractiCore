@@ -1,0 +1,134 @@
+{% set active_page = 'recommendation' %}
+{% extends "base.html" %}
+
+{% block title %}PractiCore - Recommendations{% endblock %}
+
+{% block content %}
+<header class="topbar">
+  <div class="welcome">
+    <h1>Recommended Internships</h1>
+    <p class="subtitle">Personalized opportunities matched by NLP and skill compatibility</p>
+  </div>
+</header>
+
+<div class="recommendations-container">
+  <!-- Filter & Search Bar -->
+  <div class="filter-bar">
+    <div class="filter-tabs">
+      <button class="tab-btn active">All Matches</button>
+      <button class="tab-btn">High Match (>85%)</button>
+      <button class="tab-btn">Remote Only</button>
+    </div>
+    <div class="search-box">
+      <input type="text" placeholder="Search by role or skill..." class="search-input">
+    </div>
+  </div>
+
+  <!-- Job Recommendations List -->
+  <div class="recommendations-list">
+    
+    <!-- Card 1 -->
+    <article class="rec-card">
+      <div class="rec-header">
+        <div class="company-logo">IT</div>
+        <div class="rec-info">
+          <h2 class="rec-title">IT Support Intern</h2>
+          <p class="rec-company">Tech Solution Inc. &bull; <span>Cebu City</span></p>
+        </div>
+        <div class="match-badge high">
+          <span class="match-score">89%</span>
+          <span class="match-label">Match Score</span>
+        </div>
+      </div>
+
+      <p class="rec-description">
+        Assist in network troubleshooting, workstation configuration, hardware diagnostics, and maintaining internal IT infrastructure.
+      </p>
+
+      <div class="skill-tags">
+        <span class="tag">Hardware Diagnostics</span>
+        <span class="tag">Network Setup</span>
+        <span class="tag">Troubleshooting</span>
+        <span class="tag">Windows Server</span>
+      </div>
+
+      <div class="rec-footer">
+        <span class="posting-date">Posted 2 days ago</span>
+        <div class="rec-actions">
+          <button class="btn-outline">View Details</button>
+          <button class="btn-primary">Apply Now</button>
+        </div>
+      </div>
+    </article>
+
+    <!-- Card 2 -->
+    <article class="rec-card">
+      <div class="rec-header">
+        <div class="company-logo">WD</div>
+        <div class="rec-info">
+          <h2 class="rec-title">Web Development Intern</h2>
+          <p class="rec-company">DevPro Lab &bull; <span>Remote</span></p>
+        </div>
+        <div class="match-badge medium">
+          <span class="match-score">79%</span>
+          <span class="match-label">Match Score</span>
+        </div>
+      </div>
+
+      <p class="rec-description">
+        Collaborate with our front-end team to build responsive web portals, write clean modular CSS, and integrate REST APIs using Python/Flask.
+      </p>
+
+      <div class="skill-tags">
+        <span class="tag">HTML/CSS</span>
+        <span class="tag">JavaScript</span>
+        <span class="tag">Python</span>
+        <span class="tag">Flask</span>
+      </div>
+
+      <div class="rec-footer">
+        <span class="posting-date">Posted 1 day ago</span>
+        <div class="rec-actions">
+          <button class="btn-outline">View Details</button>
+          <button class="btn-primary">Apply Now</button>
+        </div>
+      </div>
+    </article>
+
+    <!-- Card 3 -->
+    <article class="rec-card">
+      <div class="rec-header">
+        <div class="company-logo">SA</div>
+        <div class="rec-info">
+          <h2 class="rec-title">Systems Analyst Intern</h2>
+          <p class="rec-company">InnovaTech Solutions Inc. &bull; <span>Makati City</span></p>
+        </div>
+        <div class="match-badge top">
+          <span class="match-score">93%</span>
+          <span class="match-label">Match Score</span>
+        </div>
+      </div>
+
+      <p class="rec-description">
+        Evaluate software requirements, prepare system workflow documentation, perform usability test cases, and model database architecture.
+      </p>
+
+      <div class="skill-tags">
+        <span class="tag">System Design</span>
+        <span class="tag">UML Diagrams</span>
+        <span class="tag">Black-Box Testing</span>
+        <span class="tag">SQL</span>
+      </div>
+
+      <div class="rec-footer">
+        <span class="posting-date">Posted Today</span>
+        <div class="rec-actions">
+          <button class="btn-outline">View Details</button>
+          <button class="btn-primary">Apply Now</button>
+        </div>
+      </div>
+    </article>
+
+  </div>
+</div>
+{% endblock %}

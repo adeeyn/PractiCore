@@ -1,0 +1,157 @@
+/* Page Layout Constraints */
+.assessment-viewport {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+}
+
+/* Header Area */
+.assessment-header-row {
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: flex-start !important;
+  width: 100%;
+  margin-bottom: 24px;
+}
+
+.header-titles h1 {
+  font-size: 22px !important;
+  font-weight: 700 !important;
+  color: #1a202c !important;
+  margin: 0 !important;
+  line-height: 1.2;
+}
+
+.header-titles p {
+  font-size: 13px !important;
+  color: #a0aec0 !important;
+  margin: 4px 0 0 0 !important;
+}
+
+/* Bell Badge */
+.bell-icon-btn {
+  position: relative;
+  width: 38px;
+  height: 38px;
+  background: #ffffff;
+  border: none;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.bell-dot {
+  position: absolute;
+  top: 9px;
+  right: 9px;
+  width: 6px;
+  height: 6px;
+  background-color: #6c3ce9;
+  border-radius: 50%;
+}
+
+/* Centering Content Area */
+.assessment-card-wrapper {
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  width: 100%;
+  padding-top: 15px;
+}
+
+/* White Card Box */
+.assessment-main-card {
+  background: #ffffff !important;
+  width: 100% !important;
+  max-width: 500px !important;
+  border-radius: 20px !important;
+  padding: 38px 32px !important;
+  text-align: center !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03) !important;
+  box-sizing: border-box;
+}
+
+/* Icon Container */
+.assessment-icon-box {
+  width: 52px;
+  height: 52px;
+  background: #f0ebff;
+  border-radius: 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 18px;
+}
+
+.assessment-main-card h2 {
+  font-size: 18px !important;
+  font-weight: 700 !important;
+  color: #1a202c !important;
+  margin: 0 0 8px 0 !important;
+}
+
+.assessment-description {
+  font-size: 12.5px !important;
+  color: #a0aec0 !important;
+  line-height: 1.5 !important;
+  max-width: 380px;
+  margin: 0 auto 24px auto !important;
+}
+
+.score-highlight {
+  color: #6c3ce9;
+  font-weight: 700;
+}
+
+/* Stat Grid Boxes */
+.stats-container {
+  display: grid !important;
+  grid-template-columns: repeat(3, 1fr) !important;
+  gap: 12px !important;
+  margin-bottom: 24px !important;
+}
+
+.stat-item {
+  background: #f4f0ff !important;
+  border-radius: 12px !important;
+  padding: 16px 6px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.stat-number {
+  font-size: 15px !important;
+  font-weight: 700 !important;
+  color: #6c3ce9 !important;
+  margin-bottom: 2px !important;
+}
+
+.stat-title {
+  font-size: 11px !important;
+  color: #a0aec0 !important;
+}
+
+/* Action Button */
+.start-btn-primary {
+  width: 100% !important;
+  height: 44px !important;
+  background: #6c3ce9 !important;
+  color: #ffffff !important;
+  border: none !important;
+  border-radius: 12px !important;
+  font-size: 14px !important;
+  font-weight: 700 !important;
+  cursor: pointer !important;
+  transition: background 0.2s ease !important;
+  box-shadow: 0 4px 12px rgba(108, 60, 233, 0.2) !important;
+}
+
+.start-btn-primary:hover {
+  background: #5b2fd4 !important;
+}

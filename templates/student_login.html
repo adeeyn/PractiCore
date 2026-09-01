@@ -5,7 +5,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>PractiCore - Sign In</title>
-<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
 <div class="auth-page">
@@ -19,28 +19,64 @@
       <button type="button" onclick="setRole(this)">Employer</button>
     </div>
 
-    <form onsubmit="login(event)">
+    
+
+    
+    <form action="{{ url_for('student_login') }}" method="POST">
       <div class="field">
         <label>Username</label>
-        <input id="username" type="text" placeholder="Username" required>
+        <input
+        id="username"
+        name="username"
+        type="text"
+        placeholder="Username"
+        value="{{ username }}"
+        required
+      >
       </div>
       <div class="field">
-        <label>Password</label>
-        <div class="password-wrap">
-          <input id="password" type="password" placeholder="Password" required>
-          <button class="toggle-password" type="button" onclick="togglePassword('password')">◉</button>
-        </div>
-      </div>
+  <label>Password</label>
 
+  <div class="password-wrap">
+    <input
+      id="password"
+      name="password"
+      type="password"
+      placeholder="Password"
+      required
+    >
+
+    <button
+      class="toggle-password"
+      type="button"
+      onclick="togglePassword('password')"
+      aria-label="Show password"
+    >
+      <img
+        id="password-icon"
+        src="{{ url_for('static', filename='view.png') }}"
+        data-view-src="{{ url_for('static', filename='view.png') }}"
+        data-hide-src="{{ url_for('static', filename='hide.png') }}"
+        alt="Show password"
+      >
+      </button>
+  </div>
+</div>
       <div class="auth-row">
         <label class="remember"><input type="checkbox"> Remember me</label>
         <a class="auth-link" href="#">Forgot password?</a>
       </div>
 
       <button class="primary-btn" type="submit">Sign In</button>
+
+<p
+    id="login-error"
+    class="login-error"
+    data-failed="{{ '1' if failed else '0' }}"></p>
     </form>
 
-    <div class="auth-footer">Don't have an account? <a class="auth-link" href="student_register.html">Sign up</a></div>
+
+    <div class="auth-footer">Don't have an account? <a class="auth-link" href="{{url_for('student_register') }}">Sign up</a></div>
     <div class="auth-switch">Are you an employer? <a class="auth-link" href="#" onclick="switchToEmployer(event)">Switch</a></div>
   </section>
 
@@ -58,6 +94,6 @@
     <button class="help">?</button>
   </section>
 </div>
-<script src="main.js"></script>
+<script src="{{ url_for('static', filename='main.js') }}"></script>
 </body>
 </html>

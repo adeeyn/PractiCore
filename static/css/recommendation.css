@@ -1,0 +1,246 @@
+/* Container Layout */
+.recommendations-container {
+  max-width: 960px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* Filter Bar & Controls */
+.filter-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.filter-tabs {
+  display: flex;
+  gap: 8px;
+  background: #ffffff;
+  padding: 4px;
+  border-radius: 12px;
+  border: 1px solid #f1f5f9;
+}
+
+.tab-btn {
+  border: none;
+  background: transparent;
+  color: #64748b;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 8px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.tab-btn:hover {
+  color: #1e1b4b;
+}
+
+.tab-btn.active {
+  background: #f0edff;
+  color: #635bff;
+}
+
+.search-box {
+  flex: 1;
+  max-width: 280px;
+}
+
+.search-input {
+  width: 100%;
+  background: #ffffff;
+  border: 1px solid #f1f5f9;
+  border-radius: 12px;
+  padding: 9px 16px;
+  font-size: 13px;
+  color: #1e1b4b;
+  outline: none;
+  transition: border-color 0.2s ease;
+}
+
+.search-input:focus {
+  border-color: #635bff;
+}
+
+/* Recommendations List */
+.recommendations-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.rec-card {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 24px;
+  border: 1px solid #f1f5f9;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.rec-card:hover {
+  border-color: #e2e8f0;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+}
+
+/* Header Area Inside Card */
+.rec-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.company-logo {
+  width: 50px;
+  height: 50px;
+  border-radius: 14px;
+  background: #635bff;
+  color: #ffffff;
+  font-weight: 800;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.rec-info {
+  flex: 1;
+}
+
+.rec-title {
+  font-size: 17px;
+  font-weight: 800;
+  color: #1e1b4b;
+  margin: 0 0 4px 0;
+}
+
+.rec-company {
+  font-size: 13px;
+  color: #94a3b8;
+  margin: 0;
+}
+
+.rec-company span {
+  color: #64748b;
+}
+
+/* Match Badge */
+.match-badge {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  padding: 6px 14px;
+  border-radius: 12px;
+  background: #f8fafc;
+}
+
+.match-score {
+  font-size: 18px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.match-label {
+  font-size: 10px;
+  font-weight: 700;
+  color: #94a3b8;
+  text-transform: uppercase;
+  margin-top: 2px;
+}
+
+.match-badge.top .match-score {
+  color: #10b981;
+}
+
+.match-badge.high .match-score {
+  color: #f59e0b;
+}
+
+.match-badge.medium .match-score {
+  color: #635bff;
+}
+
+/* Description */
+.rec-description {
+  font-size: 13.5px;
+  color: #475569;
+  line-height: 1.5;
+  margin: 0;
+}
+
+/* Skills Tags */
+.skill-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.tag {
+  background: #f1f5f9;
+  color: #475569;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 12px;
+  border-radius: 8px;
+}
+
+/* Card Footer Actions */
+.rec-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-top: 1px solid #f8fafc;
+  padding-top: 16px;
+  margin-top: 4px;
+}
+
+.posting-date {
+  font-size: 12px;
+  color: #94a3b8;
+}
+
+.rec-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.btn-outline {
+  background: transparent;
+  color: #635bff;
+  border: 1px solid #e2e8f0;
+  padding: 8px 18px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-outline:hover {
+  border-color: #635bff;
+  background: #f0edff;
+}
+
+.btn-primary {
+  background: #635bff;
+  color: #ffffff;
+  border: none;
+  padding: 8px 20px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.btn-primary:hover {
+  background: #4f46e5;
+}

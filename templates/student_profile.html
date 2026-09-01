@@ -1,0 +1,72 @@
+{% set active_page = 'profile' %}
+{% extends "base.html" %}
+
+{% block title %}PractiCore - Profile{% endblock %}
+
+{% block content %}
+<header class="topbar">
+  <div class="welcome">
+    <h1>Edit Profile</h1>
+    <p class="subtitle">Manage your personal information</p>
+  </div>
+</header>
+
+<div class="profile-container">
+  <!-- Top Profile Card -->
+  <div class="profile-header-card">
+    <div class="avatar-container">
+      <div class="avatar-circle">JD</div>
+      <button class="upload-btn" title="Upload Photo">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+          <polyline points="17 8 12 3 7 8"></polyline>
+          <line x1="12" y1="3" x2="12" y2="15"></line>
+        </svg>
+      </button>
+    </div>
+    
+    <div class="profile-summary">
+      <h2>John Dela Cruz</h2>
+      <span class="role-badge">Student</span>
+      <div class="academic-details">
+        <span>📖 Bachelor of Science in Information Technology</span>
+        <span>📅 Year 4th</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit Form Card -->
+  <form class="profile-form-card" method="POST" action="#">
+    <div class="form-grid">
+      <div class="form-group">
+        <label for="fullname">FULL NAME</label>
+        <input type="text" id="fullname" name="fullname" value="John Dela Cruz" class="form-input">
+      </div>
+
+      <div class="form-group">
+        <label for="email">EMAIL</label>
+        <input type="email" id="email" name="email" value="JohnDelaCruz@gmail.com" class="form-input">
+      </div>
+
+      <div class="form-group">
+        <label for="phone">PHONE</label>
+        <input type="text" id="phone" name="phone" value="09939787632" class="form-input">
+      </div>
+
+      <div class="form-group">
+        <label for="year">YEAR LEVEL</label>
+        <input type="text" id="year" name="year" value="4th" class="form-input">
+      </div>
+
+      <div class="form-group full-width">
+        <label for="course">COURSE</label>
+        <input type="text" id="course" name="course" value="Bachelor of Science in Information Technology" class="form-input">
+      </div>
+    </div>
+
+    <div class="form-actions">
+      <button type="submit" class="save-btn">Save Changes</button>
+    </div>
+  </form>
+</div>
+{% endblock %}

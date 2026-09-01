@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}PractiCore{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="app-shell">
+        <!-- SHARED SIDEBAR -->
+        <aside class="sidebar">
+            <div class="sidebar-brand">PractiCore</div>
+            <div class="profile-mini">
+                <div class="avatar">JD</div>
+                <div>
+                    <strong>John Dela Cruz</strong>
+                    <span>BSIT — 4th Year</span>
+                </div>
+            </div>
+            <nav class="nav">
+                <a href="{{ url_for('student_dashboard') }}" class="nav-item {% if active_page | default('dashboard') == 'dashboard' %}active{% endif %}"><span class="icon">📈</span> Dashboard</a>
+                <a href="{{ url_for('student_profile') }}" class="nav-item {% if active_page | default('dashboard') == 'profile' %}active{% endif %}"><span class="icon">👤</span> Profile</a>
+                <a href="{{ url_for('upload_resume') }}" class="nav-item {% if active_page | default('dashboard') == 'upload_resume' %}active{% endif %}"><span class="icon">📄</span> My Resume</a>
+                <a href="{{ url_for('assessment') }}" class="nav-item {% if active_page | default('dashboard') == 'assessment' %}active{% endif %}"><span class="nav-icon">📝</span> Assessment</a>
+                <a href="{{ url_for('recommendation') }}" class="nav-item {% if active_page | default('dashboard') == 'recommendation' %}active{% endif %}"><span class="nav-icon">⭐</span> Recommendations</a>
+                <a href="{{ url_for('application') }}" class="nav-item {% if active_page | default('dashboard') == 'application' %}active{% endif %}"><span class="nav-icon">💼</span> My Applications</a>
+                <a href="#"><span class="nav-icon">💬</span> Messages</a>
+                <a href="#"><span class="nav-icon">⚙</span> Settings</a>
+            </nav>
+            <div class="logout">
+                <a href="{{ url_for('student_login') }}"><span>➔</span> Logout</a>
+            </div>
+        </aside>
+
+        <!-- DYNAMIC MAIN CONTENT AREA -->
+        <main class="main">
+            {% block content %}{% endblock %}
+        </main>
+    </div>
+
+    <script src="{{ url_for('static', filename='main.js') }}"></script>
+</body>
+</html>

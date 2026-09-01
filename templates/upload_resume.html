@@ -1,0 +1,56 @@
+{% set active_page = 'upload_resume' %}
+{% extends "base.html" %}
+
+{% block title %}PractiCore - My Resume{% endblock %}
+
+{% block content %}
+<header class="topbar">
+  <div class="welcome">
+    <h1>My Resume</h1>
+    <p class="subtitle">Upload and manage your CV for internship matching</p>
+  </div>
+</header>
+
+<div class="resume-container">
+  <!-- Resume Upload Card -->
+  <div class="resume-card">
+    <div class="card-header">
+      <h2>Current Resume</h2>
+      <span class="status-badge active">Uploaded</span>
+    </div>
+
+    <!-- Drag & Drop Upload Box -->
+    <div class="upload-dropzone" id="dropzone">
+      <div class="upload-icon"> 
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+          <polyline points="14 2 14 8 20 8"></polyline>
+          <line x1="12" y1="18" x2="12" y2="12"></line>
+          <polyline points="9 15 12 12 15 15"></polyline>
+        </svg>
+      </div>
+      <h3>Drag &amp; drop your resume here</h3>
+      <p class="upload-hint">Supports PDF, DOCX (Max 5MB)</p>
+      <label class="browse-btn">
+        Browse File
+        <input type="file" accept=".pdf,.docx" hidden>
+      </label>
+    </div>
+
+    <!-- Active File Item -->
+    <div class="file-preview">
+      <div class="file-left">
+        <div class="file-icon">PDF</div>
+        <div class="file-details">
+          <span class="file-name">John_Dela_Cruz_Resume.pdf</span>
+          <span class="file-meta">2.4 MB &bull; Uploaded Aug 25, 2026</span>
+        </div>
+      </div>
+      <div class="file-actions">
+        <button class="action-btn download" title="Download">Download</button>
+        <button class="action-btn delete" title="Delete">Delete</button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

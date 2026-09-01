@@ -1,0 +1,176 @@
+/* Container Layout */
+.resume-container {
+  max-width: 900px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.resume-card {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 28px;
+  border: 1px solid #f1f5f9;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.card-header h2 {
+  font-size: 18px;
+  font-weight: 800;
+  color: #1e1b4b;
+  margin: 0;
+}
+
+.status-badge.active {
+  background: #e6f4ea;
+  color: #137333;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 4px 12px;
+  border-radius: 20px;
+}
+
+/* Upload Dropzone */
+.upload-dropzone {
+  border: 2px dashed #e2e8f0;
+  border-radius: 14px;
+  padding: 36px 20px;
+  text-align: center;
+  background: #fafafa;
+  transition: all 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.upload-dropzone:hover {
+  border-color: #635bff;
+  background: #f8f7ff;
+}
+
+.upload-icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  background: #f0edff;
+  color: #635bff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 12px;
+}
+
+.upload-dropzone h3 {
+  font-size: 15px;
+  font-weight: 700;
+  color: #1e1b4b;
+  margin: 0 0 4px 0;
+}
+
+.upload-hint {
+  font-size: 12px;
+  color: #94a3b8;
+  margin: 0 0 16px 0;
+}
+
+.browse-btn {
+  background: #635bff;
+  color: #ffffff;
+  padding: 8px 20px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-block;
+  transition: background 0.2s ease;
+}
+
+.browse-btn:hover {
+  background: #4f46e5;
+}
+
+/* Uploaded File Preview Block */
+.file-preview {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.file-left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.file-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: #fee2e2;
+  color: #ef4444;
+  font-size: 11px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.file-name {
+  display: block;
+  font-size: 14px;
+  font-weight: 700;
+  color: #1e1b4b;
+  margin-bottom: 2px;
+}
+
+.file-meta {
+  font-size: 12px;
+  color: #94a3b8;
+}
+
+.file-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.action-btn {
+  border: none;
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.action-btn.download {
+  background: #f0edff;
+  color: #635bff;
+}
+
+.action-btn.download:hover {
+  background: #635bff;
+  color: #ffffff;
+}
+
+.action-btn.delete {
+  background: #fef2f2;
+  color: #ef4444;
+}
+
+.action-btn.delete:hover {
+  background: #ef4444;
+  color: #ffffff;
+}
