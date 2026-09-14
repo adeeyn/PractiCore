@@ -7,7 +7,7 @@
 <header class="topbar">
   <div class="welcome">
     <h1>Recommended Internships</h1>
-    <p class="subtitle">Personalized opportunities matched by NLP and skill compatibility</p>
+    <p class="subtitle">Opportunities filtered by your resume skills and evaluated by assessment results</p>
   </div>
 </header>
 
@@ -15,120 +15,128 @@
   <!-- Filter & Search Bar -->
   <div class="filter-bar">
     <div class="filter-tabs">
-      <button class="tab-btn active">All Matches</button>
-      <button class="tab-btn">High Match (>85%)</button>
-      <button class="tab-btn">Remote Only</button>
+      <button class="tab-btn active" onclick="filterList('all', this)">All Resume Matches ({{ recommendations|length }})</button>
+      <button class="tab-btn" onclick="filterList('passed', this)">⭐ Passed Assessment Matches</button>
+      <button class="tab-btn" onclick="filterList('high', this)">High Match (>80%)</button>
+      <button class="tab-btn" onclick="filterList('remote', this)">Remote Only</button>
     </div>
     <div class="search-box">
-      <input type="text" placeholder="Search by role or skill..." class="search-input">
+      <input type="text" id="searchInput" onkeyup="searchJobs()" placeholder="Search by role or skill..." class="search-input">
     </div>
   </div>
 
-  <!-- Job Recommendations List -->
+  <!-- Job Recommendations List (Dynamic DB Render) -->
   <div class="recommendations-list">
-    
-    <!-- Card 1 -->
-    <article class="rec-card">
+    {% for rec in recommendations %}
+    <article class="rec-card" 
+             data-score="{{ rec.match_score }}" 
+             data-remote="{{ 1 if rec.is_remote else 0 }}"
+             data-category="{{ rec.recommended_category }}">
+      
       <div class="rec-header">
-        <div class="company-logo">IT</div>
+        <div class="company-logo">{{ rec.logo }}</div>
         <div class="rec-info">
-          <h2 class="rec-title">IT Support Intern</h2>
-          <p class="rec-company">Tech Solution Inc. &bull; <span>Cebu City</span></p>
+          <h2 class="rec-title">{{ rec.title }}</h2>
+          <p class="rec-company">{{ rec.company }} &bull; <span>{{ rec.location }}</span></p>
         </div>
-        <div class="match-badge high">
-          <span class="match-score">89%</span>
-          <span class="match-label">Match Score</span>
+        <div class="match-badge {{ rec.match_badge_class }}">
+          <span class="match-score">{{ rec.match_score }}%</span>
+          <span class="match-label">Assessment Score</span>
         </div>
       </div>
 
       <p class="rec-description">
-        Assist in network troubleshooting, workstation configuration, hardware diagnostics, and maintaining internal IT infrastructure.
+        {{ rec.description }}
       </p>
 
+      <!-- All Required Posting Skills -->
       <div class="skill-tags">
-        <span class="tag">Hardware Diagnostics</span>
-        <span class="tag">Network Setup</span>
-        <span class="tag">Troubleshooting</span>
-        <span class="tag">Windows Server</span>
+        <strong style="font-size: 0.85rem; color: #555; display: block; margin-bottom: 4px; width: 100%;">Required Skills:</strong>
+        {% for skill in rec.skills %}
+          <span class="tag">{{ skill }}</span>
+        {% endfor %}
+      </div>
+
+      <!-- Matched Resume Skills Callout -->
+      {% if rec.matched_resume_skills %}
+      <div style="margin-top: 10px; padding: 8px 12px; background: #e8f5e9; border-radius: 6px; border-left: 4px solid #2e7d32;">
+        <small style="color: #2e7d32; font-weight: bold; display: block; margin-bottom: 4px;">
+          ✓ Skills Matched from Your Resume:
+        </small>
+        {% for m_skill in rec.matched_resume_skills %}
+          <span style="background: #ffffff; color: #2e7d32; border: 1px solid #c8e6c9; padding: 2px 8px; border-radius: 4px; font-size: 0.8rem; font-weight: 600; margin-right: 4px; display: inline-block;">
+            {{ m_skill }}
+          </span>
+        {% endfor %}
+      </div>
+      {% endif %}
+
+      <!-- Skill Assessment Callout Banner mapped to 6 Job Domains -->
+      <div class="assessment-recommendation-box" style="margin-top: 12px;">
+        <div class="assessment-info">
+          <span class="assessment-label">Domain Assessment Track</span>
+          <p class="assessment-name">📋 {{ rec.recommended_category }} Track</p>
+        </div>
+        {% if rec.match_score >= 65 %}
+          <span style="color: #2e7d32; font-weight: bold; font-size: 0.9rem; padding: 6px 12px; background: #e8f5e9; border-radius: 20px;">
+            ✓ Assessment Passed
+          </span>
+        {% else %}
+          <a href="{{ url_for('start_assessment') }}" class="btn-assessment">Retake Assessment</a>
+        {% endif %}
       </div>
 
       <div class="rec-footer">
-        <span class="posting-date">Posted 2 days ago</span>
+        <span class="posting-date">Posted {{ rec.posted }}</span>
         <div class="rec-actions">
           <button class="btn-outline">View Details</button>
           <button class="btn-primary">Apply Now</button>
         </div>
       </div>
     </article>
-
-    <!-- Card 2 -->
-    <article class="rec-card">
-      <div class="rec-header">
-        <div class="company-logo">WD</div>
-        <div class="rec-info">
-          <h2 class="rec-title">Web Development Intern</h2>
-          <p class="rec-company">DevPro Lab &bull; <span>Remote</span></p>
-        </div>
-        <div class="match-badge medium">
-          <span class="match-score">79%</span>
-          <span class="match-label">Match Score</span>
-        </div>
-      </div>
-
-      <p class="rec-description">
-        Collaborate with our front-end team to build responsive web portals, write clean modular CSS, and integrate REST APIs using Python/Flask.
-      </p>
-
-      <div class="skill-tags">
-        <span class="tag">HTML/CSS</span>
-        <span class="tag">JavaScript</span>
-        <span class="tag">Python</span>
-        <span class="tag">Flask</span>
-      </div>
-
-      <div class="rec-footer">
-        <span class="posting-date">Posted 1 day ago</span>
-        <div class="rec-actions">
-          <button class="btn-outline">View Details</button>
-          <button class="btn-primary">Apply Now</button>
-        </div>
-      </div>
-    </article>
-
-    <!-- Card 3 -->
-    <article class="rec-card">
-      <div class="rec-header">
-        <div class="company-logo">SA</div>
-        <div class="rec-info">
-          <h2 class="rec-title">Systems Analyst Intern</h2>
-          <p class="rec-company">InnovaTech Solutions Inc. &bull; <span>Makati City</span></p>
-        </div>
-        <div class="match-badge top">
-          <span class="match-score">93%</span>
-          <span class="match-label">Match Score</span>
-        </div>
-      </div>
-
-      <p class="rec-description">
-        Evaluate software requirements, prepare system workflow documentation, perform usability test cases, and model database architecture.
-      </p>
-
-      <div class="skill-tags">
-        <span class="tag">System Design</span>
-        <span class="tag">UML Diagrams</span>
-        <span class="tag">Black-Box Testing</span>
-        <span class="tag">SQL</span>
-      </div>
-
-      <div class="rec-footer">
-        <span class="posting-date">Posted Today</span>
-        <div class="rec-actions">
-          <button class="btn-outline">View Details</button>
-          <button class="btn-primary">Apply Now</button>
-        </div>
-      </div>
-    </article>
-
+    {% else %}
+    <p class="no-data">No internship recommendations matching your resume skills were found.</p>
+    {% endfor %}
   </div>
 </div>
+
+<!-- JavaScript Filtering Logic -->
+<script>
+function filterList(filterType, btnElement) {
+  // Update Active Tab UI
+  document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+  btnElement.classList.add('active');
+
+  const cards = document.querySelectorAll('.rec-card');
+
+  cards.forEach(card => {
+    const score = parseInt(card.getAttribute('data-score')) || 0;
+    const isRemote = card.getAttribute('data-remote') === '1';
+
+    if (filterType === 'passed') {
+      // Show only internships where assessment score is 65% or higher
+      card.style.display = (score >= 65) ? 'block' : 'none';
+    } else if (filterType === 'high') {
+      // Show only high match scores (>80%)
+      card.style.display = (score >= 80) ? 'block' : 'none';
+    } else if (filterType === 'remote') {
+      // Show remote only
+      card.style.display = isRemote ? 'block' : 'none';
+    } else {
+      // Show all resume-matched internships
+      card.style.display = 'block';
+    }
+  });
+}
+
+function searchJobs() {
+  const query = document.getElementById('searchInput').value.toLowerCase();
+  const cards = document.querySelectorAll('.rec-card');
+
+  cards.forEach(card => {
+    const text = card.innerText.toLowerCase();
+    card.style.display = text.includes(query) ? 'block' : 'none';
+  });
+}
+</script>
 {% endblock %}

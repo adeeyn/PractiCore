@@ -5,30 +5,39 @@
 {% block content %}
 <header class="topbar">
   <div class="welcome">
-    <h1>Welcome back, {{ session.get('username', 'John') }}! 👋</h1>
+    <h1>Welcome back, {{ username }}! 👋</h1>
     <p class="subtitle">Let's find your dream internship</p>
   </div>
   <button class="notify" title="Notifications">♟</button>
 </header>
 
 <section class="stat-grid">
+  <!-- Dynamic Assessment Score -->
   <article class="stat-card">
     <div class="stat-label">ASSESSMENT SCORE</div>
-    <div class="stat-value" style="color: #635bff;">91%</div>
-    <div class="stat-note">Excellent standing</div>
+    <div class="stat-value" style="color: #635bff;">{{ assessment_score }}%</div>
+    <div class="stat-note">
+      {% if assessment_score >= 85 %}Excellent standing
+      {% elif assessment_score >= 60 %}Good standing
+      {% else %}Assessment pending{% endif %}
+    </div>
     <div class="stat-icon" style="background: #f0edff; color: #635bff;">▣</div>
   </article>
 
+  <!-- Dynamic Resume Match Rate -->
   <article class="stat-card">
     <div class="stat-label">RESUME MATCH</div>
-    <div class="stat-value" style="color: #0088cc;">85%</div>
-    <div class="stat-note">Good match rate</div>
+    <div class="stat-value" style="color: #0088cc;">{{ resume_match }}%</div>
+    <div class="stat-note">
+      {% if resume_match > 0 %}Based on extracted skills{% else %}Upload resume to calculate{% endif %}
+    </div>
     <div class="stat-icon" style="background: #e6f7ff; color: #0088cc;">▤</div>
   </article>
 
+  <!-- Dynamic Applications Counter -->
   <article class="stat-card">
     <div class="stat-label">APPLICATIONS</div>
-    <div class="stat-value" style="color: #f59e0b;">3</div>
+    <div class="stat-value" style="color: #f59e0b;">{{ applications_count }}</div>
     <div class="stat-note">In progress</div>
     <div class="stat-icon" style="background: #fffbeb; color: #f59e0b;">▥</div>
   </article>
@@ -39,62 +48,33 @@
     <h2>Recommended for You</h2>
     <p class="subtitle">Based on your skills &amp; assessment</p>
   </div>
-  <a class="view-all" href="#">View All &rsaquo;</a>
+  <a class="view-all" href="{{ url_for('recommendation') }}">View All &rsaquo;</a>
 </div>
 
 <section class="recommendations">
-  <!-- Card 1 -->
-  <article class="job-card">
-    <div class="job-left">
-      <div class="job-logo">IT</div>
-      <div class="job-info">
-        <h3 class="job-title">IT Support Intern</h3>
-        <span class="job-meta">♟ Tech Solution Inc. &bull; ◉ Cebu City</span>
+  {% if recommendations %}
+    {% for job in recommendations %}
+    <article class="job-card">
+      <div class="job-left">
+        <div class="job-logo">{{ job.logo }}</div>
+        <div class="job-info">
+          <h3 class="job-title">{{ job.title }}</h3>
+          <span class="job-meta">♟ {{ job.company }} &bull; ◉ {{ job.location }}{% if job.is_remote %} (Remote){% endif %}</span>
+        </div>
       </div>
-    </div>
-    <div class="job-right">
-      <div class="job-match">
-        <span class="match-label">Match</span>
-        <strong class="match-val amber">89%</strong>
+      <div class="job-right">
+        <div class="job-match">
+          <span class="match-label">Match</span>
+          <strong class="match-val {{ job.match_color_class }}">{{ job.match_score }}%</strong>
+        </div>
+        <a class="apply-btn" href="{{ url_for('recommendation') }}" style="text-decoration: none; text-align: center; display: inline-block; line-height: 2.2;">Apply</a>
       </div>
-      <button class="apply-btn" onclick="alert('Application opened')">Apply</button>
+    </article>
+    {% endfor %}
+  {% else %}
+    <div class="job-card" style="padding: 2rem; text-align: center; color: #64748b;">
+      <p>No recommendations found yet. Please complete your assessment or upload your resume to get matched!</p>
     </div>
-  </article>
-
-  <!-- Card 2 -->
-  <article class="job-card">
-    <div class="job-left">
-      <div class="job-logo">WD</div>
-      <div class="job-info">
-        <h3 class="job-title">Web Development Intern</h3>
-        <span class="job-meta">♟ DevPro Lab &bull; ◉ Remote</span>
-      </div>
-    </div>
-    <div class="job-right">
-      <div class="job-match">
-        <span class="match-label">Match</span>
-        <strong class="match-val amber">79%</strong>
-      </div>
-      <button class="apply-btn" onclick="alert('Application opened')">Apply</button>
-    </div>
-  </article>
-
-  <!-- Card 3 -->
-  <article class="job-card">
-    <div class="job-left">
-      <div class="job-logo">SA</div>
-      <div class="job-info">
-        <h3 class="job-title">Systems Analyst Intern</h3>
-        <span class="job-meta">♟ InnovaTech Solutions Inc. &bull; ◉ Makati City</span>
-      </div>
-    </div>
-    <div class="job-right">
-      <div class="job-match">
-        <span class="match-label">Match</span>
-        <strong class="match-val green">93%</strong>
-      </div>
-      <button class="apply-btn" onclick="alert('Application opened')">Apply</button>
-    </div>
-  </article>
+  {% endif %}
 </section>
 {% endblock %}

@@ -174,3 +174,24 @@
   background: #ef4444;
   color: #ffffff;
 }
+
+.resume-card.hidden {
+  display: none;
+}
+
+.skill-category-block {
+  margin-bottom: 1rem;
+}
+
+.category-title {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #4a5568;
+  margin-bottom: 0.4rem;
+}
+
+.skills-tags-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}

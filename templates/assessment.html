@@ -42,13 +42,18 @@
       <h2>Technical Skills Assessment</h2>
       
       <p class="assessment-description">
-        Answer questions to help us match you with the best internships. Your current score is <span class="score-highlight">91%</span>.
+        Answer questions to help us match you with the best internships. 
+        {% if student and student.total_questions and student.total_questions > 0 %}
+          Your current score is <span class="score-highlight">{{ score_percentage }}%</span>.
+        {% else %}
+          You haven't taken the assessment yet.
+        {% endif %}
       </p>
 
       <!-- Stat Blocks -->
       <div class="stats-container">
         <div class="stat-item">
-          <span class="stat-number">20</span>
+          <span class="stat-number">10</span>
           <span class="stat-title">Questions</span>
         </div>
         <div class="stat-item">
@@ -61,9 +66,14 @@
         </div>
       </div>
 
-      <!-- Start Button -->
-      <button class="start-btn-primary">Start Assessment</button>
-
+      <!-- Start / Retake Button -->
+      <a href="{{ url_for('start_assessment') }}" class="start-btn-primary">
+        {% if student and student.total_questions and student.total_questions > 0 %}
+          Retake Assessment
+        {% else %}
+          Start Assessment
+        {% endif %}
+      </a>
     </div>
   </div>
 
