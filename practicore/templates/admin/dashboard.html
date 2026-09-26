@@ -1,0 +1,37 @@
+{% extends 'admin/base.html' %}
+
+{% block title %}Admin Dashboard | PractiCore{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>Employers</h1>
+    <a class="btn" href="{{ url_for('admin.create_employer') }}">+ New Employer Account</a>
+</div>
+
+<table class="admin-table">
+    <thead>
+        <tr>
+            <th>Company</th>
+            <th>Location</th>
+            <th>Login Email</th>
+            <th>Status</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for employer in employers %}
+        <tr>
+            <td>{{ employer.company_name }}</td>
+            <td>{{ employer.location }}</td>
+            <td>{{ employer.email or '—' }}</td>
+            <td>
+                {% if not employer.email %}<span class="badge muted">No account</span>
+                {% elif employer.is_active %}<span class="badge ok">Active</span>
+                {% else %}<span class="badge muted">Disabled</span>{% endif %}
+            </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="4">No employers yet.</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

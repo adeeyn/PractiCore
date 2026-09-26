@@ -1,0 +1,68 @@
+/* ==========================================
+   CANDIDATE RANKING
+   ========================================== */
+
+.ranking-row {
+  display: grid;
+  grid-template-columns: 28px minmax(180px, 240px) 1fr 48px;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 24px;
+  border-bottom: 1px solid var(--border-soft);
+}
+
+.ranking-row:last-of-type {
+  border-bottom: none;
+}
+
+.rank-position {
+  display: grid;
+  place-items: center;
+  color: var(--text-muted);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.rank-position svg {
+  width: 18px;
+  height: 18px;
+  color: #f59e0b;
+  fill: #fbbf24;
+}
+
+.rank-bar-track {
+  height: 8px;
+  border-radius: 999px;
+  background: var(--border-soft);
+  overflow: hidden;
+}
+
+.rank-bar {
+  height: 100%;
+  border-radius: 999px;
+}
+
+.rank-bar.score-high { background: #22c55e; }
+.rank-bar.score-mid  { background: #3b82f6; }
+.rank-bar.score-low  { background: #f97316; }
+
+.ranking-row .score {
+  text-align: right;
+}
+
+.ranking-footnote {
+  padding: 14px 24px 18px;
+  text-align: center;
+  font-size: 11px;
+  color: var(--text-faint);
+}
+
+@media (max-width: 640px) {
+  .ranking-row {
+    grid-template-columns: 28px 1fr 48px;
+  }
+
+  .ranking-row .rank-bar-track {
+    grid-column: 2 / 4;
+  }
+}

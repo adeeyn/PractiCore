@@ -1,0 +1,32 @@
+{# Reusable pieces for employer pages. Import with:
+   {% import 'employer/_macros.html' as ui %} #}
+
+{# Initials circle; color is picked from the applicant id so it stays the same on every page #}
+{% macro avatar(applicant, size='') -%}
+  <div class="avatar {{ size }} avatar-c{{ (applicant.id - 1) % 5 }}">{{ applicant.initials }}</div>
+{%- endmacro %}
+
+{# CSS class for a match score: green >= 90, blue >= 80, orange below #}
+{% macro score_class(score) -%}
+  {%- if score >= 90 %}score-high{% elif score >= 80 %}score-mid{% else %}score-low{% endif -%}
+{%- endmacro %}
+
+{% macro score(value) -%}
+  <span class="score {{ score_class(value) }}">{{ value }}%</span>
+{%- endmacro %}
+
+{# "In Review" -> status-in-review #}
+{% macro status_badge(status) -%}
+  <span class="status status-{{ status|lower|replace(' ', '-') }}">{{ status }}</span>
+{%- endmacro %}
+
+{# Avatar + name + small line underneath #}
+{% macro person(applicant, sub) -%}
+  <div class="person">
+    {{ avatar(applicant) }}
+    <div>
+      <span class="person-name">{{ applicant.name }}</span>
+      <span class="person-sub">{{ sub }}</span>
+    </div>
+  </div>
+{%- endmacro %}

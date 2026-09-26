@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>PractiCore - Create Account</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='student/css/auth.css') }}">
+</head>
+<body>
+<div class="auth-page">
+  <section class="auth-panel">
+    <div class="brand">✦ PractiCore</div>
+    <h1>Create account</h1>
+    <p class="subtitle">Start your internship journey here</p>
+
+    {% if error %}
+      <div class="error-message">{{ error }}</div>
+    {% endif %}
+
+    <form method="POST" action="{{ url_for('auth.register') }}">
+      <div class="field">
+        <label>Full Name</label>
+        <input type="text" name="name" placeholder="Full Name" required>
+      </div>
+
+      <div class="field">
+        <label>School Email</label>
+        <input type="email" name="email" placeholder="you@{{ config.STUDENT_EMAIL_DOMAIN }}" required>
+      </div>
+
+      <div class="register-grid">
+        <div class="field">
+          <label>Username</label>
+          <input type="text" name="username" placeholder="Username" required>
+        </div>
+        <div class="field">
+          <label>Student Number</label>
+          <input type="text" name="studentNo" placeholder="Student Number" required>
+        </div>
+      </div>
+
+      <div class="register-grid">
+        <div class="field">
+          <label>Phone Number</label>
+          <input type="tel" name="phone" placeholder="09xxxxxxxxx">
+        </div>
+        <div class="field">
+          <label>Year Level</label>
+          <select name="year_level" class="select-field" required>
+            <option value="1st Year">1st Year</option>
+            <option value="2nd Year">2nd Year</option>
+            <option value="3rd Year">3rd Year</option>
+            <option value="4th Year" selected>4th Year</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Course / Program</label>
+        <input type="text" name="course" placeholder="e.g. BS in Information Technology" required>
+      </div>
+
+      <div class="register-grid">
+        <div class="field">
+          <label>Password</label>
+          <div class="password-wrap">
+            <input id="password" name="password" type="password" placeholder="Password" required>
+            <button class="toggle-password" type="button" onclick="togglePassword('password')">
+              <img
+                id="password-icon"
+                src="{{ url_for('static', filename='student/img/view.png') }}"
+                alt="Show password"
+              >
+            </button>
+          </div>
+        </div>
+        <div class="field">
+          <label>Confirm</label>
+          <div class="password-wrap">
+            <input id="confirmPassword" name="confirmPassword" type="password" placeholder="Repeat" required>
+            <button class="toggle-password" type="button" onclick="togglePassword('confirmPassword')">
+              <img
+                id="password-icon-confirm"
+                src="{{ url_for('static', filename='student/img/view.png') }}"
+                alt="Show password"
+              >
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <button class="primary-btn" type="submit">Create Account</button>
+    </form>
+
+    <div class="auth-footer">Already have an account? <a class="auth-link" href="{{ url_for('auth.login') }}">Log in</a></div>
+  </section>
+
+  <section class="auth-visual">
+    <div class="visual-content">
+      <div class="visual-brand">✦ PractiCore</div>
+      <h2>Find Your Dream<br>Internship</h2>
+      <p>Smart matching connects you with the perfect internship opportunities based on your skills and goals.</p>
+      <div class="features">
+        <div class="feature"><span class="dot">✓</span> Smart skill-based matching</div>
+        <div class="feature"><span class="dot">✓</span> Real-time application tracking</div>
+        <div class="feature"><span class="dot">✓</span> Resume analysis &amp; insights</div>
+      </div>
+    </div>
+    <button class="help">?</button>
+  </section>
+</div>
+<script src="{{ url_for('static', filename='student/main.js') }}"></script>
+</body>
+</html>

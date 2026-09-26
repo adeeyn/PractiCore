@@ -1,0 +1,266 @@
+{% extends "student/base.html" %}
+
+{% block title %}PractiCore - Take Competency Assessment{% endblock %}
+
+{% block content %}
+<header class="topbar">
+  <div class="welcome">
+    <h1>Competency Assessment</h1>
+    <p class="subtitle">Complete sections across core job tracks to generate your job-matched report</p>
+  </div>
+</header>
+
+<div class="assessment-container">
+
+  <!-- Header Card -->
+  <div class="assessment-card quiz-header-card">
+    <div class="quiz-progress-info">
+      <h2>Assessment in Progress</h2>
+      <span class="q-counter-badge" id="q-counter">{{ total_questions }} Total Questions</span>
+    </div>
+    <a href="{{ url_for('student.assessment') }}" class="action-btn cancel" id="exit-btn">
+      Exit Test
+    </a>
+  </div>
+
+  <!-- Ready Screen: the timer only starts once the student clicks Start -->
+  <div class="assessment-card quiz-intro-card" id="quiz-intro">
+    <h3>Before you begin</h3>
+    <ul class="quiz-rules">
+      <li>{{ total_questions }} questions, shown <strong>one at a time</strong>.</li>
+      <li>Each question has its own timer based on difficulty:
+        {% for level, seconds in time_limits.items() %}
+          <span class="difficulty-badge {{ level }}">{{ level|capitalize }} · {{ seconds }}s</span>
+        {% endfor %}
+      </li>
+      <li>When time runs out, the test moves to the next question automatically.</li>
+      <li>You <strong>cannot go back</strong> to a previous question. Unanswered questions are scored as incorrect.</li>
+      <li>Maximum total time: about {{ (total_seconds / 60)|round|int }} minutes.</li>
+    </ul>
+    <button type="button" class="start-btn-primary" id="start-quiz-btn">Start Assessment</button>
+  </div>
+
+  <!-- Quiz: one question visible at a time -->
+  <form id="quiz-form" class="assessment-card quiz-stage" hidden>
+
+    <div class="quiz-timer" id="quiz-timer">
+      <div class="quiz-timer-top">
+        <span class="quiz-timer-label">Time left for this question</span>
+        <span class="quiz-timer-value" id="timer-value">--</span>
+      </div>
+      <div class="quiz-timer-track">
+        <div class="quiz-timer-bar" id="timer-bar"></div>
+      </div>
+    </div>
+
+    {% set global_counter = namespace(value=1) %}
+    {% for track_name, track_questions in grouped_questions.items() %}
+      {% for q in track_questions %}
+      <div class="question-block quiz-question" id="block-q-{{ q.id }}" data-qid="{{ q.id }}"
+           data-time-limit="{{ q.time_limit }}" hidden>
+        <div class="q-meta">
+          <div class="q-tags">
+            <span class="track-tag">{{ track_name }}</span>
+            <span class="difficulty-badge {{ q.difficulty }}">{{ q.difficulty|capitalize }} · {{ q.time_limit }}s</span>
+            {% if q.target_role %}<span class="sec-badge role-badge">🎯 {{ q.target_role }}</span>{% endif %}
+            {% if q.standard_ref %}<span class="q-reference">📜 {{ q.standard_ref }}</span>{% endif %}
+          </div>
+          <span class="q-number">Question {{ global_counter.value }} of {{ total_questions }}</span>
+        </div>
+
+        <p class="q-text">{{ q.question_text }}</p>
+
+        <div class="options-container">
+          {% for letter, text in [('A', q.option_a), ('B', q.option_b), ('C', q.option_c), ('D', q.option_d)] %}
+          <label class="opt-card">
+            <input type="radio" name="q_{{ q.id }}" value="{{ letter }}">
+            <span class="opt-label">{{ letter }}</span>
+            <span class="opt-text">{{ text }}</span>
+          </label>
+          {% endfor %}
+        </div>
+      </div>
+      {% set global_counter.value = global_counter.value + 1 %}
+      {% endfor %}
+    {% endfor %}
+
+    <div class="quiz-nav">
+      <span class="quiz-nav-hint" id="nav-hint">Select an answer, then continue.</span>
+      <button type="submit" class="start-btn-primary submit-btn" id="next-btn">Next Question →</button>
+    </div>
+  </form>
+
+</div>
+
+<script>
+(function () {
+  const form = document.getElementById('quiz-form');
+  const intro = document.getElementById('quiz-intro');
+  const blocks = Array.from(document.querySelectorAll('.quiz-question'));
+  const nextBtn = document.getElementById('next-btn');
+  const navHint = document.getElementById('nav-hint');
+  const counter = document.getElementById('q-counter');
+  const timerBox = document.getElementById('quiz-timer');
+  const timerValue = document.getElementById('timer-value');
+  const timerBar = document.getElementById('timer-bar');
+
+  let current = -1;
+  let timerId = null;
+  let deadline = 0;
+  let limitMs = 0;
+  let submitting = false;
+  let inProgress = false;
+
+  // Highlight selected option card UI
+  document.querySelectorAll('.opt-card input[type="radio"]').forEach(radio => {
+    radio.addEventListener('change', function () {
+      const parentBlock = this.closest('.options-container');
+      parentBlock.querySelectorAll('.opt-card').forEach(card => card.classList.remove('selected'));
+      if (this.checked) this.closest('.opt-card').classList.add('selected');
+    });
+  });
+
+  function formatTime(seconds) {
+    const m = Math.floor(seconds / 60);
+    const s = seconds % 60;
+    return m > 0 ? `${m}:${String(s).padStart(2, '0')}` : `${s}s`;
+  }
+
+  function renderTimer() {
+    const msLeft = Math.max(0, deadline - Date.now());
+    const secondsLeft = Math.ceil(msLeft / 1000);
+    timerValue.textContent = formatTime(secondsLeft);
+    timerBar.style.width = `${(msLeft / limitMs) * 100}%`;
+    timerBox.classList.toggle('warning', secondsLeft <= 10 && secondsLeft > 5);
+    timerBox.classList.toggle('danger', secondsLeft <= 5);
+    return msLeft;
+  }
+
+  function startTimer(seconds) {
+    clearInterval(timerId);
+    limitMs = seconds * 1000;
+    // Deadline-based so the countdown stays accurate even if the tab is throttled
+    deadline = Date.now() + limitMs;
+    renderTimer();
+    timerId = setInterval(() => {
+      if (renderTimer() <= 0) {
+        clearInterval(timerId);
+        goNext(true);
+      }
+    }, 250);
+  }
+
+  function showQuestion(index) {
+    blocks.forEach((block, i) => { block.hidden = i !== index; });
+    current = index;
+
+    const isLast = index === blocks.length - 1;
+    counter.textContent = `Question ${index + 1} of ${blocks.length}`;
+    nextBtn.textContent = isLast ? 'Submit Assessment' : 'Next Question →';
+    navHint.textContent = 'Select an answer, then continue.';
+
+    startTimer(parseInt(blocks[index].dataset.timeLimit, 10) || 45);
+  }
+
+  function goNext(timedOut) {
+    if (submitting) return;
+    clearInterval(timerId);
+
+    const block = blocks[current];
+    // Lock the finished question so it can't be changed afterwards
+    block.querySelectorAll('input[type="radio"]').forEach(r => { r.disabled = !r.checked; });
+    if (timedOut) block.classList.add('timed-out');
+
+    if (current < blocks.length - 1) {
+      showQuestion(current + 1);
+    } else {
+      submitAnswers();
+    }
+  }
+
+  function collectAnswers() {
+    const answers = {};
+    blocks.forEach(block => {
+      const qId = block.dataset.qid;
+      const selected = block.querySelector(`input[name="q_${qId}"]:checked`);
+      if (selected) answers[`q_${qId}`] = selected.value;
+    });
+    return answers;
+  }
+
+  function submitAnswers() {
+    submitting = true;
+    nextBtn.disabled = true;
+    nextBtn.textContent = 'Submitting Answers...';
+    timerValue.textContent = '--';
+    timerBar.style.width = '0%';
+
+    fetch("{{ url_for('student.submit_assessment') }}", {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Requested-With': 'XMLHttpRequest'
+      },
+      body: JSON.stringify(collectAnswers())
+    })
+      .then(res => {
+        if (!res.ok) throw new Error(`Server status ${res.status}`);
+        return res.json();
+      })
+      .then(data => {
+        if (data.status === 'success' && data.redirect_url) {
+          inProgress = false;
+          window.location.href = data.redirect_url;
+        } else {
+          throw new Error(data.message || data.error || 'Failed to process answers.');
+        }
+      })
+      .catch(err => {
+        console.error('Error submitting assessment:', err);
+        alert('Submission error: ' + err.message);
+        submitting = false;
+        nextBtn.disabled = false;
+        nextBtn.textContent = 'Retry Submit';
+        // Retry just re-sends the answers; the timer does not restart
+        nextBtn.onclick = (e) => { e.preventDefault(); submitAnswers(); };
+      });
+  }
+
+  document.getElementById('start-quiz-btn').addEventListener('click', () => {
+    if (!blocks.length) {
+      alert('No questions are available right now.');
+      return;
+    }
+    intro.hidden = true;
+    form.hidden = false;
+    inProgress = true;
+    showQuestion(0);
+  });
+
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const block = blocks[current];
+    if (!block.querySelector('input[type="radio"]:checked')) {
+      if (!confirm('You have not answered this question. Skip it? (It will be scored as incorrect.)')) return;
+    }
+    goNext(false);
+  });
+
+  document.getElementById('exit-btn').addEventListener('click', (e) => {
+    if (inProgress && !confirm('Exit assessment? Your current progress will be lost.')) {
+      e.preventDefault();
+      return;
+    }
+    inProgress = false;
+  });
+
+  // Warn before closing or refreshing mid-test
+  window.addEventListener('beforeunload', (e) => {
+    if (inProgress) {
+      e.preventDefault();
+      e.returnValue = '';
+    }
+  });
+})();
+</script>
+{% endblock %}

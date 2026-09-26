@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}PractiCore{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='student/style.css') }}">
+</head>
+<body>
+    <div class="app-shell">
+        <!-- SHARED SIDEBAR -->
+        <aside class="sidebar">
+            <div class="sidebar-brand">PractiCore</div>
+            <div class="profile-mini">
+                <div class="avatar">👤</div>
+                <div>
+                    <strong>{{ current_student.name if current_student else session.get('username', 'Student') }}</strong>
+                    {% if current_student %}
+                    <span>{{ current_student.course }}{% if current_student.year_level %} — {{ current_student.year_level }}{% endif %}</span>
+                    {% endif %}
+                </div>
+            </div>
+            <nav class="nav">
+                <a href="{{ url_for('student.dashboard') }}" class="nav-item {% if active_page | default('dashboard') == 'dashboard' %}active{% endif %}"><span class="icon">📈</span> Dashboard</a>
+                <a href="{{ url_for('student.profile') }}" class="nav-item {% if active_page | default('dashboard') == 'profile' %}active{% endif %}"><span class="icon">👤</span> Profile</a>
+                <a href="{{ url_for('student.resume') }}" class="nav-item {% if active_page | default('dashboard') == 'upload_resume' %}active{% endif %}"><span class="icon">📄</span> My Resume</a>
+                <a href="{{ url_for('student.assessment') }}" class="nav-item {% if active_page | default('dashboard') == 'assessment' %}active{% endif %}"><span class="nav-icon">📝</span> Assessment</a>
+                <a href="{{ url_for('student.recommendation') }}" class="nav-item {% if active_page | default('dashboard') == 'recommendation' %}active{% endif %}"><span class="nav-icon">⭐</span> Recommendations</a>
+                <a href="{{ url_for('student.application') }}" class="nav-item {% if active_page | default('dashboard') == 'application' %}active{% endif %}"><span class="nav-icon">💼</span> My Applications</a>
+                <a href="#"><span class="nav-icon">💬</span> Messages</a>
+                <a href="#"><span class="nav-icon">⚙</span> Settings</a>
+            </nav>
+            <div class="logout">
+                <a href="{{ url_for('auth.logout') }}"><span>➔</span> Logout</a>
+            </div>
+        </aside>
+
+        <!-- DYNAMIC MAIN CONTENT AREA -->
+        <main class="main">
+            {% block content %}{% endblock %}
+        </main>
+    </div>
+
+    <script src="{{ url_for('static', filename='student/main.js') }}"></script>
+</body>
+</html>

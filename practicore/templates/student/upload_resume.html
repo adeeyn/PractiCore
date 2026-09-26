@@ -1,0 +1,234 @@
+{% set active_page = 'upload_resume' %}
+{% extends "student/base.html" %}
+
+{% block title %}PractiCore - My Resume{% endblock %}
+
+{% block content %}
+<header class="topbar">
+  <div class="welcome">
+    <h1>My Resume</h1>
+    <p class="subtitle">Upload and manage your CV for internship matching</p>
+  </div>
+</header>
+
+<div class="resume-container">
+  <!-- Resume Upload Card -->
+  <div class="resume-card">
+    <div class="card-header">
+      <h2>Current Resume</h2>
+      <span class="status-badge active" id="status-badge">
+        {% if student and student.resume_filename %}Active{% else %}Ready{% endif %}
+      </span>
+    </div>
+
+    <!-- Drag & Drop Upload Box -->
+    <div class="upload-dropzone" id="dropzone">
+      <div class="upload-icon"> 
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+          <polyline points="14 2 14 8 20 8"></polyline>
+          <line x1="12" y1="18" x2="12" y2="12"></line>
+          <polyline points="9 15 12 12 15 15"></polyline>
+        </svg>
+      </div>
+      <h3 id="upload-status-title">Drag &amp; drop your resume here</h3>
+      <p class="upload-hint">Supports PDF, DOCX (Max 5MB)</p>
+      <label class="browse-btn">
+        Browse File
+        <input type="file" id="resume-file-input" accept=".pdf,.docx" hidden>
+      </label>
+    </div>
+
+    <!-- Active File Item -->
+    <div class="file-preview {% if not (student and student.resume_filename) %}hidden{% endif %}" id="file-preview">
+      <div class="file-left">
+        <div class="file-icon" id="file-ext-badge">
+          {% if student and student.resume_filename %}
+            {{ student.resume_filename.split('.').pop().upper() }}
+          {% else %}
+            PDF
+          {% endif %}
+        </div>
+        <div class="file-details">
+          <span class="file-name" id="display-file-name">
+            {{ student.resume_filename if student and student.resume_filename else 'filename.pdf' }}
+          </span>
+          <span class="file-meta" id="display-file-meta">Saved in database</span>
+        </div>
+      </div>
+      <div class="file-actions">
+        <a class="action-btn" href="{{ url_for('student.resume_file') }}" target="_blank" title="View">View</a>
+        <button class="action-btn delete" id="remove-file-btn" title="Delete">Remove</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Parsed Extraction Results Card -->
+  <div class="resume-card {% if not (student and (student.skills or categorized_skills)) %}hidden{% endif %}" id="parsed-results-card">
+    <div class="card-header">
+      <h2>Extracted Resume Data (SpaCy NLP)</h2>
+    </div>
+
+    <div class="parsed-grid">
+      <div class="info-group">
+        <label>Detected Name</label>
+        <p id="extracted-name" class="info-value">{{ student.name if student and student.name else '--' }}</p>
+      </div>
+      <div class="info-group">
+        <label>Detected Email</label>
+        <p id="extracted-email" class="info-value">{{ student.email if student and student.email else '--' }}</p>
+      </div>
+      <div class="info-group">
+        <label>Detected Phone</label>
+        <p id="extracted-phone" class="info-value">{{ student.phone if student and student.phone else '--' }}</p>
+      </div>
+    </div>
+
+    <div class="skills-section">
+      <label class="section-label">Categorized Skills Taxonomy</label>
+      <div class="categorized-skills-wrapper" id="extracted-skills-container">
+        {% if categorized_skills %}
+          {% for category, cat_skills in categorized_skills.items() %}
+            <div class="skill-category-block">
+              <h4 class="category-title">{{ category }}</h4>
+              <div class="skills-tags-group">
+                {% for skill in cat_skills %}
+                  <span class="skill-tag">{{ skill }}</span>
+                {% endfor %}
+              </div>
+            </div>
+          {% endfor %}
+        {% elif skills %}
+          <div class="skills-tags-group">
+            {% for skill in skills %}
+              <span class="skill-tag">{{ skill }}</span>
+            {% endfor %}
+          </div>
+        {% else %}
+          <span class="no-skills">No matching skills detected.</span>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const fileInput = document.getElementById('resume-file-input');
+const dropzone = document.getElementById('dropzone');
+const statusBadge = document.getElementById('status-badge');
+const uploadTitle = document.getElementById('upload-status-title');
+const filePreview = document.getElementById('file-preview');
+const parsedCard = document.getElementById('parsed-results-card');
+
+fileInput.addEventListener('change', function(e) {
+  const file = e.target.files[0];
+  if (file) uploadAndParse(file);
+});
+
+dropzone.addEventListener('dragover', (e) => {
+  e.preventDefault();
+  dropzone.classList.add('drag-over');
+});
+
+dropzone.addEventListener('dragleave', () => {
+  dropzone.classList.remove('drag-over');
+});
+
+dropzone.addEventListener('drop', (e) => {
+  e.preventDefault();
+  dropzone.classList.remove('drag-over');
+  if (e.dataTransfer.files.length > 0) {
+    uploadAndParse(e.dataTransfer.files[0]);
+  }
+});
+
+function uploadAndParse(file) {
+  uploadTitle.innerText = "Parsing resume with SpaCy...";
+  statusBadge.innerText = "Processing";
+  statusBadge.className = "status-badge processing";
+
+  const formData = new FormData();
+  formData.append('resume', file);
+
+  fetch('{{ url_for('student.resume') }}', {
+    method: 'POST',
+    body: formData
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.status === 'success') {
+      const parsed = data.parsed_data;
+
+      document.getElementById('display-file-name').innerText = data.filename;
+      document.getElementById('file-ext-badge').innerText = data.filename.split('.').pop().toUpperCase();
+      filePreview.style.display = 'flex';
+
+      if (parsed.name) document.getElementById('extracted-name').innerText = parsed.name;
+      if (parsed.email) document.getElementById('extracted-email').innerText = parsed.email;
+      if (parsed.phone) document.getElementById('extracted-phone').innerText = parsed.phone;
+
+      const container = document.getElementById('extracted-skills-container');
+      container.innerHTML = '';
+
+      if (parsed.categorized_skills && Object.keys(parsed.categorized_skills).length > 0) {
+        for (const [category, catSkills] of Object.entries(parsed.categorized_skills)) {
+          const categoryBlock = document.createElement('div');
+          categoryBlock.className = 'skill-category-block';
+
+          const catTitle = document.createElement('h4');
+          catTitle.className = 'category-title';
+          catTitle.innerText = category;
+
+          const tagsGroup = document.createElement('div');
+          tagsGroup.className = 'skills-tags-group';
+
+          catSkills.forEach(skill => {
+            const badge = document.createElement('span');
+            badge.className = 'skill-tag';
+            badge.innerText = skill;
+            tagsGroup.appendChild(badge);
+          });
+
+          categoryBlock.appendChild(catTitle);
+          categoryBlock.appendChild(tagsGroup);
+          container.appendChild(categoryBlock);
+        }
+      } else if (parsed.skills && parsed.skills.length > 0) {
+        const tagsGroup = document.createElement('div');
+        tagsGroup.className = 'skills-tags-group';
+        parsed.skills.forEach(skill => {
+          const badge = document.createElement('span');
+          badge.className = 'skill-tag';
+          badge.innerText = skill;
+          tagsGroup.appendChild(badge);
+        });
+        container.appendChild(tagsGroup);
+      } else {
+        container.innerHTML = '<span class="no-skills">No matching skills detected.</span>';
+      }
+
+      parsedCard.style.display = 'block';
+      statusBadge.innerText = "Active";
+      statusBadge.className = "status-badge active";
+      uploadTitle.innerText = "Drag & drop your resume here";
+    } else {
+      alert("Error: " + data.error);
+      statusBadge.innerText = "Failed";
+      statusBadge.className = "status-badge error";
+    }
+  })
+  .catch(err => {
+    console.error(err);
+    alert("An error occurred while uploading.");
+  });
+}
+
+document.getElementById('remove-file-btn').addEventListener('click', () => {
+  filePreview.style.display = 'none';
+  parsedCard.style.display = 'none';
+  fileInput.value = '';
+  statusBadge.innerText = "Ready";
+  statusBadge.className = "status-badge active";
+});
+</script>
+{% endblock %}

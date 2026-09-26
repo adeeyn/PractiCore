@@ -1,0 +1,89 @@
+{% extends 'employer/base.html' %}
+{% import 'employer/_macros.html' as ui %}
+
+{% block title %}Applicant Management{% endblock %}
+{% block topbar_title %}Applicant Management{% endblock %}
+
+{% block content %}
+<div class="page-head">
+    <h1>Applicant Management</h1>
+    <p>Review and manage applicant details</p>
+</div>
+
+<div class="manage-grid">
+    <!-- Applicant picker -->
+    <div class="card">
+        <div class="manage-list-title">Select Applicant</div>
+        {% for applicant in applicants %}
+        <a class="manage-item {% if selected and applicant.id == selected.id %}active{% endif %}"
+           href="{{ url_for('employer.applicant_management', applicant=applicant.id) }}">
+            {{ ui.person(applicant, applicant.position) }}
+            {% if selected and applicant.id == selected.id %}<i data-lucide="chevron-right" class="manage-item-arrow"></i>{% endif %}
+        </a>
+        {% else %}
+        <div class="empty-state">No applicants yet.</div>
+        {% endfor %}
+    </div>
+
+    <!-- Details -->
+    {% if selected %}
+    <form class="card card-pad" method="POST" data-demo="Saving applicant notes is not connected to the database yet.">
+        <h2 class="manage-details-title">Applicant Details</h2>
+
+        <div class="manage-applicant-head">
+            <div class="person">
+                {{ ui.avatar(selected, 'avatar-lg') }}
+                <div>
+                    <span class="person-name">{{ selected.name }}</span>
+                    <span class="person-sub">Applied for: {{ selected.position }}</span>
+                    <span class="person-sub">Applied on: {{ selected.applied_on }}</span>
+                </div>
+            </div>
+            <div class="manage-score">
+                {{ ui.score(selected.match_score) }}
+                <span>Match Score</span>
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label class="form-label" for="action_status">Action Status</label>
+                <select class="form-control" id="action_status" name="action_status">
+                    <option value="">Status</option>
+                    {% for action in actions %}
+                    <option value="{{ action }}">{{ action }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="form-label" for="current_status">Current Status</label>
+                <select class="form-control" id="current_status" name="current_status">
+                    {% for status in statuses %}
+                    <option value="{{ status }}" {% if status == selected.status %}selected{% endif %}>{{ status }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+
+        <div class="manage-actions">
+            <button type="button" class="btn btn-primary" data-demo-action="Shortlisting is not connected to the database yet.">
+                <i data-lucide="user-check"></i> Shortlist
+            </button>
+            <button type="button" class="btn btn-purple" data-demo-action="Interview scheduling is not connected yet.">
+                <i data-lucide="calendar"></i> Schedule Interview
+            </button>
+            <button type="button" class="btn btn-danger-soft" data-demo-action="Reporting is not connected yet.">
+                <i data-lucide="circle-alert"></i> Report
+            </button>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label" for="notes">Notes</label>
+            <textarea class="form-control" id="notes" name="notes" rows="4" placeholder="Add notes about this applicant...">{{ selected.notes }}</textarea>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Save Notes</button>
+    </form>
+    {% endif %}
+</div>
+{% endblock %}

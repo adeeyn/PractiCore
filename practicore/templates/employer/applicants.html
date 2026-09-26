@@ -1,0 +1,40 @@
+{% extends 'employer/base.html' %}
+{% import 'employer/_macros.html' as ui %}
+
+{% block title %}Applicants{% endblock %}
+{% block topbar_title %}Applicants{% endblock %}
+
+{% block content %}
+<div class="page-head">
+    <h1>Applicants for {{ posting_title }}</h1>
+    <p>Total Applicants: {{ total_applicants }}</p>
+</div>
+
+<div class="card">
+    <div class="list-toolbar">
+        <div class="search-box">
+            <i data-lucide="search"></i>
+            <input class="form-control" type="search" id="applicant-search" placeholder="Search applicants...">
+        </div>
+        <select class="form-control filter-select" id="status-filter" aria-label="Filter by status">
+            <option value="">All statuses</option>
+            {% for status in statuses %}
+            <option value="{{ status }}">{{ status }}</option>
+            {% endfor %}
+        </select>
+    </div>
+
+    {% for applicant in applicants %}
+    <a class="applicant-list-row" data-applicant-row data-name="{{ applicant.name }}" data-status="{{ applicant.status }}"
+       href="{{ url_for('employer.applicant_management', applicant=applicant.id) }}">
+        <span class="rank-num">{{ loop.index }}</span>
+        {{ ui.person(applicant, applicant.applied_on) }}
+        <div class="applicant-row-right">
+            {{ ui.score(applicant.match_score) }}
+            {{ ui.status_badge(applicant.status) }}
+        </div>
+    </a>
+    {% endfor %}
+    <div class="empty-state" id="applicants-empty" {% if applicants %}hidden{% endif %}>No applicants match your search.</div>
+</div>
+{% endblock %}

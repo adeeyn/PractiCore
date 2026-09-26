@@ -1,0 +1,91 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>PractiCore - Sign In</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='student/style.css') }}">
+</head>
+<body>
+<div class="auth-page">
+  <section class="auth-panel">
+    <div class="brand">✦ PractiCore</div>
+    <h1>Sign in</h1>
+    <p class="subtitle">Start your internship journey here</p>
+
+    <form action="{{ url_for('auth.login') }}" method="POST">
+      <div class="field">
+        <label>Email or Username</label>
+        <input
+        id="username"
+        name="username"
+        type="text"
+        placeholder="Email or Username"
+        value="{{ username }}"
+        required
+      >
+      </div>
+      <div class="field">
+  <label>Password</label>
+
+  <div class="password-wrap">
+    <input
+      id="password"
+      name="password"
+      type="password"
+      placeholder="Password"
+      required
+    >
+
+    <button
+      class="toggle-password"
+      type="button"
+      onclick="togglePassword('password')"
+      aria-label="Show password"
+    >
+      <img
+        id="password-icon"
+        src="{{ url_for('static', filename='student/img/view.png') }}"
+        data-view-src="{{ url_for('static', filename='student/img/view.png') }}"
+        data-hide-src="{{ url_for('static', filename='student/img/hide.png') }}"
+        alt="Show password"
+      >
+      </button>
+  </div>
+</div>
+      <div class="auth-row">
+        <label class="remember"><input type="checkbox"> Remember me</label>
+        <a class="auth-link" href="#">Forgot password?</a>
+      </div>
+
+      <button class="primary-btn" type="submit">Sign In</button>
+
+<p
+    id="login-error"
+    class="login-error"
+    data-failed="{{ '1' if failed else '0' }}"></p>
+    </form>
+
+
+    <div class="auth-footer">Student without an account? <a class="auth-link" href="{{url_for('auth.register') }}">Sign up</a></div>
+    <div class="auth-switch">Employer? Contact the PractiCore admin to get an account.</div>
+  </section>
+
+  <section class="auth-visual">
+    <div class="visual-content">
+      <div class="visual-brand">✦ PractiCore</div>
+      <h2>Find Your Dream<br>Internship</h2>
+      <p>Smart matching connects you with the perfect internship opportunities based on your skills and goals.</p>
+      <div class="features">
+        <div class="feature"><span class="dot">✓</span> Smart skill-based matching</div>
+        <div class="feature"><span class="dot">✓</span> Real-time application tracking</div>
+        <div class="feature"><span class="dot">✓</span> Resume analysis &amp; insights</div>
+      </div>
+    </div>
+    <button class="help">?</button>
+  </section>
+</div>
+<script src="{{ url_for('static', filename='student/main.js') }}"></script>
+</body>
+</html>

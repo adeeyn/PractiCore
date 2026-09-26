@@ -1,0 +1,142 @@
+{% set active_page = 'recommendation' %}
+{% extends "student/base.html" %}
+
+{% block title %}PractiCore - Recommendations{% endblock %}
+
+{% block content %}
+<header class="topbar">
+  <div class="welcome">
+    <h1>Recommended Internships</h1>
+    <p class="subtitle">Opportunities filtered by your resume skills and evaluated by assessment results</p>
+  </div>
+</header>
+
+<div class="recommendations-container">
+  <!-- Filter & Search Bar -->
+  <div class="filter-bar">
+    <div class="filter-tabs">
+      <button class="tab-btn active" onclick="filterList('all', this)">All Resume Matches ({{ recommendations|length }})</button>
+      <button class="tab-btn" onclick="filterList('passed', this)">⭐ Passed Assessment Matches</button>
+      <button class="tab-btn" onclick="filterList('high', this)">High Match (>80%)</button>
+      <button class="tab-btn" onclick="filterList('remote', this)">Remote Only</button>
+    </div>
+    <div class="search-box">
+      <input type="text" id="searchInput" onkeyup="searchJobs()" placeholder="Search by role or skill..." class="search-input">
+    </div>
+  </div>
+
+  <!-- Job Recommendations List (Dynamic DB Render) -->
+  <div class="recommendations-list">
+    {% for rec in recommendations %}
+    <article class="rec-card" 
+             data-score="{{ rec.match_score }}" 
+             data-remote="{{ 1 if rec.is_remote else 0 }}"
+             data-category="{{ rec.recommended_category }}">
+      
+      <div class="rec-header">
+        <div class="company-logo">{{ rec.logo }}</div>
+        <div class="rec-info">
+          <h2 class="rec-title">{{ rec.title }}</h2>
+          <p class="rec-company">{{ rec.company }} &bull; <span>{{ rec.location }}</span></p>
+        </div>
+        <div class="match-badge {{ rec.match_badge_class }}">
+          <span class="match-score">{{ rec.match_score }}%</span>
+          <span class="match-label">Assessment Score</span>
+        </div>
+      </div>
+
+      <p class="rec-description">
+        {{ rec.description }}
+      </p>
+
+      <!-- All Required Posting Skills -->
+      <div class="skill-tags">
+        <strong style="font-size: 0.85rem; color: #555; display: block; margin-bottom: 4px; width: 100%;">Required Skills:</strong>
+        {% for skill in rec.skills %}
+          <span class="tag">{{ skill }}</span>
+        {% endfor %}
+      </div>
+
+      <!-- Matched Resume Skills Callout -->
+      {% if rec.matched_resume_skills %}
+      <div style="margin-top: 10px; padding: 8px 12px; background: #e8f5e9; border-radius: 6px; border-left: 4px solid #2e7d32;">
+        <small style="color: #2e7d32; font-weight: bold; display: block; margin-bottom: 4px;">
+          ✓ Skills Matched from Your Resume:
+        </small>
+        {% for m_skill in rec.matched_resume_skills %}
+          <span style="background: #ffffff; color: #2e7d32; border: 1px solid #c8e6c9; padding: 2px 8px; border-radius: 4px; font-size: 0.8rem; font-weight: 600; margin-right: 4px; display: inline-block;">
+            {{ m_skill }}
+          </span>
+        {% endfor %}
+      </div>
+      {% endif %}
+
+      <!-- Skill Assessment Callout Banner mapped to 6 Job Domains -->
+      <div class="assessment-recommendation-box" style="margin-top: 12px;">
+        <div class="assessment-info">
+          <span class="assessment-label">Domain Assessment Track</span>
+          <p class="assessment-name">📋 {{ rec.recommended_category }} Track</p>
+        </div>
+        {% if rec.match_score >= 65 %}
+          <span style="color: #2e7d32; font-weight: bold; font-size: 0.9rem; padding: 6px 12px; background: #e8f5e9; border-radius: 20px;">
+            ✓ Assessment Passed
+          </span>
+        {% else %}
+          <a href="{{ url_for('student.start_assessment') }}" class="btn-assessment">Retake Assessment</a>
+        {% endif %}
+      </div>
+
+      <div class="rec-footer">
+        <span class="posting-date">Posted {{ rec.posted }}</span>
+        <div class="rec-actions">
+          <button class="btn-outline">View Details</button>
+          <button class="btn-primary">Apply Now</button>
+        </div>
+      </div>
+    </article>
+    {% else %}
+    <p class="no-data">No internship recommendations matching your resume skills were found.</p>
+    {% endfor %}
+  </div>
+</div>
+
+<!-- JavaScript Filtering Logic -->
+<script>
+function filterList(filterType, btnElement) {
+  // Update Active Tab UI
+  document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+  btnElement.classList.add('active');
+
+  const cards = document.querySelectorAll('.rec-card');
+
+  cards.forEach(card => {
+    const score = parseInt(card.getAttribute('data-score')) || 0;
+    const isRemote = card.getAttribute('data-remote') === '1';
+
+    if (filterType === 'passed') {
+      // Show only internships where assessment score is 65% or higher
+      card.style.display = (score >= 65) ? 'block' : 'none';
+    } else if (filterType === 'high') {
+      // Show only high match scores (>80%)
+      card.style.display = (score >= 80) ? 'block' : 'none';
+    } else if (filterType === 'remote') {
+      // Show remote only
+      card.style.display = isRemote ? 'block' : 'none';
+    } else {
+      // Show all resume-matched internships
+      card.style.display = 'block';
+    }
+  });
+}
+
+function searchJobs() {
+  const query = document.getElementById('searchInput').value.toLowerCase();
+  const cards = document.querySelectorAll('.rec-card');
+
+  cards.forEach(card => {
+    const text = card.innerText.toLowerCase();
+    card.style.display = text.includes(query) ? 'block' : 'none';
+  });
+}
+</script>
+{% endblock %}

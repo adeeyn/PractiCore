@@ -1,0 +1,50 @@
+{% extends 'employer/base.html' %}
+
+{% block title %}Company Profile{% endblock %}
+{% block topbar_title %}Company Profile{% endblock %}
+
+{% block content %}
+<div class="page-head">
+    <h1>Company Profile</h1>
+    <p>Manage your company information</p>
+</div>
+
+<form class="card card-pad" method="POST" data-demo="Saving the company profile is not connected to the database yet.">
+    <div class="logo-row">
+        <div class="avatar avatar-xl avatar-brand">{{ company.logo_text }}</div>
+        <div>
+            <span class="logo-row-label">Company Logo</span>
+            <button type="button" class="btn btn-outline btn-sm" data-demo-action="Logo upload is not connected yet.">
+                <i data-lucide="upload"></i> Change Logo
+            </button>
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label class="form-label" for="company_name">Company Name</label>
+        <input class="form-control" type="text" id="company_name" name="company_name" value="{{ company.name }}" required>
+    </div>
+
+    <div class="form-group">
+        <label class="form-label" for="industry">Industry</label>
+        <input class="form-control" type="text" id="industry" name="industry" value="{{ company.industry }}" placeholder="e.g. Information Technology">
+    </div>
+
+    <div class="form-group">
+        <label class="form-label" for="email">Company Email</label>
+        <input class="form-control" type="email" id="email" name="email" value="{{ company.email }}">
+    </div>
+
+    <div class="form-group">
+        <label class="form-label" for="location">Location</label>
+        <input class="form-control" type="text" id="location" name="location" value="{{ company.location }}">
+    </div>
+
+    <div class="form-group">
+        <label class="form-label" for="about">About Company</label>
+        <textarea class="form-control" id="about" name="about" rows="4" placeholder="Tell students about your company">{{ company.about }}</textarea>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Save Changes</button>
+</form>
+{% endblock %}

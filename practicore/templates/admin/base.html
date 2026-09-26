@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}PractiCore Admin{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='admin/css/layout.css') }}">
+    {% block head %}{% endblock %}
+</head>
+<body>
+    <header class="admin-nav">
+        <span class="admin-brand">✦ PractiCore Admin</span>
+        <nav>
+            <a href="{{ url_for('admin.dashboard') }}" class="{% if active_page == 'dashboard' %}active{% endif %}">Dashboard</a>
+            <a href="{{ url_for('admin.create_employer') }}" class="{% if active_page == 'employers' %}active{% endif %}">New Employer Account</a>
+            <a href="{{ url_for('auth.logout') }}">Logout</a>
+        </nav>
+    </header>
+    <main class="admin-content">
+        {% block content %}{% endblock %}
+    </main>
+</body>
+</html>

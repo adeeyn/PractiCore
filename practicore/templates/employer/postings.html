@@ -1,0 +1,54 @@
+{% extends 'employer/base.html' %}
+
+{% block title %}Internship Posting{% endblock %}
+{% block topbar_title %}Internship Posting{% endblock %}
+
+{% block content %}
+<div class="page-head">
+    <h1>Internship Posting</h1>
+    <p>Create and manage your internship listings</p>
+</div>
+
+<form class="card card-pad" method="POST" data-demo="Posting internships is not connected to the database yet.">
+    <h2 class="card-title">Create New Posting</h2>
+
+    <div class="form-group">
+        <label class="form-label" for="title">Internship Title</label>
+        <input class="form-control" type="text" id="title" name="title" placeholder="e.g. IT Support Intern" required>
+    </div>
+
+    <div class="form-group">
+        <label class="form-label" for="department">Department</label>
+        <input class="form-control" type="text" id="department" name="department" placeholder="e.g. IT Operation">
+    </div>
+
+    <div class="form-group">
+        <label class="form-label" for="location">Location</label>
+        <input class="form-control" type="text" id="location" name="location" placeholder="e.g. Cebu City (On-Site)"
+               value="{{ current_employer.location if current_employer else '' }}">
+    </div>
+
+    <div class="form-group">
+        <label class="form-label" for="description">Description</label>
+        <textarea class="form-control" id="description" name="description" rows="4"
+                  placeholder="What will the intern do?"></textarea>
+    </div>
+
+    <div class="form-group">
+        <label class="form-label">Required Skills</label>
+        <div class="tag-input" data-tag-input data-target="skills">
+            {% for skill in suggested_skills %}
+            <span class="skill-tag" data-value="{{ skill }}">
+                <i data-lucide="tag"></i><span>{{ skill }}</span>
+                <button type="button" class="skill-tag-remove" aria-label="Remove skill">&times;</button>
+            </span>
+            {% endfor %}
+            <input type="text" class="tag-input-field" placeholder="+ Add skill">
+        </div>
+        <input type="hidden" id="skills" name="skills">
+        <p class="form-hint">Press Enter or comma to add a skill. These are matched against student resumes.</p>
+    </div>
+
+    <button type="submit" class="btn btn-primary btn-block">Post Internship</button>
+</form>
+{% endblock %}

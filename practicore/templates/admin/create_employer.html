@@ -1,0 +1,38 @@
+{% extends 'admin/base.html' %}
+
+{% block title %}New Employer Account | PractiCore{% endblock %}
+
+{% block content %}
+<h1>New Employer Account</h1>
+
+{% if error %}
+<div class="error-message">{{ error }}</div>
+{% endif %}
+
+<form method="POST" class="admin-form">
+    <fieldset>
+        <legend>Company</legend>
+        <label>
+            Existing company without an account
+            <select name="employer_id">
+                <option value="">— Create a new company —</option>
+                {% for company in companies_without_account %}
+                <option value="{{ company.id }}" {% if form.employer_id == company.id|string %}selected{% endif %}>{{ company.company_name }}</option>
+                {% endfor %}
+            </select>
+        </label>
+        <p class="hint">Or fill these in to create a new company:</p>
+        <label>Company name <input type="text" name="company_name" value="{{ form.company_name }}"></label>
+        <label>Location <input type="text" name="location" value="{{ form.location }}"></label>
+        <label>Logo text (optional, e.g. "TS") <input type="text" name="logo_text" maxlength="10" value="{{ form.logo_text }}"></label>
+    </fieldset>
+
+    <fieldset>
+        <legend>Login</legend>
+        <label>Email <input type="email" name="email" value="{{ form.email }}" required></label>
+        <label>Temporary password <input type="password" name="password" required></label>
+    </fieldset>
+
+    <button type="submit" class="btn">Create Account</button>
+</form>
+{% endblock %}

@@ -1,0 +1,263 @@
+/* ==========================================
+   EMPLOYER APP SHELL: sidebar + topbar
+   ========================================== */
+
+.emp-shell {
+  display: flex;
+  min-height: 100vh;
+}
+
+/* ---------- Sidebar ---------- */
+.emp-sidebar {
+  position: fixed;
+  inset: 0 auto 0 0;
+  width: var(--sidebar-width);
+  background: var(--card);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  z-index: 40;
+}
+
+.emp-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: var(--topbar-height);
+  padding: 0 20px;
+  font-size: 17px;
+  font-weight: 800;
+  border-bottom: 1px solid var(--border-soft);
+}
+
+.emp-brand-logo {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  background: var(--primary);
+  color: #fff;
+}
+
+.emp-brand-logo svg {
+  width: 17px;
+  height: 17px;
+}
+
+.emp-user {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 18px 20px;
+  border-bottom: 1px solid var(--border-soft);
+}
+
+.emp-user-info {
+  min-width: 0;
+}
+
+.emp-user-info strong {
+  display: block;
+  font-size: 13px;
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.emp-user-info span {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.emp-nav {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 14px 10px;
+}
+
+.emp-nav a {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 12px;
+  border-radius: var(--radius-sm);
+  color: var(--text-body);
+  font-size: 13px;
+  font-weight: 500;
+  transition: background 0.15s, color 0.15s;
+}
+
+.emp-nav a svg {
+  width: 16px;
+  height: 16px;
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.emp-nav a:hover {
+  background: var(--bg);
+}
+
+.emp-nav a.active {
+  background: var(--primary-soft);
+  color: var(--primary-hover);
+  font-weight: 600;
+}
+
+.emp-nav a.active svg {
+  color: var(--primary);
+}
+
+.emp-logout {
+  padding: 16px 20px;
+  border-top: 1px solid var(--border-soft);
+}
+
+.emp-logout a {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--red);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.emp-logout svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* ---------- Main area ---------- */
+.emp-main {
+  flex: 1;
+  margin-left: var(--sidebar-width);
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.emp-topbar {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  height: var(--topbar-height);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 28px;
+  background: var(--card);
+  border-bottom: 1px solid var(--border);
+}
+
+.emp-topbar-title {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.emp-topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.emp-bell {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  background: var(--card);
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+.emp-bell svg {
+  width: 16px;
+  height: 16px;
+}
+
+.emp-bell-dot {
+  position: absolute;
+  top: 6px;
+  right: 7px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--red);
+  border: 1.5px solid var(--card);
+}
+
+.emp-company-chip {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.emp-company-chip strong {
+  display: block;
+  font-size: 12px;
+  font-weight: 700;
+  text-align: right;
+}
+
+.emp-company-chip span {
+  display: block;
+  font-size: 11px;
+  color: var(--text-muted);
+  text-align: right;
+}
+
+.emp-content {
+  padding: 28px;
+  max-width: 1200px;
+  width: 100%;
+}
+
+/* ---------- Page heading ---------- */
+.page-head {
+  margin-bottom: 20px;
+}
+
+.page-head h1 {
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: -0.3px;
+}
+
+.page-head p {
+  margin-top: 2px;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+/* ---------- Small screens ---------- */
+@media (max-width: 860px) {
+  .emp-sidebar {
+    position: static;
+    width: 100%;
+    height: auto;
+  }
+
+  .emp-shell {
+    flex-direction: column;
+  }
+
+  .emp-main {
+    margin-left: 0;
+  }
+
+  .emp-nav {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+
+  .emp-content {
+    padding: 20px 16px;
+  }
+}

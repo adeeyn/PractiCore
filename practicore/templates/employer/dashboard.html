@@ -1,0 +1,42 @@
+{% extends 'employer/base.html' %}
+{% import 'employer/_macros.html' as ui %}
+
+{% block title %}Overview{% endblock %}
+{% block topbar_title %}Overview{% endblock %}
+
+{% block content %}
+<div class="page-head">
+    <h1>Dashboard Overview</h1>
+    <p>Welcome back, {{ current_employer.company_name if current_employer else 'Employer' }}</p>
+</div>
+
+<div class="stat-grid">
+    {% for stat in stats %}
+    <div class="card stat-card">
+        <div class="stat-icon {{ stat.color }}"><i data-lucide="{{ stat.icon }}"></i></div>
+        <div class="stat-value">{{ stat.value }}</div>
+        <div class="stat-label">{{ stat.label }}</div>
+        <div class="stat-note">{{ stat.note }}</div>
+    </div>
+    {% endfor %}
+</div>
+
+<div class="card">
+    <div class="card-head">
+        <h2>Recent Applicants</h2>
+        <a href="{{ url_for('employer.applicants') }}" class="link-green">View all</a>
+    </div>
+
+    {% for applicant in recent_applicants %}
+    <a class="applicant-row" href="{{ url_for('employer.applicant_management', applicant=applicant.id) }}">
+        {{ ui.person(applicant, applicant.applied_on) }}
+        <div class="applicant-row-right">
+            {{ ui.score(applicant.match_score) }}
+            {{ ui.status_badge(applicant.status) }}
+        </div>
+    </a>
+    {% else %}
+    <div class="empty-state">No applicants yet.</div>
+    {% endfor %}
+</div>
+{% endblock %}

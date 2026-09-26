@@ -1,0 +1,270 @@
+/* ==========================================
+   SHARED COMPONENTS: cards, avatars, badges, buttons, forms
+   ========================================== */
+
+/* ---------- Cards ---------- */
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+
+.card-pad {
+  padding: 22px 24px;
+}
+
+.card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 24px;
+  border-bottom: 1px solid var(--border-soft);
+}
+
+.card-head h2 {
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.link-green {
+  color: var(--primary);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.link-green:hover {
+  color: var(--primary-hover);
+}
+
+/* ---------- Avatars (initials circles) ---------- */
+.avatar {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.avatar-lg {
+  width: 48px;
+  height: 48px;
+  font-size: 15px;
+}
+
+.avatar-xl {
+  width: 56px;
+  height: 56px;
+  border-radius: 12px;
+  font-size: 17px;
+}
+
+.avatar-c0 { background: var(--purple-soft); color: var(--purple); }
+.avatar-c1 { background: var(--blue-soft);   color: var(--blue); }
+.avatar-c2 { background: var(--amber-soft);  color: var(--amber); }
+.avatar-c3 { background: var(--pink-soft);   color: var(--pink); }
+.avatar-c4 { background: var(--green-soft);  color: var(--green); }
+
+.avatar-brand {
+  background: var(--primary-soft);
+  color: var(--primary-hover);
+}
+
+/* ---------- Person row (avatar + name + sub text) ---------- */
+.person {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.person-name {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-dark);
+}
+
+.person-sub {
+  display: block;
+  font-size: 11px;
+  color: var(--text-faint);
+}
+
+/* ---------- Match score text ---------- */
+.score {
+  font-size: 13px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.score-high { color: var(--green); }
+.score-mid  { color: var(--blue); }
+.score-low  { color: var(--orange); }
+
+/* ---------- Status badges ---------- */
+.status {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 6px;
+  border: 1px solid transparent;
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.status-shortlisted { background: var(--green-soft);  color: var(--green);  border-color: #bbf7d0; }
+.status-in-review   { background: var(--blue-soft);   color: var(--blue);   border-color: #bfdbfe; }
+.status-scheduled   { background: var(--purple-soft); color: var(--purple); border-color: #ddd6fe; }
+.status-pending     { background: var(--border-soft); color: var(--text-muted); border-color: var(--border); }
+.status-rejected    { background: var(--red-soft);    color: var(--red);    border-color: #fecaca; }
+.status-hired       { background: var(--green-soft);  color: var(--primary-hover); border-color: #86efac; }
+
+/* ---------- Buttons ---------- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 9px 18px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.btn svg {
+  width: 14px;
+  height: 14px;
+}
+
+.btn-primary {
+  background: var(--primary);
+  color: #fff;
+}
+
+.btn-primary:hover {
+  background: var(--primary-hover);
+}
+
+.btn-purple {
+  background: var(--purple);
+  color: #fff;
+}
+
+.btn-purple:hover {
+  background: #6d28d9;
+}
+
+.btn-danger-soft {
+  background: var(--red-soft);
+  color: var(--red);
+  border-color: #fecaca;
+}
+
+.btn-outline {
+  background: var(--card);
+  color: var(--text-body);
+  border-color: var(--border);
+}
+
+.btn-outline:hover {
+  background: var(--bg);
+}
+
+.btn-sm {
+  padding: 6px 12px;
+  font-size: 12px;
+}
+
+.btn-block {
+  width: 100%;
+  padding: 12px;
+}
+
+/* ---------- Forms ---------- */
+.form-group {
+  margin-bottom: 16px;
+}
+
+.form-label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-dark);
+}
+
+.form-control {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--card);
+  font-family: inherit;
+  font-size: 13px;
+  color: var(--text-dark);
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.form-control:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-soft);
+}
+
+textarea.form-control {
+  min-height: 90px;
+  resize: vertical;
+}
+
+select.form-control {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2'%3e%3cpolyline points='6 9 12 15 18 9'/%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  background-size: 16px;
+  padding-right: 34px;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+@media (max-width: 640px) {
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ---------- Toast (used for "not connected yet" notices) ---------- */
+.toast {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  z-index: 100;
+  max-width: 340px;
+  padding: 12px 16px;
+  border-radius: var(--radius-sm);
+  background: var(--text-dark);
+  color: #fff;
+  font-size: 13px;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.2);
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 0.2s, transform 0.2s;
+  pointer-events: none;
+}
+
+.toast.show {
+  opacity: 1;
+  transform: translateY(0);
+}

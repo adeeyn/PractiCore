@@ -1,0 +1,31 @@
+{% extends 'employer/base.html' %}
+{% import 'employer/_macros.html' as ui %}
+
+{% block title %}Candidate Ranking{% endblock %}
+{% block topbar_title %}Candidate Ranking{% endblock %}
+
+{% block content %}
+<div class="page-head">
+    <h1>Candidate Ranking</h1>
+    <p>Based on AI Match Score</p>
+</div>
+
+<div class="card">
+    {% for applicant in ranked_applicants %}
+    <a class="ranking-row" href="{{ url_for('employer.applicant_management', applicant=applicant.id) }}">
+        <span class="rank-position">
+            {% if loop.first %}<i data-lucide="star"></i>{% else %}{{ loop.index }}{% endif %}
+        </span>
+        {{ ui.person(applicant, applicant.position) }}
+        <div class="rank-bar-track">
+            <div class="rank-bar {{ ui.score_class(applicant.match_score) }}" style="width: {{ applicant.match_score }}%"></div>
+        </div>
+        {{ ui.score(applicant.match_score) }}
+    </a>
+    {% else %}
+    <div class="empty-state">No candidates to rank yet.</div>
+    {% endfor %}
+
+    <p class="ranking-footnote">{{ ranking_note }}</p>
+</div>
+{% endblock %}

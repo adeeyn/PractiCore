@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Employer{% endblock %} | PractiCore</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='employer/style.css') }}">
+    {% block head %}{% endblock %}
+</head>
+<body>
+    {% set nav_items = [
+        ('dashboard', 'employer.dashboard', 'layout-grid', 'Overview'),
+        ('profile', 'employer.profile', 'building-2', 'Company Profile'),
+        ('postings', 'employer.postings', 'file-text', 'Internship Posting'),
+        ('applicants', 'employer.applicants', 'users', 'Applicants'),
+        ('ranking', 'employer.ranking', 'chart-column', 'Candidate Ranking'),
+        ('management', 'employer.applicant_management', 'clipboard-list', 'Applicant Management'),
+        ('messages', None, 'message-square', 'Messages'),
+        ('settings', None, 'settings', 'Settings'),
+    ] %}
+
+    <div class="emp-shell">
+        <!-- SIDEBAR -->
+        <aside class="emp-sidebar">
+            <div class="emp-brand">
+                <span class="emp-brand-logo"><i data-lucide="briefcase"></i></span>
+                Practicore
+            </div>
+
+            <div class="emp-user">
+                <div class="avatar avatar-brand">{{ current_employer.company_logo_text if current_employer else '?' }}</div>
+                <div class="emp-user-info">
+                    <strong>{{ session.get('email', 'Employer') }}</strong>
+                    <span>Employer</span>
+                </div>
+            </div>
+
+            <nav class="emp-nav">
+                {% for key, endpoint, icon, label in nav_items %}
+                <a href="{{ url_for(endpoint) if endpoint else '#' }}" class="{% if active_page == key %}active{% endif %}">
+                    <i data-lucide="{{ icon }}"></i>
+                    <span>{{ label }}</span>
+                </a>
+                {% endfor %}
+            </nav>
+
+            <div class="emp-logout">
+                <a href="{{ url_for('auth.logout') }}"><i data-lucide="log-out"></i> Logout</a>
+            </div>
+        </aside>
+
+        <!-- MAIN -->
+        <div class="emp-main">
+            <header class="emp-topbar">
+                <span class="emp-topbar-title">{% block topbar_title %}{% endblock %}</span>
+                <div class="emp-topbar-right">
+                    <button type="button" class="emp-bell" aria-label="Notifications">
+                        <i data-lucide="bell"></i>
+                        <span class="emp-bell-dot"></span>
+                    </button>
+                    <div class="emp-company-chip">
+                        <div class="avatar avatar-brand">{{ current_employer.company_logo_text if current_employer else '?' }}</div>
+                        <div>
+                            <strong>{{ current_employer.company_name if current_employer else 'Company' }}</strong>
+                            <span>Employer</span>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <main class="emp-content">
+                {% block content %}{% endblock %}
+            </main>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/lucide@0.469.0/dist/umd/lucide.min.js"></script>
+    <script src="{{ url_for('static', filename='employer/js/employer.js') }}"></script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>
