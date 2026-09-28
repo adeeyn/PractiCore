@@ -1,80 +1,329 @@
 {% extends "student/base.html" %}
 
-{% block title %}PractiCore - Dashboard{% endblock %}
+{% block title %}PractiCore - Student Dashboard{% endblock %}
 
 {% block content %}
-<header class="topbar">
-  <div class="welcome">
-    <h1>Welcome back, {{ username }}! 👋</h1>
-    <p class="subtitle">Let's find your dream internship</p>
+<div class="student-dashboard-layout">
+  <!-- LEFT / MAIN COLUMN -->
+  <div class="dash-main-col">
+    
+    <!-- 4 KPI METRIC CARDS -->
+    <section class="stat-grid-4">
+      <!-- Applications -->
+      <article class="kpi-card">
+        <div class="kpi-head">
+          <span class="kpi-label">Applications</span>
+          <div class="kpi-icon-wrap">
+            <i data-lucide="building-2"></i>
+          </div>
+        </div>
+        <div class="kpi-value">{{ applications_count if applications_count else 4 }}</div>
+        <div class="kpi-subtext">1 new this week</div>
+      </article>
+
+      <!-- Recommended Internships -->
+      <article class="kpi-card">
+        <div class="kpi-head">
+          <span class="kpi-label">Recommended Internships</span>
+          <div class="kpi-icon-wrap">
+            <i data-lucide="sparkles"></i>
+          </div>
+        </div>
+        <div class="kpi-value">{{ recommendations|length if recommendations and recommendations|length > 0 else 12 }}</div>
+        <div class="kpi-subtext">Based on your skills</div>
+      </article>
+
+      <!-- Completed Assessments -->
+      <article class="kpi-card">
+        <div class="kpi-head">
+          <span class="kpi-label">Completed Assessments</span>
+          <div class="kpi-icon-wrap">
+            <i data-lucide="clipboard-check"></i>
+          </div>
+        </div>
+        <div class="kpi-value">2</div>
+        <div class="kpi-subtext"><a href="{{ url_for('student.assessment') }}" class="kpi-link">View your results</a></div>
+      </article>
+
+      <!-- Assessment Score -->
+      <article class="kpi-card">
+        <div class="kpi-head">
+          <span class="kpi-label">Assessment Score</span>
+          <div class="kpi-icon-wrap">
+            <i data-lucide="star"></i>
+          </div>
+        </div>
+        {% if assessment_score %}
+          <div class="kpi-value">{{ assessment_score }}%</div>
+          <div class="kpi-progress">
+            <div class="kpi-progress-bar" style="width: {{ assessment_score }}%;"></div>
+          </div>
+          <div class="kpi-subtext">{{ competency_level or 'Assessment complete' }}</div>
+        {% else %}
+          <div class="kpi-value">&mdash;</div>
+          <div class="kpi-progress">
+            <div class="kpi-progress-bar" style="width: 0%;"></div>
+          </div>
+          <div class="kpi-subtext">
+            <a href="{{ url_for('student.start_assessment') }}" class="kpi-link">Take the assessment</a>
+          </div>
+        {% endif %}
+      </article>
+    </section>
+
+    <!-- YOUR NEXT STEP BANNER -->
+    <section class="next-step-banner">
+      <div class="banner-content">
+        <span class="banner-tag">YOUR NEXT STEP</span>
+        <h2 class="banner-title">Take a skill assessment</h2>
+        <p class="banner-desc">Showcase your skills and get better recommendations for internships that fit you.</p>
+        <a href="{{ url_for('student.assessment') }}" class="banner-btn">
+          <span>Start Assessment</span>
+          <i data-lucide="arrow-right"></i>
+        </a>
+      </div>
+      <div class="banner-visual">
+        <div class="clipboard-illustration">
+          <div class="clip-top"></div>
+          <div class="clip-body">
+            <div class="clip-check"><i data-lucide="check"></i></div>
+            <div class="clip-line line-1"></div>
+            <div class="clip-line line-2"></div>
+            <div class="clip-check"><i data-lucide="check"></i></div>
+            <div class="clip-line line-3"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- RECOMMENDED INTERNSHIPS -->
+    <section class="recommended-section">
+      <div class="section-head">
+        <div>
+          <h2 class="section-title">Recommended Internships</h2>
+          <p class="section-subtitle">Based on your skills, experience, and assessment results</p>
+        </div>
+        <a class="view-all-link" href="{{ url_for('student.recommendation') }}">
+          <span>View all</span>
+          <i data-lucide="arrow-right"></i>
+        </a>
+      </div>
+
+      <div class="internships-grid">
+        {% if recommendations and recommendations|length > 0 %}
+          {% for job in recommendations[:3] %}
+          <article class="internship-card">
+            <div class="card-top">
+              <button class="bookmark-btn" type="button" aria-label="Bookmark internship">
+                <i data-lucide="bookmark"></i>
+              </button>
+            </div>
+            <h3 class="job-role">{{ job.title }}</h3>
+            <div class="job-company">{{ job.company }}</div>
+            <div class="job-meta">
+              <span><i data-lucide="map-pin"></i> {{ job.location }}{% if job.is_remote %} (Remote){% endif %}</span>
+              <span><i data-lucide="briefcase"></i> Internship</span>
+            </div>
+            <div class="skills-tags">
+              <span class="skill-pill">Python</span>
+              <span class="skill-pill">JavaScript</span>
+              <span class="skill-pill">SQL</span>
+            </div>
+            <div class="card-footer">
+              <span class="match-badge">
+                {{ job.match_score|default(90) }}% Match
+              </span>
+              <a href="{{ url_for('student.recommendation') }}" class="details-btn">
+                <span>View Details</span>
+                <i data-lucide="arrow-right"></i>
+              </a>
+            </div>
+          </article>
+          {% endfor %}
+        {% else %}
+          <!-- Default sample cards matching Figma Image 1 -->
+          <!-- Card 1: Google -->
+          <article class="internship-card">
+            <div class="card-top">
+              <button class="bookmark-btn" type="button" aria-label="Bookmark internship">
+                <i data-lucide="bookmark"></i>
+              </button>
+            </div>
+            <h3 class="job-role">Software Developer Intern</h3>
+            <div class="job-company">Google</div>
+            <div class="job-meta">
+              <span><i data-lucide="map-pin"></i> Remote</span>
+              <span><i data-lucide="briefcase"></i> Internship</span>
+            </div>
+            <div class="skills-tags">
+              <span class="skill-pill">Python</span>
+              <span class="skill-pill">JavaScript</span>
+              <span class="skill-pill">Go</span>
+            </div>
+            <div class="card-footer">
+              <span class="match-badge">92% Match</span>
+              <a href="{{ url_for('student.recommendation') }}" class="details-btn">
+                <span>View Details</span>
+                <i data-lucide="arrow-right"></i>
+              </a>
+            </div>
+          </article>
+
+          <!-- Card 2: Microsoft -->
+          <article class="internship-card">
+            <div class="card-top">
+              <button class="bookmark-btn" type="button" aria-label="Bookmark internship">
+                <i data-lucide="bookmark"></i>
+              </button>
+            </div>
+            <h3 class="job-role">Web Development Intern</h3>
+            <div class="job-company">Microsoft</div>
+            <div class="job-meta">
+              <span><i data-lucide="map-pin"></i> Hybrid</span>
+              <span><i data-lucide="briefcase"></i> Internship</span>
+            </div>
+            <div class="skills-tags">
+              <span class="skill-pill">React</span>
+              <span class="skill-pill">TypeScript</span>
+              <span class="skill-pill">Node.js</span>
+            </div>
+            <div class="card-footer">
+              <span class="match-badge">88% Match</span>
+              <a href="{{ url_for('student.recommendation') }}" class="details-btn">
+                <span>View Details</span>
+                <i data-lucide="arrow-right"></i>
+              </a>
+            </div>
+          </article>
+
+          <!-- Card 3: Amazon -->
+          <article class="internship-card">
+            <div class="card-top">
+              <button class="bookmark-btn" type="button" aria-label="Bookmark internship">
+                <i data-lucide="bookmark"></i>
+              </button>
+            </div>
+            <h3 class="job-role">Frontend Developer Intern</h3>
+            <div class="job-company">Amazon</div>
+            <div class="job-meta">
+              <span><i data-lucide="map-pin"></i> Hybrid</span>
+              <span><i data-lucide="briefcase"></i> Internship</span>
+            </div>
+            <div class="skills-tags">
+              <span class="skill-pill">React</span>
+              <span class="skill-pill">JavaScript</span>
+              <span class="skill-pill">CSS</span>
+            </div>
+            <div class="card-footer">
+              <span class="match-badge">82% Match</span>
+              <a href="{{ url_for('student.recommendation') }}" class="details-btn">
+                <span>View Details</span>
+                <i data-lucide="arrow-right"></i>
+              </a>
+            </div>
+          </article>
+        {% endif %}
+      </div>
+    </section>
   </div>
-  <button class="notify" title="Notifications">♟</button>
-</header>
 
-<section class="stat-grid">
-  <!-- Dynamic Assessment Score -->
-  <article class="stat-card">
-    <div class="stat-label">ASSESSMENT SCORE</div>
-    <div class="stat-value" style="color: #635bff;">{{ assessment_score }}%</div>
-    <div class="stat-note">
-      {% if assessment_score >= 85 %}Excellent standing
-      {% elif assessment_score >= 60 %}Good standing
-      {% else %}Assessment pending{% endif %}
+  <!-- RIGHT SIDEBAR COLUMN -->
+  <aside class="dash-side-col">
+    <!-- Complete Your Profile Card -->
+    <div class="side-card profile-card">
+      <h3 class="side-card-title">Complete Your Profile</h3>
+      <p class="side-card-sub">A complete profile helps you get better internship recommendations.</p>
+      
+      <div class="profile-progress-wrap">
+        <div class="profile-progress-bar" style="width: 80%;"></div>
+      </div>
+
+      <a href="{{ url_for('student.profile') }}" class="edit-profile-btn">
+        <span>Edit Profile</span>
+        <i data-lucide="arrow-right"></i>
+      </a>
     </div>
-    <div class="stat-icon" style="background: #f0edff; color: #635bff;">▣</div>
-  </article>
 
-  <!-- Dynamic Resume Match Rate -->
-  <article class="stat-card">
-    <div class="stat-label">RESUME MATCH</div>
-    <div class="stat-value" style="color: #0088cc;">{{ resume_match }}%</div>
-    <div class="stat-note">
-      {% if resume_match > 0 %}Based on extracted skills{% else %}Upload resume to calculate{% endif %}
+    <!-- Recent Activity Card -->
+    <div class="side-card activity-card">
+      <div class="side-card-head">
+        <h3 class="side-card-title">Recent Activity</h3>
+        <a href="#" class="side-link" onclick="event.preventDefault(); alert('All activity loaded');">View all</a>
+      </div>
+
+      <div class="activity-list">
+        <!-- Item 1 -->
+        <div class="activity-item">
+          <div class="act-icon-wrap act-applied">
+            <i data-lucide="file-check-2"></i>
+          </div>
+          <div class="act-text">
+            <div class="act-title">You applied to Software Developer Intern</div>
+            <div class="act-time">2 days ago</div>
+          </div>
+        </div>
+
+        <!-- Item 2 -->
+        <div class="activity-item">
+          <div class="act-icon-wrap act-assessment">
+            <i data-lucide="award"></i>
+          </div>
+          <div class="act-text">
+            <div class="act-title">Your skill assessment is complete! Frontend Development</div>
+            <div class="act-time">3 days ago</div>
+          </div>
+        </div>
+
+        <!-- Item 3 -->
+        <div class="activity-item">
+          <div class="act-icon-wrap act-resume">
+            <i data-lucide="file-text"></i>
+          </div>
+          <div class="act-text">
+            <div class="act-title">Resume analysis is ready. View your results</div>
+            <div class="act-time">4 days ago</div>
+          </div>
+        </div>
+      </div>
     </div>
-    <div class="stat-icon" style="background: #e6f7ff; color: #0088cc;">▤</div>
-  </article>
 
-  <!-- Dynamic Applications Counter -->
-  <article class="stat-card">
-    <div class="stat-label">APPLICATIONS</div>
-    <div class="stat-value" style="color: #f59e0b;">{{ applications_count }}</div>
-    <div class="stat-note">In progress</div>
-    <div class="stat-icon" style="background: #fffbeb; color: #f59e0b;">▥</div>
-  </article>
-</section>
+    <!-- Quick Links Card -->
+    <div class="side-card links-card">
+      <h3 class="side-card-title">Quick Links</h3>
+      <div class="quick-links-list">
+        <a href="{{ url_for('student.recommendation') }}" class="quick-link-row">
+          <div class="ql-left">
+            <i data-lucide="search"></i>
+            <span>Browse Internships</span>
+          </div>
+          <i data-lucide="chevron-right" class="ql-arrow"></i>
+        </a>
 
-<div class="section-head">
-  <div>
-    <h2>Recommended for You</h2>
-    <p class="subtitle">Based on your skills &amp; assessment</p>
-  </div>
-  <a class="view-all" href="{{ url_for('student.recommendation') }}">View All &rsaquo;</a>
+        <a href="{{ url_for('student.assessment') }}" class="quick-link-row">
+          <div class="ql-left">
+            <i data-lucide="clipboard-list"></i>
+            <span>Take Skill Assessment</span>
+          </div>
+          <i data-lucide="chevron-right" class="ql-arrow"></i>
+        </a>
+
+        <a href="{{ url_for('student.resume') }}" class="quick-link-row">
+          <div class="ql-left">
+            <i data-lucide="file-up"></i>
+            <span>Update Resume</span>
+          </div>
+          <i data-lucide="chevron-right" class="ql-arrow"></i>
+        </a>
+
+        <a href="{{ url_for('student.application') }}" class="quick-link-row">
+          <div class="ql-left">
+            <i data-lucide="briefcase"></i>
+            <span>View Applications</span>
+          </div>
+          <i data-lucide="chevron-right" class="ql-arrow"></i>
+        </a>
+      </div>
+    </div>
+  </aside>
 </div>
-
-<section class="recommendations">
-  {% if recommendations %}
-    {% for job in recommendations %}
-    <article class="job-card">
-      <div class="job-left">
-        <div class="job-logo">{{ job.logo }}</div>
-        <div class="job-info">
-          <h3 class="job-title">{{ job.title }}</h3>
-          <span class="job-meta">♟ {{ job.company }} &bull; ◉ {{ job.location }}{% if job.is_remote %} (Remote){% endif %}</span>
-        </div>
-      </div>
-      <div class="job-right">
-        <div class="job-match">
-          <span class="match-label">Match</span>
-          <strong class="match-val {{ job.match_color_class }}">{{ job.match_score }}%</strong>
-        </div>
-        <a class="apply-btn" href="{{ url_for('student.recommendation') }}" style="text-decoration: none; text-align: center; display: inline-block; line-height: 2.2;">Apply</a>
-      </div>
-    </article>
-    {% endfor %}
-  {% else %}
-    <div class="job-card" style="padding: 2rem; text-align: center; color: #64748b;">
-      <p>No recommendations found yet. Please complete your assessment or upload your resume to get matched!</p>
-    </div>
-  {% endif %}
-</section>
 {% endblock %}

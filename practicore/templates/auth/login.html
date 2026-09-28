@@ -1,91 +1,199 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>PractiCore - Sign In</title>
-<link rel="stylesheet" href="{{ url_for('static', filename='student/style.css') }}">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PractiCore - Sign In</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='student/style.css') }}">
+  <script src="https://cdn.jsdelivr.net/npm/lucide@0.469.0/dist/umd/lucide.min.js"></script>
 </head>
 <body>
 <div class="auth-page">
+  <!-- Left Side: Form Panel -->
   <section class="auth-panel">
-    <div class="brand">✦ PractiCore</div>
-    <h1>Sign in</h1>
-    <p class="subtitle">Start your internship journey here</p>
-
-    <form action="{{ url_for('auth.login') }}" method="POST">
-      <div class="field">
-        <label>Email or Username</label>
-        <input
-        id="username"
-        name="username"
-        type="text"
-        placeholder="Email or Username"
-        value="{{ username }}"
-        required
-      >
-      </div>
-      <div class="field">
-  <label>Password</label>
-
-  <div class="password-wrap">
-    <input
-      id="password"
-      name="password"
-      type="password"
-      placeholder="Password"
-      required
-    >
-
-    <button
-      class="toggle-password"
-      type="button"
-      onclick="togglePassword('password')"
-      aria-label="Show password"
-    >
-      <img
-        id="password-icon"
-        src="{{ url_for('static', filename='student/img/view.png') }}"
-        data-view-src="{{ url_for('static', filename='student/img/view.png') }}"
-        data-hide-src="{{ url_for('static', filename='student/img/hide.png') }}"
-        alt="Show password"
-      >
-      </button>
-  </div>
-</div>
-      <div class="auth-row">
-        <label class="remember"><input type="checkbox"> Remember me</label>
-        <a class="auth-link" href="#">Forgot password?</a>
+    <div class="auth-panel-inner">
+      <div class="brand">
+        <svg class="brand-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M22 10v6M2 10l10-5 10 5-10 5z"></path>
+          <path d="M6 12v5c3 3 9 3 12 0v-5"></path>
+        </svg>
+        <span>PractiCore</span>
       </div>
 
-      <button class="primary-btn" type="submit">Sign In</button>
+      <div class="auth-header">
+        <h1>Welcome back!</h1>
+        <p class="subtitle">Continue your internship journey.</p>
+      </div>
 
-<p
-    id="login-error"
-    class="login-error"
-    data-failed="{{ '1' if failed else '0' }}"></p>
-    </form>
+      <form action="{{ url_for('auth.login') }}" method="POST" class="auth-form">
+        <div class="field">
+          <label for="username">Email Address</label>
+          <div class="input-wrapper">
+            <input
+              id="username"
+              name="username"
+              type="text"
+              placeholder="Enter your email address"
+              value="{{ username }}"
+              required
+            >
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="password">Password</label>
+          <div class="password-wrap">
+            <input
+              id="password"
+              name="password"
+              type="password"
+              placeholder="Enter your password"
+              required
+            >
+            <button
+              class="toggle-password"
+              type="button"
+              onclick="togglePassword('password')"
+              aria-label="Toggle password visibility"
+            >
+              <svg id="eye-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                <circle cx="12" cy="12" r="3"></circle>
+              </svg>
+            </button>
+          </div>
+          <div class="forgot-row">
+            <a class="forgot-link" href="#">Forgot password?</a>
+          </div>
+        </div>
+
+        <button class="primary-btn signin-btn" type="submit">
+          <span>Sign In</span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+            <polyline points="12 5 19 12 12 19"></polyline>
+          </svg>
+        </button>
+
+        <p
+          id="login-error"
+          class="login-error"
+          data-failed="{{ '1' if failed else '0' }}"></p>
 
 
-    <div class="auth-footer">Student without an account? <a class="auth-link" href="{{url_for('auth.register') }}">Sign up</a></div>
-    <div class="auth-switch">Employer? Contact the PractiCore admin to get an account.</div>
+        <div class="auth-footer">
+          Don't have an account? <a class="signup-link" href="{{ url_for('auth.register') }}">Sign up</a>
+        </div>
+      </form>
+    </div>
+
+    <!-- Decorative Corner Shape -->
+    <div class="auth-corner-decor" aria-hidden="true"></div>
   </section>
 
+  <!-- Right Side: Brand Panel -->
   <section class="auth-visual">
-    <div class="visual-content">
-      <div class="visual-brand">✦ PractiCore</div>
-      <h2>Find Your Dream<br>Internship</h2>
-      <p>Smart matching connects you with the perfect internship opportunities based on your skills and goals.</p>
-      <div class="features">
-        <div class="feature"><span class="dot">✓</span> Smart skill-based matching</div>
-        <div class="feature"><span class="dot">✓</span> Real-time application tracking</div>
-        <div class="feature"><span class="dot">✓</span> Resume analysis &amp; insights</div>
+    <div class="visual-header">
+      <div class="brand-white">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M22 10v6M2 10l10-5 10 5-10 5z"></path>
+          <path d="M6 12v5c3 3 9 3 12 0v-5"></path>
+        </svg>
+        <span>PractiCore</span>
       </div>
     </div>
-    <button class="help">?</button>
+
+    <div class="visual-headline">
+      <h2>Find internships<br>that fit your skills.</h2>
+      <p>PractiCore connects your skills, experience, and competencies with internship opportunities that match your potential.</p>
+    </div>
+
+    <!-- Visual Interactive Preview Stack -->
+    <div class="mockup-stack">
+      <!-- Top Left Floating Badge -->
+      <div class="float-card float-top-left">
+        <div class="float-icon-box resume-box">
+          <i data-lucide="file-text"></i>
+        </div>
+        <div class="float-text">
+          <strong>Resume Analysis</strong>
+          <span>98 skills detected</span>
+        </div>
+      </div>
+
+      <!-- Top Right Floating Badge -->
+      <div class="float-card float-top-right">
+        <div class="float-icon-box assessment-box">
+          <i data-lucide="clipboard-check"></i>
+        </div>
+        <div class="float-text">
+          <strong>Skill Assessment</strong>
+          <span>7 Competencies Profile</span>
+        </div>
+      </div>
+
+      <!-- Central Mini Dashboard Mockup Window -->
+      <div class="mockup-window">
+        <div class="mini-sidebar">
+          <div class="mini-logo"></div>
+          <div class="mini-nav active"></div>
+          <div class="mini-nav"></div>
+          <div class="mini-nav"></div>
+          <div class="mini-nav"></div>
+        </div>
+        <div class="mini-content">
+          <div class="mini-header">
+            <strong>Welcome back, Alex</strong>
+          </div>
+          <div class="mini-cards">
+            <div class="mini-job">
+              <span class="mini-job-title">Product Design Intern</span>
+            </div>
+            <div class="mini-job">
+              <span class="mini-job-title">Data Analyst Intern</span>
+            </div>
+            <div class="mini-job">
+              <span class="mini-job-title">Marketing Intern</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bottom Right Floating Badge -->
+      <div class="float-card float-bottom-right">
+        <div class="float-icon-box match-box">
+          <i data-lucide="sparkles"></i>
+        </div>
+        <div class="float-text">
+          <strong>Internship Match</strong>
+          <span>92% Compatibility • 85% match</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bottom Feature Pills -->
+    <div class="visual-features">
+      <div class="feature-item">
+        <div class="feature-icon"><i data-lucide="check-circle-2"></i></div>
+        <span>Skill-based matching</span>
+      </div>
+      <div class="feature-item">
+        <div class="feature-icon"><i data-lucide="bar-chart-2"></i></div>
+        <span>Competency assessment</span>
+      </div>
+      <div class="feature-item">
+        <div class="feature-icon"><i data-lucide="briefcase"></i></div>
+        <span>Internship recommendations</span>
+      </div>
+    </div>
   </section>
 </div>
+
 <script src="{{ url_for('static', filename='student/main.js') }}"></script>
+<script>
+  if (window.lucide) {
+    lucide.createIcons();
+  }
+</script>
 </body>
 </html>

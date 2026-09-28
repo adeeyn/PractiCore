@@ -9,29 +9,38 @@
     <p>Create and manage your internship listings</p>
 </div>
 
-<form class="card card-pad" method="POST" data-demo="Posting internships is not connected to the database yet.">
+{% if message %}
+<div class="alert alert-{{ message_type or 'success' }}">
+    <i data-lucide="{{ 'circle-check' if message_type == 'success' else 'circle-alert' }}"></i>
+    <span>{{ message }}</span>
+</div>
+{% endif %}
+
+<form class="card card-pad" method="POST">
     <h2 class="card-title">Create New Posting</h2>
 
     <div class="form-group">
         <label class="form-label" for="title">Internship Title</label>
-        <input class="form-control" type="text" id="title" name="title" placeholder="e.g. IT Support Intern" required>
+        <input class="form-control" type="text" id="title" name="title" placeholder="e.g. IT Support Intern"
+               value="{{ form.title or '' }}" required>
     </div>
 
     <div class="form-group">
         <label class="form-label" for="department">Department</label>
-        <input class="form-control" type="text" id="department" name="department" placeholder="e.g. IT Operation">
+        <input class="form-control" type="text" id="department" name="department"
+               value="{{ form.department or '' }}" placeholder="e.g. IT Operation">
     </div>
 
     <div class="form-group">
         <label class="form-label" for="location">Location</label>
         <input class="form-control" type="text" id="location" name="location" placeholder="e.g. Cebu City (On-Site)"
-               value="{{ current_employer.location if current_employer else '' }}">
+               value="{{ form.location or (current_employer.location if current_employer else '') }}">
     </div>
 
     <div class="form-group">
         <label class="form-label" for="description">Description</label>
         <textarea class="form-control" id="description" name="description" rows="4"
-                  placeholder="What will the intern do?"></textarea>
+                  placeholder="What will the intern do?">{{ form.description or '' }}</textarea>
     </div>
 
     <div class="form-group">
@@ -45,10 +54,56 @@
             {% endfor %}
             <input type="text" class="tag-input-field" placeholder="+ Add skill">
         </div>
-        <input type="hidden" id="skills" name="skills">
+        <input type="hidden" id="skills" name="required_skills">
         <p class="form-hint">Press Enter or comma to add a skill. These are matched against student resumes.</p>
+    </div>
+
+    <div class="form-row">
+        <div class="form-group">
+            <label class="form-label" for="positions_available">Positions Available</label>
+            <input class="form-control" type="number" id="positions_available" name="positions_available"
+                   min="1" max="99" value="{{ form.positions_available or '1' }}">
+        </div>
+
+        <div class="form-group">
+            <span class="form-label">Work Setup</span>
+            <label class="check-row">
+                <input type="checkbox" name="is_remote" value="1">
+                <span>This internship is remote</span>
+            </label>
+        </div>
     </div>
 
     <button type="submit" class="btn btn-primary btn-block">Post Internship</button>
 </form>
+
+<h2 class="section-title">Your Internships ({{ postings|length }})</h2>
+
+{% for posting in postings %}
+<div class="card card-pad posting-item">
+    <div class="posting-item-head">
+        <div>
+            <h3 class="posting-item-title">{{ posting.title }}</h3>
+            <p class="posting-item-meta">
+                {{ posting.department or 'No department' }} &middot;
+                {{ posting.positions_available }} position{{ '' if posting.positions_available == 1 else 's' }} &middot;
+                {{ 'Remote' if posting.is_remote else 'On-site' }} &middot;
+                Posted {{ posting.posted_date.strftime('%b %d, %Y') if posting.posted_date else 'recently' }}
+            </p>
+        </div>
+        <a class="card-action-link" href="{{ url_for('employer.applicants', posting=posting.id) }}">
+            <span>View applicants</span>
+            <i data-lucide="arrow-right"></i>
+        </a>
+    </div>
+
+    <p class="posting-item-desc">{{ posting.description }}</p>
+
+    <div class="skill-tags">
+        {% for skill in posting.skills %}<span class="skill-tag">{{ skill }}</span>{% endfor %}
+    </div>
+</div>
+{% else %}
+<div class="card"><div class="empty-state">You have not posted an internship yet.</div></div>
+{% endfor %}
 {% endblock %}

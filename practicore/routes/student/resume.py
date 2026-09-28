@@ -31,11 +31,18 @@ class UploadResumeView(MethodView):
         if student and student.get("skills"):
             saved_skills = [s.strip() for s in student["skills"].split(",") if s.strip()]
 
+        # Career sections parsed out of the stored resume (migration 007).
+        # student_id can be missing if the profile lookup failed, and get_sections
+        # returns empty lists when there is no uploaded resume yet.
+        student_id = student.get("id") if student else None
+        sections = self.resumes.get_sections(student_id) if student_id else {}
+
         return render_template(
             "student/upload_resume.html",
             active_page="resume",
             student=student,
             skills=saved_skills,
+            resume_sections=sections,
         )
 
     def post(self):
@@ -64,7 +71,12 @@ class UploadResumeView(MethodView):
         try:
             parsed_data = self.parser.parse(io.BytesIO(data), filename)
             self.resumes.save(
-                student["id"], filename, mime_types[extension], data, ", ".join(parsed_data["skills"])
+                student["id"],
+                filename,
+                mime_types[extension],
+                data,
+                ", ".join(parsed_data["skills"]),
+                sections={key: parsed_data.get(key) for key in ResumeRepository.SECTION_COLUMNS},
             )
         except mysql.connector.Error as e:
             if e.errno in PACKET_TOO_LARGE_ERRNOS:

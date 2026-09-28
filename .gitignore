@@ -14,6 +14,9 @@ env/
 # Flask
 instance/
 
+# User uploads (avatars, resumes) - created at runtime, never committed
+uploads/
+
 # IDE
 .vscode/
 .idea/
@@ -26,6 +29,12 @@ Thumbs.db
 *.db
 *.sqlite
 *.sqlite3
+
+# Trained ranking model - regenerated with `flask --app app retrain-ranking`.
+# Never committed: it is large, binary, and rebuilt from the database.
+practicore/models/*.joblib
+practicore/models/*.pkl
+practicore/models/*.meta.json
 
 # Logs
 *.log

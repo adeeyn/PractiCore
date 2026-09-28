@@ -30,6 +30,26 @@ class UserRepository:
         )
         return cursor.lastrowid
 
+    @staticmethod
+    def update_email(cursor, user_id, email):
+        """Updates the login email with the caller's cursor so it shares the transaction."""
+        cursor.execute("UPDATE users SET email = %s WHERE id = %s", (email, user_id))
+
     def create(self, email, username, password_hash, role):
         with Database.cursor(commit=True) as cursor:
             return self.insert(cursor, email, username, password_hash, role)
+
+    def email_for(self, user_id):
+        """The login email of one account, used when refreshing seeded employers."""
+        with Database.cursor() as cursor:
+            cursor.execute("SELECT email FROM users WHERE id = %s", (user_id,))
+            row = cursor.fetchone()
+            return row["email"] if row else None
+
+    def set_password(self, user_id, password_hash):
+        """Replaces an account's password (used by the seeder to make demos log in)."""
+        with Database.cursor(commit=True) as cursor:
+            cursor.execute(
+                "UPDATE users SET password_hash = %s, is_active = 1 WHERE id = %s",
+                (password_hash, user_id),
+            )

@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>PractiCore - Create Account</title>
 <link rel="stylesheet" href="{{ url_for('static', filename='student/css/auth.css') }}">
+<script src="https://cdn.jsdelivr.net/npm/lucide@0.469.0/dist/umd/lucide.min.js"></script>
 </head>
 <body>
 <div class="auth-page">
@@ -57,7 +58,14 @@
 
       <div class="field">
         <label>Course / Program</label>
-        <input type="text" name="course" placeholder="e.g. BS in Information Technology" required>
+        <select name="course" class="select-field" required>
+          <option value="" disabled selected>Select your course</option>
+          <option value="BSIT(WMA)">BSIT (Web and Mobile Application)</option>
+          <option value="BSIT(TSM)">BSIT (Technical Support and Management)</option>
+          <option value="BSIT(NA)">BSIT (Network Administration)</option>
+          <option value="BSCS">BSCS (Bachelor of Science in Computer Science)</option>
+          <option value="BSIS">BSIS (Bachelor of Science in Information Systems)</option>
+        </select>
       </div>
 
       <div class="register-grid">
@@ -65,12 +73,11 @@
           <label>Password</label>
           <div class="password-wrap">
             <input id="password" name="password" type="password" placeholder="Password" required>
-            <button class="toggle-password" type="button" onclick="togglePassword('password')">
-              <img
-                id="password-icon"
-                src="{{ url_for('static', filename='student/img/view.png') }}"
-                alt="Show password"
-              >
+            <button class="toggle-password" type="button" onclick="togglePw('password', this)" aria-label="Show password">
+              <svg class="eye-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M1 12S5 5 12 5s11 7 11 7-4 7-11 7S1 12 1 12z"/>
+                <circle cx="12" cy="12" r="3"/>
+              </svg>
             </button>
           </div>
         </div>
@@ -78,15 +85,33 @@
           <label>Confirm</label>
           <div class="password-wrap">
             <input id="confirmPassword" name="confirmPassword" type="password" placeholder="Repeat" required>
-            <button class="toggle-password" type="button" onclick="togglePassword('confirmPassword')">
-              <img
-                id="password-icon-confirm"
-                src="{{ url_for('static', filename='student/img/view.png') }}"
-                alt="Show password"
-              >
+            <button class="toggle-password" type="button" onclick="togglePw('confirmPassword', this)" aria-label="Show confirm password">
+              <svg class="eye-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M1 12S5 5 12 5s11 7 11 7-4 7-11 7S1 12 1 12z"/>
+                <circle cx="12" cy="12" r="3"/>
+              </svg>
             </button>
           </div>
         </div>
+      </div>
+
+      <div class="consent-box">
+        <div class="consent-head">
+          <i data-lucide="shield-check"></i>
+          <strong>Your privacy matters</strong>
+        </div>
+        <p>
+          To create your PractiCore account and recommend internships that fit you, we collect your
+          full name, school email, username, student number, phone number, year level and course/program.
+          By creating an account you agree to our
+          <button type="button" class="terms-link" data-open-terms="terms">Terms &amp; Conditions</button>
+          and
+          <button type="button" class="terms-link" data-open-terms="privacy">Privacy Policy</button>.
+        </p>
+        <label class="consent-check">
+          <input type="checkbox" name="agree_terms" value="yes" required>
+          <span>I agree to the Terms &amp; Conditions and consent to the collection and processing of my personal information.</span>
+        </label>
       </div>
 
       <button class="primary-btn" type="submit">Create Account</button>
@@ -95,20 +120,260 @@
     <div class="auth-footer">Already have an account? <a class="auth-link" href="{{ url_for('auth.login') }}">Log in</a></div>
   </section>
 
+  <!-- Right Side: Brand Panel -->
   <section class="auth-visual">
-    <div class="visual-content">
-      <div class="visual-brand">✦ PractiCore</div>
-      <h2>Find Your Dream<br>Internship</h2>
-      <p>Smart matching connects you with the perfect internship opportunities based on your skills and goals.</p>
-      <div class="features">
-        <div class="feature"><span class="dot">✓</span> Smart skill-based matching</div>
-        <div class="feature"><span class="dot">✓</span> Real-time application tracking</div>
-        <div class="feature"><span class="dot">✓</span> Resume analysis &amp; insights</div>
+    <div class="visual-header">
+      <div class="brand-white">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M22 10v6M2 10l10-5 10 5-10 5z"></path>
+          <path d="M6 12v5c3 3 9 3 12 0v-5"></path>
+        </svg>
+        <span>PractiCore</span>
       </div>
     </div>
-    <button class="help">?</button>
+
+    <div class="visual-headline">
+      <h2>Find internships<br>that fit your skills.</h2>
+      <p>PractiCore connects your skills, experience, and competencies with internship opportunities that match your potential.</p>
+    </div>
+
+    <!-- Visual Interactive Preview Stack -->
+    <div class="mockup-stack">
+      <!-- Top Left Floating Badge -->
+      <div class="float-card float-top-left">
+        <div class="float-icon-box resume-box">
+          <i data-lucide="file-text"></i>
+        </div>
+        <div class="float-text">
+          <strong>Resume Analysis</strong>
+          <span>98 skills detected</span>
+        </div>
+      </div>
+
+      <!-- Top Right Floating Badge -->
+      <div class="float-card float-top-right">
+        <div class="float-icon-box assessment-box">
+          <i data-lucide="clipboard-check"></i>
+        </div>
+        <div class="float-text">
+          <strong>Skill Assessment</strong>
+          <span>7 Competencies Profile</span>
+        </div>
+      </div>
+
+      <!-- Central Mini Dashboard Mockup Window -->
+      <div class="mockup-window">
+        <div class="mini-sidebar">
+          <div class="mini-logo"></div>
+          <div class="mini-nav active"></div>
+          <div class="mini-nav"></div>
+          <div class="mini-nav"></div>
+          <div class="mini-nav"></div>
+        </div>
+        <div class="mini-content">
+          <div class="mini-header">
+            <strong>Welcome back, Alex</strong>
+          </div>
+          <div class="mini-cards">
+            <div class="mini-job">
+              <span class="mini-job-title">Product Design Intern</span>
+            </div>
+            <div class="mini-job">
+              <span class="mini-job-title">Data Analyst Intern</span>
+            </div>
+            <div class="mini-job">
+              <span class="mini-job-title">Marketing Intern</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bottom Right Floating Badge -->
+      <div class="float-card float-bottom-right">
+        <div class="float-icon-box match-box">
+          <i data-lucide="sparkles"></i>
+        </div>
+        <div class="float-text">
+          <strong>Internship Match</strong>
+          <span>92% Compatibility • 85% match</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bottom Feature Pills -->
+    <div class="visual-features">
+      <div class="feature-item">
+        <div class="feature-icon"><i data-lucide="check-circle-2"></i></div>
+        <span>Skill-based matching</span>
+      </div>
+      <div class="feature-item">
+        <div class="feature-icon"><i data-lucide="bar-chart-2"></i></div>
+        <span>Competency assessment</span>
+      </div>
+      <div class="feature-item">
+        <div class="feature-icon"><i data-lucide="briefcase"></i></div>
+        <span>Internship recommendations</span>
+      </div>
+    </div>
   </section>
 </div>
+
+<!-- ===== Terms & Conditions / Privacy Policy Modal ===== -->
+<div class="terms-modal" id="termsModal" role="dialog" aria-modal="true" aria-labelledby="termsModalTitle" hidden>
+  <div class="terms-modal-backdrop" data-close-terms></div>
+
+  <div class="terms-modal-dialog">
+    <div class="terms-modal-head">
+      <h3 id="termsModalTitle">Terms &amp; Conditions</h3>
+      <button type="button" class="terms-modal-close" data-close-terms aria-label="Close">&times;</button>
+    </div>
+
+    <div class="terms-modal-body">
+      <!-- Terms & Conditions -->
+      <div data-terms-panel="terms">
+        <p>By creating a PractiCore account, you agree to these terms.</p>
+
+        <h4>1. Who may register</h4>
+        <p>PractiCore accounts are for currently enrolled students of Tarlac State University. You must sign up with a valid school email ending in <strong>@{{ config.STUDENT_EMAIL_DOMAIN }}</strong>.</p>
+
+        <h4>2. Your account</h4>
+        <ul>
+          <li>Give truthful, accurate and complete information.</li>
+          <li>Keep your password confidential — you are responsible for all activity on your account.</li>
+          <li>One account per student. Duplicate or shared accounts may be suspended.</li>
+        </ul>
+
+        <h4>3. How PractiCore is used</h4>
+        <p>Your skills, competency assessment results and resume are used to recommend internships. Recommendations are suggestions only; they are not a guarantee of an internship or of employment.</p>
+
+        <h4>4. Acceptable use</h4>
+        <p>Do not submit false information, impersonate another student, or use the platform to harass employers or other users.</p>
+
+        <h4>5. Changes to these terms</h4>
+        <p>These terms may be updated as the platform develops. Continuing to use your account means you accept the latest version.</p>
+      </div>
+
+      <!-- Privacy Policy -->
+      <div data-terms-panel="privacy" hidden>
+        <p>This notice explains what private information PractiCore collects, why we collect it, and how it is protected, in line with the <strong>Data Privacy Act of 2012 (Republic Act No. 10173)</strong>.</p>
+
+        <h4>Information we collect</h4>
+        <ul>
+          <li>The details you type in: full name, school email, username, student number, phone number, year level and course/program.</li>
+          <li>Your password — stored only as a salted hash, never as readable text.</li>
+          <li>Information you add later: resume file, skills, and competency assessment results.</li>
+        </ul>
+
+        <h4>Why we collect it</h4>
+        <ul>
+          <li>To confirm you are an enrolled student and to create your account.</li>
+          <li>To match your skills and competencies with internship postings.</li>
+          <li>To let the employers you apply to review your application.</li>
+          <li>To keep the platform secure and prevent duplicate or fake accounts.</li>
+        </ul>
+
+        <h4>Who can see it</h4>
+        <p>Only authorized PractiCore administrators and the employers you send an application to can see your information. Employers see only what is needed to evaluate your application — never your password or your login details.</p>
+
+        <h4>How it is stored and protected</h4>
+        <p>Your information is stored in the PractiCore database, and access is limited to authorized staff. Passwords are hashed, and resumes are served only to you and to the employers you apply to.</p>
+
+        <h4>How long we keep it</h4>
+        <p>Your information is kept while your account is active and for a limited period afterwards for records and reporting. You may ask us to delete your account and personal information at any time.</p>
+
+        <h4>Your rights</h4>
+        <ul>
+          <li>Be informed about how your data is processed.</li>
+          <li>Access and get a copy of your personal information.</li>
+          <li>Correct any inaccurate information.</li>
+          <li>Object to processing and request erasure or blocking of your data.</li>
+          <li>Lodge a complaint with the National Privacy Commission.</li>
+        </ul>
+
+        <h4>Contact</h4>
+        <p>For any privacy request, contact the PractiCore Data Protection Officer through the TSU IT office.</p>
+      </div>
+    </div>
+
+    <div class="terms-modal-foot">
+      <button type="button" class="primary-btn" data-close-terms>I understand</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* Terms & Conditions / Privacy Policy modal */
+document.addEventListener('DOMContentLoaded', function () {
+  const modal = document.getElementById('termsModal');
+  if (!modal) return;
+
+  const panels = modal.querySelectorAll('[data-terms-panel]');
+  const title = document.getElementById('termsModalTitle');
+  const body = modal.querySelector('.terms-modal-body');
+  const TITLES = { terms: 'Terms & Conditions', privacy: 'Privacy Policy' };
+  let lastFocused = null;
+
+  function openModal(panel) {
+    lastFocused = document.activeElement;
+    panels.forEach(function (el) {
+      el.hidden = el.getAttribute('data-terms-panel') !== panel;
+    });
+    title.textContent = TITLES[panel] || TITLES.terms;
+    modal.hidden = false;
+    if (body) body.scrollTop = 0;
+    document.body.style.overflow = 'hidden';
+    const closeBtn = modal.querySelector('.terms-modal-close');
+    if (closeBtn) closeBtn.focus();
+  }
+
+  function closeModal() {
+    modal.hidden = true;
+    document.body.style.overflow = '';
+    if (lastFocused && lastFocused.focus) lastFocused.focus();
+  }
+
+  document.querySelectorAll('[data-open-terms]').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      openModal(btn.getAttribute('data-open-terms'));
+    });
+  });
+
+  modal.querySelectorAll('[data-close-terms]').forEach(function (el) {
+    el.addEventListener('click', closeModal);
+  });
+
+  document.addEventListener('keydown', function (event) {
+    if (event.key === 'Escape' && !modal.hidden) closeModal();
+  });
+});
+</script>
+
+<script>
+function togglePw(id, btn) {
+  const input = document.getElementById(id);
+  if (!input) return;
+  const isHidden = input.type === 'password';
+  input.type = isHidden ? 'text' : 'password';
+  const svg = btn.querySelector('svg');
+  if (isHidden) {
+    // eye-off icon (slash through eye)
+    svg.innerHTML = `
+      <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20C5 20 1 12 1 12a18.45 18.45 0 0 1 5.06-5.94"/>
+      <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/>
+      <line x1="1" y1="1" x2="23" y2="23"/>`;
+  } else {
+    // eye-open icon
+    svg.innerHTML = `
+      <path d="M1 12S5 5 12 5s11 7 11 7-4 7-11 7S1 12 1 12z"/>
+      <circle cx="12" cy="12" r="3"/>`;
+  }
+}
+</script>
 <script src="{{ url_for('static', filename='student/main.js') }}"></script>
+<script>
+  if (window.lucide) {
+    lucide.createIcons();
+  }
+</script>
 </body>
 </html>

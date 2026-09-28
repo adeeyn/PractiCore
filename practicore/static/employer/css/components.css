@@ -116,12 +116,13 @@
   white-space: nowrap;
 }
 
-.status-shortlisted { background: var(--green-soft);  color: var(--green);  border-color: #bbf7d0; }
+.status-shortlisted { background: var(--blue-soft);   color: var(--blue);   border-color: #bfdbfe; }
 .status-in-review   { background: var(--blue-soft);   color: var(--blue);   border-color: #bfdbfe; }
+.status-reviewed    { background: var(--teal-soft);   color: var(--teal);   border-color: #99f6e4; }
 .status-scheduled   { background: var(--purple-soft); color: var(--purple); border-color: #ddd6fe; }
-.status-pending     { background: var(--border-soft); color: var(--text-muted); border-color: var(--border); }
+.status-pending     { background: var(--amber-soft);  color: var(--amber);  border-color: #fde68a; }
 .status-rejected    { background: var(--red-soft);    color: var(--red);    border-color: #fecaca; }
-.status-hired       { background: var(--green-soft);  color: var(--primary-hover); border-color: #86efac; }
+.status-hired       { background: var(--green-soft);  color: var(--green);  border-color: #86efac; }
 
 /* ---------- Buttons ---------- */
 .btn {
@@ -159,7 +160,7 @@
 }
 
 .btn-purple:hover {
-  background: #6d28d9;
+  background: var(--purple-dark);
 }
 
 .btn-danger-soft {

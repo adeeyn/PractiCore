@@ -30,6 +30,7 @@
     {% for rec in recommendations %}
     <article class="rec-card" 
              data-score="{{ rec.match_score }}" 
+             data-assessment="{{ assessment_percentage }}"
              data-remote="{{ 1 if rec.is_remote else 0 }}"
              data-category="{{ rec.recommended_category }}">
       
@@ -41,7 +42,7 @@
         </div>
         <div class="match-badge {{ rec.match_badge_class }}">
           <span class="match-score">{{ rec.match_score }}%</span>
-          <span class="match-label">Assessment Score</span>
+          <span class="match-label">Match Score</span>
         </div>
       </div>
 
@@ -77,20 +78,63 @@
           <span class="assessment-label">Domain Assessment Track</span>
           <p class="assessment-name">📋 {{ rec.recommended_category }} Track</p>
         </div>
-        {% if rec.match_score >= 65 %}
+        {# Gated on the real assessment score, not the combined match score #}
+        {% if assessment_percentage >= 65 %}
           <span style="color: #2e7d32; font-weight: bold; font-size: 0.9rem; padding: 6px 12px; background: #e8f5e9; border-radius: 20px;">
-            ✓ Assessment Passed
+            ✓ Assessment Passed ({{ assessment_percentage }}%)
           </span>
         {% else %}
-          <a href="{{ url_for('student.start_assessment') }}" class="btn-assessment">Retake Assessment</a>
+          <a href="{{ url_for('student.start_assessment') }}" class="btn-assessment">
+            {% if assessment_percentage %}Assessment {{ assessment_percentage }}% — Retake{% else %}Take Assessment{% endif %}
+          </a>
         {% endif %}
       </div>
+
+      <!-- How the match score was reached, so the number is not a black box -->
+      {% if rec.match_breakdown %}
+      <details class="match-explain" style="margin-top: 10px;">
+        <summary style="cursor: pointer; font-size: 0.85rem; color: #555;">
+          How this {{ rec.match_score }}% match score is calculated
+        </summary>
+        {% set b = rec.match_breakdown %}
+        <div style="margin-top: 8px; padding: 10px 12px; background: #f8f9fa; border: 1px solid #e9ecef; border-radius: 6px; font-size: 0.85rem; color: #444; line-height: 1.7;">
+          <div>
+            <strong>Assessment ({{ b.assessment_relevant }}%)</strong>
+            &times; {{ (b.assessment_weight * 100)|int }}% weight
+            {%- if b.assessment_relevant != b.assessment_overall %}
+              <span style="color: #6c757d;">(your score in {{ rec.recommended_category }}; overall was {{ b.assessment_overall }}%)</span>
+            {%- endif %}
+            <br>
+            <span style="color: #6c757d;">Objective items &mdash; the primary evidence of capability.</span>
+          </div>
+          <div style="margin-top: 4px;">
+            <strong>Resume overlap ({{ b.resume_percent }}%)</strong>
+            &times; {{ (b.resume_weight * 100)|int }}% weight
+            <span style="color: #6c757d;">({{ b.matched_count }} of {{ b.required_count }} required skills listed)</span>
+            <br>
+            <span style="color: #6c757d;">Self-reported, so it only corroborates the assessment.</span>
+          </div>
+          {% if b.missing_skills %}
+          <div style="margin-top: 6px; color: #6c757d;">
+            Not listed on your resume: {{ b.missing_skills|join(', ') }}.
+            Your assessment still measures these.
+          </div>
+          {% endif %}
+        </div>
+      </details>
+      {% endif %}
 
       <div class="rec-footer">
         <span class="posting-date">Posted {{ rec.posted }}</span>
         <div class="rec-actions">
-          <button class="btn-outline">View Details</button>
-          <button class="btn-primary">Apply Now</button>
+          <a href="{{ url_for('student.application') }}" class="btn-outline">My Applications</a>
+          {% if rec.id in applied_posting_ids %}
+            <a href="{{ url_for('student.application') }}" class="btn-applied">&#10003; Applied</a>
+          {% else %}
+            <form method="POST" action="{{ url_for('student.apply', posting_id=rec.id) }}">
+              <button type="submit" class="btn-primary">Apply Now</button>
+            </form>
+          {% endif %}
         </div>
       </div>
     </article>
@@ -111,11 +155,12 @@ function filterList(filterType, btnElement) {
 
   cards.forEach(card => {
     const score = parseInt(card.getAttribute('data-score')) || 0;
+    const assessment = parseInt(card.getAttribute('data-assessment')) || 0;
     const isRemote = card.getAttribute('data-remote') === '1';
 
     if (filterType === 'passed') {
-      // Show only internships where assessment score is 65% or higher
-      card.style.display = (score >= 65) ? 'block' : 'none';
+      // Gates on the student's real assessment score, not the combined match
+      card.style.display = (assessment >= 65) ? 'block' : 'none';
     } else if (filterType === 'high') {
       // Show only high match scores (>80%)
       card.style.display = (score >= 80) ? 'block' : 'none';

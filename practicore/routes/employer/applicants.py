@@ -1,29 +1,58 @@
-from flask import render_template, request
+from flask import redirect, render_template, request, url_for
 from flask.views import MethodView
 
-from . import employer_bp, sample_data
+from . import employer_bp
+from .context import current_employer
+from ...repositories import ApplicationRepository, PostingRepository
 
-APPLICATION_STATUSES = ["Pending", "In Review", "Shortlisted", "Scheduled", "Hired", "Rejected"]
-ACTIONS = ["Shortlist", "Schedule Interview", "Hire", "Reject"]
+# The screening pipeline, in the order a candidate moves through it
+APPLICATION_STATUSES = ["Pending", "In Review", "Reviewed", "Shortlisted", "Scheduled", "Hired", "Rejected"]
 
 
 class ApplicantsView(MethodView):
+    """The employer's applicants, optionally narrowed to one posting."""
+
+    def __init__(self):
+        self.applications = ApplicationRepository()
+        self.postings = PostingRepository()
+
     def get(self):
+        employer = current_employer() or {}
+        employer_id = employer.get("id")
+        postings = self.postings.for_employer(employer_id)
+
+        posting_id = request.args.get("posting", type=int)
+        selected = next((p for p in postings if p["id"] == posting_id), None)
+        applicants = self.applications.for_employer(
+            employer_id, selected["id"] if selected else None
+        )
+
         return render_template(
             "employer/applicants.html",
             active_page="applicants",
-            posting_title=sample_data.POSITION + "s",
-            total_applicants=sample_data.TOTAL_APPLICANTS,
-            applicants=sample_data.APPLICANTS,
+            postings=postings,
+            selected_posting=selected,
+            posting_title=selected["title"] if selected else "your internships",
+            total_applicants=len(applicants),
+            applicants=applicants,
             statuses=APPLICATION_STATUSES,
         )
 
 
 class ApplicantManagementView(MethodView):
-    def get(self):
-        applicants = sample_data.APPLICANTS
-        selected_id = request.args.get("applicant", type=int)
-        selected = next((a for a in applicants if a["id"] == selected_id), applicants[0] if applicants else None)
+    """Reviews one applicant and saves the employer's status and notes."""
+
+    def __init__(self):
+        self.applications = ApplicationRepository()
+
+    def get(self, application_id=None):
+        employer = current_employer() or {}
+        employer_id = employer.get("id")
+
+        applicants = self.applications.for_employer(employer_id)
+        selected = self.applications.find_for_employer(employer_id, application_id)
+        if selected is None and applicants:
+            selected = applicants[0]
 
         return render_template(
             "employer/applicant_management.html",
@@ -31,9 +60,32 @@ class ApplicantManagementView(MethodView):
             applicants=applicants,
             selected=selected,
             statuses=APPLICATION_STATUSES,
-            actions=ACTIONS,
+            saved=request.args.get("saved") == "1",
         )
+
+    def post(self, application_id):
+        employer = current_employer() or {}
+        employer_id = employer.get("id")
+
+        # Only touch an application that belongs to this employer
+        if not self.applications.find_for_employer(employer_id, application_id):
+            return redirect(url_for("employer.applicant_management"))
+
+        status = request.form.get("status", "Pending")
+        if status not in APPLICATION_STATUSES:
+            status = "Pending"
+
+        self.applications.update_status_and_notes(
+            application_id, status, request.form.get("notes", "").strip()
+        )
+        return redirect(url_for("employer.applicant_management", applicant=application_id, saved=1))
 
 
 employer_bp.add_url_rule("/applicants", view_func=ApplicantsView.as_view("applicants"))
-employer_bp.add_url_rule("/applicants/manage", view_func=ApplicantManagementView.as_view("applicant_management"))
+employer_bp.add_url_rule(
+    "/applicants/manage", view_func=ApplicantManagementView.as_view("applicant_management")
+)
+employer_bp.add_url_rule(
+    "/applicants/manage/<int:application_id>",
+    view_func=ApplicantManagementView.as_view("applicant_management_detail"),
+)

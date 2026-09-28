@@ -1,4 +1,4 @@
-/* Container Layout */
+﻿/* Container Layout */
 .resume-container {
   max-width: 900px;
   display: flex;
@@ -24,7 +24,7 @@
 .card-header h2 {
   font-size: 18px;
   font-weight: 800;
-  color: #1e1b4b;
+  color: #111827;
   margin: 0;
 }
 
@@ -52,16 +52,16 @@
 }
 
 .upload-dropzone:hover {
-  border-color: #635bff;
-  background: #f8f7ff;
+  border-color: var(--primary);
+  background: var(--primary-light);
 }
 
 .upload-icon {
   width: 52px;
   height: 52px;
   border-radius: 14px;
-  background: #f0edff;
-  color: #635bff;
+  background: var(--primary-light);
+  color: var(--primary);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -71,7 +71,7 @@
 .upload-dropzone h3 {
   font-size: 15px;
   font-weight: 700;
-  color: #1e1b4b;
+  color: #111827;
   margin: 0 0 4px 0;
 }
 
@@ -82,19 +82,21 @@
 }
 
 .browse-btn {
-  background: #635bff;
+  background: var(--primary);
   color: #ffffff;
   padding: 8px 20px;
-  border-radius: 10px;
+  border-radius: 8px;
   font-size: 13px;
   font-weight: 700;
   cursor: pointer;
   display: inline-block;
-  transition: background 0.2s ease;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px var(--primary-glow);
 }
 
 .browse-btn:hover {
-  background: #4f46e5;
+  background: var(--primary-hover);
+  transform: translateY(-1px);
 }
 
 /* Uploaded File Preview Block */
@@ -131,7 +133,7 @@
   display: block;
   font-size: 14px;
   font-weight: 700;
-  color: #1e1b4b;
+  color: #111827;
   margin-bottom: 2px;
 }
 
@@ -156,12 +158,12 @@
 }
 
 .action-btn.download {
-  background: #f0edff;
-  color: #635bff;
+  background: var(--primary-light);
+  color: var(--primary);
 }
 
 .action-btn.download:hover {
-  background: #635bff;
+  background: var(--primary);
   color: #ffffff;
 }
 

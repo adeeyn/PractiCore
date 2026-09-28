@@ -50,7 +50,7 @@
   right: 9px;
   width: 6px;
   height: 6px;
-  background-color: #6c3ce9;
+  background-color: var(--primary);
   border-radius: 50%;
 }
 
@@ -94,10 +94,10 @@
 .filter-btn {
   height: 44px;
   padding: 0 20px;
-  background: #f0ebff;
-  border: none;
+  background: var(--primary-light);
+  border: 1px solid var(--primary-soft);
   border-radius: 22px;
-  color: #6c3ce9;
+  color: var(--primary);
   font-weight: 600;
   font-size: 13.5px;
   display: flex;
@@ -108,7 +108,7 @@
 }
 
 .filter-btn:hover {
-  background: #e4d8ff;
+  background: var(--primary-soft);
 }
 
 /* Recommendation Cards */
@@ -154,9 +154,9 @@
   flex-shrink: 0;
 }
 
-.purple-avatar { background: #6c3ce9; }
-.dark-purple-avatar { background: #5633c7; }
-.bright-purple-avatar { background: #814eff; }
+.purple-avatar { background: var(--primary); }
+.dark-purple-avatar { background: var(--primary-dark); }
+.bright-purple-avatar { background: #9b1d34; }
 
 .company-details h3 {
   font-size: 16px !important;
@@ -218,7 +218,7 @@
 
 .progress-fill {
   height: 100%;
-  background: #6c3ce9;
+  background: var(--primary);
   border-radius: 3px;
 }
 
@@ -232,7 +232,7 @@
 .apply-btn {
   height: 38px;
   padding: 0 24px;
-  background: #6c3ce9;
+  background: var(--primary);
   color: #ffffff;
   border: none;
   border-radius: 19px;
@@ -240,10 +240,103 @@
   font-weight: 700;
   cursor: pointer;
   transition: all 0.2s ease;
-  box-shadow: 0 3px 10px rgba(108, 60, 233, 0.2);
+  box-shadow: 0 3px 10px var(--primary-glow);
 }
 
 .apply-btn:hover {
-  background: #5b2fd4;
+  background: var(--primary-hover);
   transform: translateY(-1px);
+}
+
+/* ---------- Applied state (no second application) ---------- */
+.btn-applied {
+  background: #e6f9f0;
+  color: #059669;
+  border: 1px solid #a7e8c9;
+  padding: 8px 20px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.btn-applied:hover {
+  background: #d5f2e3;
+}
+
+/* Wrap the Apply form so the button lines up with the sibling link */
+.rec-actions form {
+  margin: 0;
+}
+
+/* ---------- My Applications page ---------- */
+.app-alert {
+  padding: 12px 16px;
+  margin-bottom: 16px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.app-alert-success {
+  background: #e6f9f0;
+  color: #047857;
+  border: 1px solid #a7e8c9;
+}
+
+.app-alert-error {
+  background: #fde8e8;
+  color: #b91c1c;
+  border: 1px solid #f5b5b5;
+}
+
+.app-status {
+  font-size: 12px;
+  font-weight: 700;
+  padding: 5px 14px;
+  border-radius: 12px;
+  background: #f1f5f9;
+  color: #475569;
+}
+
+.app-status-pending    { background: #fff8e6; color: #b45309; }
+.app-status-in-review,
+.app-status-reviewed   { background: #e6f6ff; color: #0369a1; }
+.app-status-shortlisted{ background: #ede9fe; color: #6d28d9; }
+.app-status-scheduled  { background: #ede9fe; color: #6d28d9; }
+.app-status-hired      { background: #e6f9f0; color: #047857; }
+.app-status-rejected   { background: #fde8e8; color: #b91c1c; }
+
+.apply-btn-ghost {
+  background: transparent;
+  color: #b91c1c;
+  border: 1px solid #f5b5b5;
+  box-shadow: none;
+  height: 34px;
+  padding: 0 18px;
+  font-size: 12px;
+}
+
+.apply-btn-ghost:hover {
+  background: #fde8e8;
+  color: #b91c1c;
+}
+
+.empty-applications {
+  text-align: center;
+  padding: 28px 12px;
+}
+
+.empty-applications h3 {
+  font-size: 16px;
+  font-weight: 700;
+  color: #1a202c;
+  margin-bottom: 6px;
+}
+
+.empty-applications p {
+  font-size: 13px;
+  color: #a0aec0;
+  margin-bottom: 16px;
 }

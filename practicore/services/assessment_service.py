@@ -11,6 +11,25 @@ class AssessmentService:
 
     FALLBACK_QUESTION_LIMIT = 90
 
+    # Bands are (minimum percent, label). Ordered strongest first, so the first
+    # match wins. The previous two-tier version labelled a 10% score
+    # "Intermediate / Competent", which is not a defensible reading of a score.
+    COMPETENCY_BANDS = (
+        (85, "Advanced / Job-Ready"),
+        (70, "Proficient"),
+        (50, "Developing"),
+        (30, "Foundational"),
+        (0, "Below Foundational"),
+    )
+
+    @classmethod
+    def competency_level_for(cls, overall_percent):
+        """Maps an overall percentage onto a competency band."""
+        for threshold, label in cls.COMPETENCY_BANDS:
+            if overall_percent >= threshold:
+                return label
+        return cls.COMPETENCY_BANDS[-1][1]
+
     def __init__(self, questions=None):
         self.questions = questions or QuestionRepository()
 
@@ -23,8 +42,17 @@ class AssessmentService:
 
     @staticmethod
     def _question_domain(question):
+        """Which of the 6 job categories an item is scored under.
+
+        The research bank stores the track code in `course_track` (DEV, NET, ...)
+        and the finer sub-domain in `category` ("Programming", "Networking", ...).
+        The track code is authoritative; `category` is only a fallback for older
+        rows that predate the research bank.
+        """
         track = question.get("course_track") or question.get("track_code") or question.get("track") or ""
         role = question.get("target_role") or question.get("job_title") or ""
+        if not track:
+            track = question.get("category") or ""
         return SkillTaxonomy.map_to_domain(track, role)
 
     @staticmethod
@@ -33,22 +61,56 @@ class AssessmentService:
         limits = current_app.config["QUESTION_TIME_LIMITS"]
         return limits.get(question.get("difficulty"), limits["medium"])
 
-    def build(self):
-        """Picks N random questions per domain, each tagged with its `time_limit`.
+    @staticmethod
+    def _domains_for_skills(student_skills):
+        """The job categories a student's resume skills map onto.
+
+        Used to send extra (resume-triggered) questions to domains the student
+        claims experience in, without abandoning the other domains.
+        """
+        domains = set()
+        for skill in student_skills or set():
+            domain = SkillTaxonomy.map_skills_to_category([skill])
+            domains.add(domain)
+        return domains
+
+    def build(self, student_skills=None):
+        """Picks core questions per domain, then adds resume-triggered questions.
+
+        Every domain gets `CORE_QUESTIONS_PER_DOMAIN` questions so a student who
+        never mentions Networking is still measured on it. Domains matching the
+        student's resume skills then get up to `RESUME_QUESTIONS_PER_SKILL` extra
+        questions per matched skill, capped by `MAX_QUESTIONS_PER_DOMAIN`.
 
         Returns (shuffled_questions, grouped_questions, question_domain_map).
         """
         per_domain = current_app.config["QUESTIONS_PER_DOMAIN"]
-        buckets = {domain: [] for domain in SkillTaxonomy.categories()}
+        core = current_app.config["CORE_QUESTIONS_PER_DOMAIN"]
+        per_skill = current_app.config["RESUME_QUESTIONS_PER_SKILL"]
+        cap = current_app.config["MAX_QUESTIONS_PER_DOMAIN"]
+        # Honour the cap even if the legacy QUESTIONS_PER_DOMAIN is set higher.
+        per_domain = min(per_domain, cap)
+        # Core must never exceed what a single domain can supply.
+        core = min(core, per_domain)
 
+        buckets = {domain: [] for domain in SkillTaxonomy.categories()}
         for question in self.questions.all():
             question["time_limit"] = self.time_limit_for(question)
             buckets[self._question_domain(question)].append(question)
 
+        # How many resume-triggered questions each domain earns, from the skills
+        # the resume actually named.
+        extra_allowance = {
+            domain: 0 for domain in buckets
+        }
+        for domain in self._domains_for_skills(student_skills):
+            extra_allowance[domain] += per_skill
+
         selected, grouped, domain_map = [], {}, {}
         for domain, question_list in buckets.items():
             random.shuffle(question_list)
-            chosen = question_list[:per_domain]
+            target = min(core + extra_allowance[domain], cap, len(question_list))
+            chosen = question_list[:target]
             grouped[domain] = chosen
             for question in chosen:
                 domain_map[str(question["id"])] = domain
@@ -103,8 +165,8 @@ class AssessmentService:
         for stats in breakdown.values():
             stats["score_percent"] = round((stats["correct"] / stats["total"]) * 100) if stats["total"] > 0 else 0
 
-        overall = round((total_correct / total_questions) * 100) if total_questions > 0 else 0
-        competency_level = "Advanced / Job-Ready" if overall >= 85 else "Intermediate / Competent"
+        overall = round((total_correct / total_questions) * 100) if total_questions else 0
+        competency_level = self.competency_level_for(overall)
 
         return {
             "overall_percentage": overall,

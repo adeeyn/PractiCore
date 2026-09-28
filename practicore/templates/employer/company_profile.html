@@ -9,7 +9,14 @@
     <p>Manage your company information</p>
 </div>
 
-<form class="card card-pad" method="POST" data-demo="Saving the company profile is not connected to the database yet.">
+{% if message %}
+<div class="alert alert-{{ message_type or 'success' }}">
+    <i data-lucide="{{ 'circle-check' if message_type == 'success' else 'circle-alert' }}"></i>
+    <span>{{ message }}</span>
+</div>
+{% endif %}
+
+<form class="card card-pad" method="POST">
     <div class="logo-row">
         <div class="avatar avatar-xl avatar-brand">{{ company.logo_text }}</div>
         <div>
@@ -21,29 +28,88 @@
     </div>
 
     <div class="form-group">
+        <label class="form-label" for="logo_text">Logo Text (max 10 characters)</label>
+        <input class="form-control form-control-sm" type="text" id="logo_text" name="logo_text"
+               maxlength="10" value="{{ company.logo_text }}" placeholder="e.g. TS">
+    </div>
+
+    <div class="form-group">
         <label class="form-label" for="company_name">Company Name</label>
         <input class="form-control" type="text" id="company_name" name="company_name" value="{{ company.name }}" required>
     </div>
 
-    <div class="form-group">
-        <label class="form-label" for="industry">Industry</label>
-        <input class="form-control" type="text" id="industry" name="industry" value="{{ company.industry }}" placeholder="e.g. Information Technology">
+    <div class="form-row">
+        <div class="form-group">
+            <label class="form-label" for="industry">Industry</label>
+            <input class="form-control" type="text" id="industry" name="industry" value="{{ company.industry }}"
+                   placeholder="e.g. Information Technology">
+        </div>
+
+        <div class="form-group">
+            <label class="form-label" for="company_size">Company Size</label>
+            <select class="form-control" id="company_size" name="company_size">
+                <option value="">— Select —</option>
+                {% for size in company_sizes %}
+                <option value="{{ size }}" {% if size == company.company_size %}selected{% endif %}>{{ size }} employees</option>
+                {% endfor %}
+            </select>
+        </div>
     </div>
 
     <div class="form-group">
         <label class="form-label" for="email">Company Email</label>
-        <input class="form-control" type="email" id="email" name="email" value="{{ company.email }}">
+        <input class="form-control" type="email" id="email" name="email" value="{{ company.email }}" required>
     </div>
 
     <div class="form-group">
         <label class="form-label" for="location">Location</label>
-        <input class="form-control" type="text" id="location" name="location" value="{{ company.location }}">
+        <input class="form-control" type="text" id="location" name="location" value="{{ company.location }}" required>
+    </div>
+
+    <div class="form-group">
+        <label class="form-label" for="website">Website</label>
+        <input class="form-control" type="url" id="website" name="website" value="{{ company.website }}"
+               placeholder="https://">
+    </div>
+
+    <div class="form-group">
+        <label class="form-label">Skills We Are Looking For</label>
+        <div class="tag-input" data-tag-input data-target="required_skills">
+            {% for skill in company.required_skills %}
+            <span class="skill-tag" data-value="{{ skill }}">
+                <i data-lucide="tag"></i><span>{{ skill }}</span>
+                <button type="button" class="skill-tag-remove" aria-label="Remove skill">&times;</button>
+            </span>
+            {% endfor %}
+            <input type="text" class="tag-input-field" placeholder="+ Add skill">
+        </div>
+        <input type="hidden" id="required_skills" name="required_skills">
+        <p class="form-hint">Press Enter or comma to add a skill. These are matched against student resumes.</p>
+    </div>
+
+    <div class="form-row">
+        <div class="form-group">
+            <label class="form-label" for="contact_name">Contact Person</label>
+            <input class="form-control" type="text" id="contact_name" name="contact_name"
+                   value="{{ company.contact_name }}" placeholder="e.g. Natalie Cruz">
+        </div>
+
+        <div class="form-group">
+            <label class="form-label" for="contact_position">Contact Position</label>
+            <input class="form-control" type="text" id="contact_position" name="contact_position"
+                   value="{{ company.contact_position }}" placeholder="e.g. HR Manager">
+        </div>
     </div>
 
     <div class="form-group">
         <label class="form-label" for="about">About Company</label>
         <textarea class="form-control" id="about" name="about" rows="4" placeholder="Tell students about your company">{{ company.about }}</textarea>
     </div>
+
+    <label class="check-row">
+        <input type="checkbox" name="is_hiring" value="1" {% if company.is_hiring %}checked{% endif %}>
+        <span>We are currently accepting internship applications</span>
+    </label>
 
     <button type="submit" class="btn btn-primary">Save Changes</button>
 </form>

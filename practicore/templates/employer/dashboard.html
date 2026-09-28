@@ -1,42 +1,196 @@
 {% extends 'employer/base.html' %}
-{% import 'employer/_macros.html' as ui %}
 
-{% block title %}Overview{% endblock %}
-{% block topbar_title %}Overview{% endblock %}
+{% block title %}Dashboard Overview{% endblock %}
 
 {% block content %}
-<div class="page-head">
-    <h1>Dashboard Overview</h1>
-    <p>Welcome back, {{ current_employer.company_name if current_employer else 'Employer' }}</p>
-</div>
-
-<div class="stat-grid">
-    {% for stat in stats %}
-    <div class="card stat-card">
-        <div class="stat-icon {{ stat.color }}"><i data-lucide="{{ stat.icon }}"></i></div>
-        <div class="stat-value">{{ stat.value }}</div>
-        <div class="stat-label">{{ stat.label }}</div>
-        <div class="stat-note">{{ stat.note }}</div>
-    </div>
-    {% endfor %}
-</div>
-
-<div class="card">
-    <div class="card-head">
-        <h2>Recent Applicants</h2>
-        <a href="{{ url_for('employer.applicants') }}" class="link-green">View all</a>
+<div class="emp-dashboard-layout">
+  <!-- LEFT / MAIN COLUMN -->
+  <div class="emp-main-col">
+    <!-- Greeting Head -->
+    <div class="emp-greeting-head">
+      <h1>{{ greeting }}, {{ contact_name }} 👋</h1>
+      <p>Here's what's happening with your internship program today.</p>
     </div>
 
-    {% for applicant in recent_applicants %}
-    <a class="applicant-row" href="{{ url_for('employer.applicant_management', applicant=applicant.id) }}">
-        {{ ui.person(applicant, applicant.applied_on) }}
-        <div class="applicant-row-right">
-            {{ ui.score(applicant.match_score) }}
-            {{ ui.status_badge(applicant.status) }}
+    <!-- KPI CARDS -->
+    <section class="emp-stat-grid">
+      {% for stat in stats %}
+      <article class="emp-stat-card">
+        <div class="emp-stat-head">
+          <span class="emp-stat-label">{{ stat.label }}</span>
+          <div class="emp-stat-icon-wrap">
+            <i data-lucide="{{ stat.icon }}"></i>
+          </div>
         </div>
-    </a>
-    {% else %}
-    <div class="empty-state">No applicants yet.</div>
-    {% endfor %}
+        <div class="emp-stat-val">{{ stat.value }}</div>
+        <div class="emp-stat-sub">{{ stat.note }}</div>
+      </article>
+      {% endfor %}
+    </section>
+
+    <!-- QUICK ACTION BANNER -->
+    <section class="quick-action-banner">
+      <div class="qa-content">
+        <span class="qa-badge">QUICK ACTION</span>
+        <h2 class="qa-title">Review New Applications</h2>
+        <p class="qa-desc">
+          {% if pending_count %}
+            You have {{ pending_count }} new application{{ '' if pending_count == 1 else 's' }} waiting for your review. Take action now.
+          {% else %}
+            No applications are waiting for review right now. Check back soon.
+          {% endif %}
+        </p>
+        <a href="{{ url_for('employer.applicant_management') }}" class="qa-btn">
+          <span>View Applications</span>
+          <i data-lucide="arrow-right"></i>
+        </a>
+      </div>
+    </section>
+
+    <!-- RECENT APPLICATIONS TABLE CARD -->
+    <section class="emp-card recent-apps-card">
+      <div class="card-header-row">
+        <div>
+          <h2 class="card-title">Recent Applications</h2>
+          <p class="card-subtitle">Latest internship applications from candidates.</p>
+        </div>
+        <a href="{{ url_for('employer.applicants') }}" class="card-action-link">
+          <span>View all</span>
+          <i data-lucide="arrow-right"></i>
+        </a>
+      </div>
+
+      <div class="table-responsive">
+        <table class="emp-table">
+          <thead>
+            <tr>
+              <th>Candidate</th>
+              <th>Position</th>
+              <th>Applied On</th>
+              <th>Status</th>
+              <th class="text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for applicant in recent_applicants %}
+            <tr>
+              <td>
+                <div class="candidate-cell">
+                  <div class="cand-avatar">
+                    <span class="avatar avatar-c{{ (applicant.id - 1) % 5 }}">{{ applicant.initials }}</span>
+                  </div>
+                  <span class="cand-name">{{ applicant.name }}</span>
+                </div>
+              </td>
+              <td class="pos-text">{{ applicant.position }}</td>
+              <td class="date-text">{{ applicant.applied_on }}</td>
+              <td>
+                <span class="status status-{{ applicant.status|lower|replace(' ', '-') }}">{{ applicant.status }}</span>
+              </td>
+              <td class="text-right">
+                <a class="action-dots-btn" aria-label="Review {{ applicant.name }}"
+                   href="{{ url_for('employer.applicant_management_detail', application_id=applicant.id) }}">
+                  <i data-lucide="more-vertical"></i>
+                </a>
+              </td>
+            </tr>
+            {% else %}
+            <tr>
+              <td colspan="5" class="empty-state">No applications yet. They will appear here once students apply.</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+
+  <!-- RIGHT SIDEBAR COLUMN -->
+  <aside class="emp-side-col">
+    <!-- Company Overview Card -->
+    <div class="emp-side-card overview-card">
+      <div class="side-card-top-icon">
+        <i data-lucide="building-2"></i>
+      </div>
+      <h3 class="side-card-title">Company Overview</h3>
+      <p class="side-card-desc">Track your internship program performance and team activity.</p>
+      
+      <div class="overview-metric-box">
+        <div class="overview-big-num">{{ active_postings }}</div>
+        <div class="overview-metric-label">Active Internships</div>
+        <a href="{{ url_for('employer.postings') }}" class="overview-link">
+          <span>View Internships</span>
+          <i data-lucide="arrow-right"></i>
+        </a>
+      </div>
+    </div>
+
+    <!-- Recent Activity Card -->
+    <div class="emp-side-card">
+      <div class="side-card-header-flex">
+        <div class="side-title-wrap">
+          <div class="side-tiny-icon"><i data-lucide="activity"></i></div>
+          <h3 class="side-card-title">Recent Activity</h3>
+        </div>
+        <a href="{{ url_for('employer.applicants') }}" class="side-text-link">View all</a>
+      </div>
+
+      <div class="emp-activity-list">
+        {% for applicant in recent_applicants %}
+        <div class="emp-act-item">
+          <div class="emp-act-icon"><i data-lucide="file-text"></i></div>
+          <div class="emp-act-body">
+            <div class="emp-act-msg">{{ applicant.name }} applied for {{ applicant.position }}</div>
+            <div class="emp-act-time">{{ applicant.status }} &middot; {{ applicant.applied_on }}</div>
+          </div>
+        </div>
+        {% else %}
+        <div class="emp-act-msg">No activity yet.</div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- Quick Links Card -->
+    <div class="emp-side-card">
+      <div class="side-title-wrap" style="margin-bottom: 12px;">
+        <div class="side-tiny-icon"><i data-lucide="link"></i></div>
+        <h3 class="side-card-title">Quick Links</h3>
+      </div>
+
+      <div class="emp-quick-links">
+        <a href="{{ url_for('employer.postings') }}" class="emp-ql-item">
+          <div class="emp-ql-left">
+            <div class="emp-ql-icon"><i data-lucide="plus-circle"></i></div>
+            <span>Post New Internship</span>
+          </div>
+          <i data-lucide="chevron-right" class="emp-ql-arrow"></i>
+        </a>
+
+        <a href="{{ url_for('employer.applicant_management') }}" class="emp-ql-item">
+          <div class="emp-ql-left">
+            <div class="emp-ql-icon"><i data-lucide="clipboard-check"></i></div>
+            <span>Review Applications</span>
+          </div>
+          <i data-lucide="chevron-right" class="emp-ql-arrow"></i>
+        </a>
+
+        <a href="{{ url_for('employer.ranking') }}" class="emp-ql-item">
+          <div class="emp-ql-left">
+            <div class="emp-ql-icon"><i data-lucide="bar-chart-2"></i></div>
+            <span>View Reports</span>
+          </div>
+          <i data-lucide="chevron-right" class="emp-ql-arrow"></i>
+        </a>
+
+        <a href="{{ url_for('employer.applicants') }}" class="emp-ql-item">
+          <div class="emp-ql-left">
+            <div class="emp-ql-icon"><i data-lucide="users"></i></div>
+            <span>Manage Team</span>
+          </div>
+          <i data-lucide="chevron-right" class="emp-ql-arrow"></i>
+        </a>
+      </div>
+    </div>
+  </aside>
 </div>
 {% endblock %}

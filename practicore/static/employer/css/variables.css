@@ -1,11 +1,12 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
 :root {
-  /* Brand (green) */
-  --primary: #16a34a;
-  --primary-hover: #15803d;
-  --primary-soft: #e8f7ee;
-  --primary-border: #bbf7d0;
+  /* Brand: Warm Golden Yellow / Amber (Figma Employer Theme) */
+  --primary: #e6a817;
+  --primary-hover: #d1940e;
+  --primary-soft: #fef9c3;
+  --primary-border: #fde68a;
+  --sidebar-bg: #e6a817;
 
   /* Surfaces */
   --bg: #f8fafc;
@@ -14,19 +15,22 @@
   --border-soft: #f1f5f9;
 
   /* Text */
-  --text-dark: #0f172a;
-  --text-body: #334155;
-  --text-muted: #64748b;
-  --text-faint: #94a3b8;
+  --text-dark: #111827;
+  --text-body: #374151;
+  --text-muted: #6b7280;
+  --text-faint: #9ca3af;
 
   /* Status / score colors */
-  --green: #16a34a;
-  --green-soft: #dcfce7;
+  --green: #10b981;
+  --green-soft: #ecfdf5;
   --blue: #2563eb;
   --blue-soft: #dbeafe;
+  --teal: #0d9488;
+  --teal-soft: #ccfbf1;
   --orange: #ea580c;
   --orange-soft: #ffedd5;
   --purple: #7c3aed;
+  --purple-dark: #6d28d9;
   --purple-soft: #ede9fe;
   --pink: #db2777;
   --pink-soft: #fce7f3;
@@ -35,12 +39,12 @@
   --red: #dc2626;
   --red-soft: #fee2e2;
 
-  --radius: 12px;
+  --radius: 14px;
   --radius-sm: 8px;
-  --shadow: 0 1px 3px rgba(15, 23, 42, 0.06), 0 1px 2px rgba(15, 23, 42, 0.04);
+  --shadow: 0 1px 3px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.02);
 
   --sidebar-width: 240px;
-  --topbar-height: 60px;
+  --topbar-height: 64px;
 }
 
 * {
@@ -62,7 +66,6 @@ a {
   text-decoration: none;
 }
 
-/* The hidden attribute must win over component display rules (used by JS filters) */
 [hidden] {
   display: none !important;
 }

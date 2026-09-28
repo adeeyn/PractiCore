@@ -50,7 +50,7 @@
   right: 9px;
   width: 6px;
   height: 6px;
-  background-color: #6c3ce9;
+  background-color: var(--primary);
   border-radius: 50%;
 }
 
@@ -79,7 +79,8 @@
 .assessment-icon-box {
   width: 52px;
   height: 52px;
-  background: #f0ebff;
+  background: var(--primary-light);
+  color: var(--primary);
   border-radius: 14px;
   display: inline-flex;
   align-items: center;
@@ -103,7 +104,7 @@
 }
 
 .score-highlight {
-  color: #6c3ce9;
+  color: var(--primary);
   font-weight: 700;
 }
 
@@ -116,7 +117,8 @@
 }
 
 .stat-item {
-  background: #f4f0ff !important;
+  background: var(--primary-light) !important;
+  border: 1px solid var(--primary-soft) !important;
   border-radius: 12px !important;
   padding: 16px 6px !important;
   display: flex !important;
@@ -128,7 +130,7 @@
 .stat-number {
   font-size: 15px !important;
   font-weight: 700 !important;
-  color: #6c3ce9 !important;
+  color: var(--primary) !important;
   margin-bottom: 2px !important;
 }
 
@@ -141,17 +143,18 @@
 .start-btn-primary {
   width: 100% !important;
   height: 44px !important;
-  background: #6c3ce9 !important;
+  background: var(--primary) !important;
   color: #ffffff !important;
   border: none !important;
   border-radius: 12px !important;
   font-size: 14px !important;
   font-weight: 700 !important;
   cursor: pointer !important;
-  transition: background 0.2s ease !important;
-  box-shadow: 0 4px 12px rgba(108, 60, 233, 0.2) !important;
+  transition: all 0.2s ease !important;
+  box-shadow: 0 4px 12px var(--primary-glow) !important;
 }
 
 .start-btn-primary:hover {
-  background: #5b2fd4 !important;
+  background: var(--primary-hover) !important;
+  transform: translateY(-1px);
 }

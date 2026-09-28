@@ -33,6 +33,7 @@ class StudentRegisterView(MethodView):
             "course": form.get("course", "").strip(),
             "password": form.get("password", "").strip(),
             "confirm_password": form.get("confirmPassword", "").strip(),
+            "agree_terms": form.get("agree_terms", "").strip(),
         }
 
     def _error(self, message):
@@ -43,6 +44,9 @@ class StudentRegisterView(MethodView):
 
         if not all(data[field] for field in self.REQUIRED_FIELDS):
             return self._error("Please fill out all required fields.")
+        # Consent is required before any personal information is stored (RA 10173)
+        if not data["agree_terms"]:
+            return self._error("Please agree to the Terms & Conditions and Privacy Policy to continue.")
         if not AuthService.is_student_email(data["email"]):
             return self._error(f"Please use your school email (@{current_app.config['STUDENT_EMAIL_DOMAIN']}).")
         if data["password"] != data["confirm_password"]:

@@ -1,4 +1,4 @@
-/* Container Layout */
+﻿/* Container Layout */
 .recommendations-container {
   max-width: 960px;
   display: flex;
@@ -37,12 +37,13 @@
 }
 
 .tab-btn:hover {
-  color: #1e1b4b;
+  color: #111827;
 }
 
 .tab-btn.active {
-  background: #f0edff;
-  color: #635bff;
+  background: var(--primary-light);
+  color: var(--primary);
+  font-weight: 700;
 }
 
 .search-box {
@@ -57,13 +58,14 @@
   border-radius: 12px;
   padding: 9px 16px;
   font-size: 13px;
-  color: #1e1b4b;
+  color: #111827;
   outline: none;
   transition: border-color 0.2s ease;
 }
 
 .search-input:focus {
-  border-color: #635bff;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-glow);
 }
 
 /* Recommendations List */
@@ -101,7 +103,7 @@
   width: 50px;
   height: 50px;
   border-radius: 14px;
-  background: #635bff;
+  background: var(--primary);
   color: #ffffff;
   font-weight: 800;
   font-size: 14px;
@@ -118,7 +120,7 @@
 .rec-title {
   font-size: 17px;
   font-weight: 800;
-  color: #1e1b4b;
+  color: #111827;
   margin: 0 0 4px 0;
 }
 
@@ -156,16 +158,17 @@
   margin-top: 2px;
 }
 
-.match-badge.top .match-score {
+/* Badge colour follows the score band: high = best, low = weakest */
+.match-badge.high .match-score {
   color: #10b981;
 }
 
-.match-badge.high .match-score {
+.match-badge.medium .match-score {
   color: #f59e0b;
 }
 
-.match-badge.medium .match-score {
-  color: #635bff;
+.match-badge.low .match-score {
+  color: #94a3b8;
 }
 
 /* Description */
@@ -214,10 +217,10 @@
 
 .btn-outline {
   background: transparent;
-  color: #635bff;
-  border: 1px solid #e2e8f0;
+  color: var(--primary);
+  border: 1px solid var(--border-color);
   padding: 8px 18px;
-  border-radius: 10px;
+  border-radius: 8px;
   font-size: 13px;
   font-weight: 700;
   cursor: pointer;
@@ -225,22 +228,24 @@
 }
 
 .btn-outline:hover {
-  border-color: #635bff;
-  background: #f0edff;
+  border-color: var(--primary);
+  background: var(--primary-light);
 }
 
 .btn-primary {
-  background: #635bff;
+  background: var(--primary);
   color: #ffffff;
   border: none;
   padding: 8px 20px;
-  border-radius: 10px;
+  border-radius: 8px;
   font-size: 13px;
   font-weight: 700;
   cursor: pointer;
-  transition: background 0.2s ease;
+  box-shadow: 0 2px 8px var(--primary-glow);
+  transition: all 0.2s ease;
 }
 
 .btn-primary:hover {
-  background: #4f46e5;
+  background: var(--primary-hover);
+  transform: translateY(-1px);
 }

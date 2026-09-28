@@ -7,12 +7,12 @@
 {% block content %}
 <div class="page-head">
     <h1>Candidate Ranking</h1>
-    <p>Based on AI Match Score</p>
+    <p>{{ "Random Forest model" if uses_model else "Weighted content-based match score" }}</p>
 </div>
 
 <div class="card">
     {% for applicant in ranked_applicants %}
-    <a class="ranking-row" href="{{ url_for('employer.applicant_management', applicant=applicant.id) }}">
+    <a class="ranking-row" href="{{ url_for('employer.applicant_management_detail', application_id=applicant.id) }}">
         <span class="rank-position">
             {% if loop.first %}<i data-lucide="star"></i>{% else %}{{ loop.index }}{% endif %}
         </span>

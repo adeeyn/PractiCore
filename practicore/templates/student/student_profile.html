@@ -11,18 +11,26 @@
   </div>
 </header>
 
+{% if message %}
+<div class="{{ 'success-message' if message_type == 'success' else 'error-message' }}">{{ message }}</div>
+{% endif %}
+
 <div class="profile-container">
   <!-- Top Profile Card -->
   <div class="profile-header-card">
     <div class="avatar-container">
-      <div class="avatar-circle">👤</div>
-      <button class="upload-btn" title="Upload Photo">
+      <div class="avatar-circle">
+        {% include "student/_avatar.html" %}
+      </div>
+      <label class="upload-btn" title="Upload Photo" aria-label="Upload Photo">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
           <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
           <polyline points="17 8 12 3 7 8"></polyline>
           <line x1="12" y1="3" x2="12" y2="15"></line>
         </svg>
-      </button>
+        <input type="file" id="avatar-input" name="avatar" accept="image/png,image/jpeg,image/webp" hidden>
+      </label>
+      <span class="avatar-status" id="avatar-status" role="status" aria-live="polite"></span>
     </div>
     
     <div class="profile-summary">
@@ -36,7 +44,7 @@
   </div>
 
   <!-- Edit Form Card -->
-  <form class="profile-form-card" method="POST" action="#">
+  <form class="profile-form-card" method="POST" action="{{ url_for('student.profile') }}">
     <div class="form-grid">
       <div class="form-group">
         <label for="fullname">FULL NAME</label>
@@ -69,4 +77,317 @@
     </div>
   </form>
 </div>
+
+<!-- ===== Avatar crop editor ===== -->
+<div class="crop-modal" id="crop-modal" role="dialog" aria-modal="true" aria-labelledby="crop-modal-title" hidden>
+  <div class="crop-modal-backdrop" data-crop-cancel></div>
+
+  <div class="crop-modal-dialog">
+    <div class="crop-modal-head">
+      <h3 id="crop-modal-title">Adjust your photo</h3>
+      <button type="button" class="crop-modal-close" data-crop-cancel aria-label="Close">&times;</button>
+    </div>
+
+    <div class="crop-modal-body">
+      <p class="crop-hint">Drag the photo to move it and zoom until your face fills the circle.</p>
+
+      <div class="crop-stage" id="crop-stage" tabindex="0" aria-label="Photo being cropped">
+        <img id="crop-image" alt="Photo being cropped" draggable="false">
+        <div class="crop-mask" id="crop-mask" aria-hidden="true"></div>
+      </div>
+
+      <label class="crop-zoom">
+        <span>Zoom</span>
+        <input type="range" id="crop-zoom" min="1" max="4" step="0.01" value="1" aria-label="Zoom">
+      </label>
+
+      <p class="crop-status" id="crop-status" role="status" aria-live="polite"></p>
+    </div>
+
+    <div class="crop-modal-foot">
+      <button type="button" class="crop-cancel" data-crop-cancel>Cancel</button>
+      <button type="button" class="crop-apply" id="crop-apply">Save photo</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const AVATAR_CROP_SIZE = 512; // exported square, in pixels
+
+const avatarInput = document.getElementById('avatar-input');
+const avatarStatus = document.getElementById('avatar-status');
+
+// Crop editor elements
+const cropModal = document.getElementById('crop-modal');
+const cropStage = document.getElementById('crop-stage');
+const cropMask = document.getElementById('crop-mask');
+const cropImage = document.getElementById('crop-image');
+const cropZoom = document.getElementById('crop-zoom');
+const cropApply = document.getElementById('crop-apply');
+const cropStatus = document.getElementById('crop-status');
+
+// nw/nh = source size, base = scale that just covers the crop circle, ox/oy = pan offset
+const view = { nw: 0, nh: 0, base: 1, zoom: 1, ox: 0, oy: 0, box: 0, dragging: false, x: 0, y: 0 };
+let cropFile = null;
+let cropUrl = null;
+
+if (avatarInput) {
+  avatarInput.addEventListener('change', function (e) {
+    const file = e.target.files[0];
+
+    if (!file) {
+      return;
+    }
+
+    // Only images can be cropped; anything else goes up untouched
+    if (file.type.indexOf('image/') === 0 && canCrop()) {
+      openCrop(file);
+    } else {
+      uploadAvatar(file);
+    }
+  });
+}
+
+function canCrop() {
+  const probe = document.createElement('canvas');
+  return !!(probe.getContext && probe.getContext('2d') && probe.toBlob);
+}
+
+function uploadAvatar(file, filename) {
+  const formData = new FormData();
+  formData.append('avatar', file, filename || 'avatar.png');
+
+  avatarStatus.className = 'avatar-status';
+  avatarStatus.innerText = 'Uploading...';
+
+  fetch('{{ url_for('student.profile_avatar') }}', {
+    method: 'POST',
+    body: formData
+  })
+  .then(res => {
+    // A logged-out session is redirected to the login page as HTML, not JSON
+    if (!res.headers.get('content-type').includes('application/json')) {
+      return Promise.reject({ error: 'Your session expired. Please log in again.' });
+    }
+
+    return res.json().then(data => ({ ok: res.ok, data: data }));
+  })
+  .then(({ ok, data }) => {
+    if (!ok || data.status !== 'success') {
+      throw data;
+    }
+
+    // Refresh the profile card and the topbar chip without reloading the page
+    document.querySelector('.avatar-circle img').src = data.avatar_url;
+    document.querySelector('.user-avatar img').src = data.avatar_url;
+
+    avatarStatus.innerText = 'Photo updated';
+  })
+  .catch(err => {
+    avatarStatus.className = 'avatar-status error';
+    avatarStatus.innerText = (err && err.error) ? err.error : 'Upload failed. Please try again.';
+  })
+  .finally(() => {
+    avatarInput.value = '';
+  });
+}
+
+/* ===== Crop editor: drag to move, zoom, then export a square PNG ===== */
+
+function openCrop(file) {
+  cropFile = file;
+
+  if (cropUrl) {
+    URL.revokeObjectURL(cropUrl);
+  }
+  cropUrl = URL.createObjectURL(file);
+
+  view.zoom = 1;
+  view.ox = 0;
+  view.oy = 0;
+  cropZoom.value = 1;
+  cropStatus.className = 'crop-status';
+  cropStatus.innerText = '';
+  cropModal.hidden = false;
+
+  cropImage.onload = function () {
+    view.nw = cropImage.naturalWidth;
+    view.nh = cropImage.naturalHeight;
+    view.box = cropMask.getBoundingClientRect().width; // the painted crop circle
+    view.base = view.box / Math.min(view.nw, view.nh); // smallest scale that covers it
+    drawCropView();
+    cropApply.focus();
+  };
+
+  cropImage.src = cropUrl;
+}
+
+function drawCropView() {
+  const scale = view.base * view.zoom;
+  const width = view.nw * scale;
+  const height = view.nh * scale;
+
+  // Never let the photo pull away from the crop circle
+  const limitX = Math.max(0, (width - view.box) / 2);
+  const limitY = Math.max(0, (height - view.box) / 2);
+  view.ox = Math.min(limitX, Math.max(-limitX, view.ox));
+  view.oy = Math.min(limitY, Math.max(-limitY, view.oy));
+
+  const stage = cropStage.getBoundingClientRect().width;
+  cropImage.style.width = width + 'px';
+  cropImage.style.height = height + 'px';
+  cropImage.style.left = (stage / 2 + view.ox - width / 2) + 'px';
+  cropImage.style.top = (stage / 2 + view.oy - height / 2) + 'px';
+}
+
+function setZoom(value) {
+  view.zoom = Math.min(4, Math.max(1, value));
+  cropZoom.value = view.zoom;
+  drawCropView();
+}
+
+cropStage.addEventListener('pointerdown', function (e) {
+  if (!cropFile) {
+    return;
+  }
+
+  view.dragging = true;
+  view.x = e.clientX;
+  view.y = e.clientY;
+  cropStage.classList.add('dragging');
+  cropStage.setPointerCapture(e.pointerId);
+});
+
+cropStage.addEventListener('pointermove', function (e) {
+  if (!view.dragging) {
+    return;
+  }
+
+  view.ox += e.clientX - view.x;
+  view.oy += e.clientY - view.y;
+  view.x = e.clientX;
+  view.y = e.clientY;
+  drawCropView();
+});
+
+function endDrag(e) {
+  if (!view.dragging) {
+    return;
+  }
+
+  view.dragging = false;
+  cropStage.classList.remove('dragging');
+
+  if (cropStage.hasPointerCapture(e.pointerId)) {
+    cropStage.releasePointerCapture(e.pointerId);
+  }
+}
+
+cropStage.addEventListener('pointerup', endDrag);
+cropStage.addEventListener('pointercancel', endDrag);
+
+cropStage.addEventListener('wheel', function (e) {
+  if (!cropFile) {
+    return;
+  }
+
+  e.preventDefault();
+  setZoom(view.zoom - e.deltaY * 0.001);
+}, { passive: false });
+
+cropZoom.addEventListener('input', function () {
+  setZoom(parseFloat(cropZoom.value));
+});
+
+cropStage.addEventListener('keydown', function (e) {
+  const step = e.shiftKey ? 20 : 5;
+  const moves = {
+    ArrowLeft: [step, 0],
+    ArrowRight: [-step, 0],
+    ArrowUp: [0, step],
+    ArrowDown: [0, -step]
+  };
+  const move = moves[e.key];
+
+  if (!move) {
+    return;
+  }
+
+  e.preventDefault();
+  view.ox += move[0];
+  view.oy += move[1];
+  drawCropView();
+});
+
+document.querySelectorAll('[data-crop-cancel]').forEach(function (button) {
+  button.addEventListener('click', closeCrop);
+});
+
+cropApply.addEventListener('click', exportCrop);
+
+document.addEventListener('keydown', function (e) {
+  if (e.key === 'Escape' && !cropModal.hidden) {
+    closeCrop();
+  }
+});
+
+function releaseCropUrl() {
+  if (cropUrl) {
+    URL.revokeObjectURL(cropUrl);
+    cropUrl = null;
+  }
+
+  cropFile = null;
+}
+
+function closeCrop() {
+  cropModal.hidden = true;
+  cropImage.removeAttribute('src');
+  view.dragging = false;
+  cropStage.classList.remove('dragging');
+  releaseCropUrl();
+  avatarInput.value = '';
+}
+
+/* Maps the visible circle back to the source image and exports a square PNG */
+function exportCrop() {
+  if (!cropFile) {
+    return;
+  }
+
+  const scale = view.base * view.zoom;
+  const source = view.box / scale;
+  const canvas = document.createElement('canvas');
+
+  canvas.width = AVATAR_CROP_SIZE;
+  canvas.height = AVATAR_CROP_SIZE;
+
+  canvas.getContext('2d').drawImage(
+    cropImage,
+    view.nw / 2 - (view.ox + view.box / 2) / scale, // source left edge, in image pixels
+    view.nh / 2 - (view.oy + view.box / 2) / scale, // source top edge, in image pixels
+    source,
+    source,
+    0,
+    0,
+    AVATAR_CROP_SIZE,
+    AVATAR_CROP_SIZE
+  );
+
+  cropApply.disabled = true;
+
+  canvas.toBlob(function (blob) {
+    cropApply.disabled = false;
+
+    if (!blob) {
+      cropStatus.className = 'crop-status error';
+      cropStatus.innerText = 'Could not process that image.';
+      return;
+    }
+
+    closeCrop();
+    uploadAvatar(blob, 'avatar.png');
+  }, 'image/png');
+}
+</script>
 {% endblock %}

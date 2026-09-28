@@ -1,4 +1,4 @@
-  /* Container Layout */
+﻿  /* Container Layout */
   .assessment-container {
     max-width: 900px;
     display: flex;
@@ -20,7 +20,7 @@
 
   /* Framework Banner */
   .framework-banner {
-    background: linear-gradient(135deg, #1e1b4b 0%, #312e81 100%);
+    background: linear-gradient(135deg, #111827 0%, #312e81 100%);
     color: #ffffff;
   }
 
@@ -72,7 +72,7 @@
     width: fit-content;
   }
 
-  .f-code.sfia { background: #818cf8; color: #1e1b4b; }
+  .f-code.sfia { background: #818cf8; color: #111827; }
   .f-code.comptia { background: #fca5a5; color: #7f1d1d; }
   .f-code.google { background: #93c5fd; color: #1e3a8a; }
   .f-code.cisco { background: #6ee7b7; color: #064e3b; }
@@ -95,7 +95,7 @@
   .status-info h3 {
     font-size: 16px;
     font-weight: 800;
-    color: #1e1b4b;
+    color: #111827;
     margin: 0 0 4px 0;
   }
 
@@ -130,13 +130,13 @@
   .metric-value {
     font-size: 15px;
     font-weight: 800;
-    color: #1e1b4b;
+    color: #111827;
   }
 
   .metric-level-badge {
     font-size: 13px;
     font-weight: 700;
-    color: #635bff;
+    color: var(--primary);
   }
 
   /* Primary Button */
@@ -145,7 +145,7 @@
   }
 
   .start-btn-primary {
-    background: #635bff;
+    background: var(--primary);
     color: #ffffff;
     border: none;
     padding: 12px 28px;
@@ -157,7 +157,7 @@
   }
 
   .start-btn-primary:hover {
-    background: #4f46e5;
+    background: var(--primary-hover);
   }
 
   /* Quiz Section */
@@ -170,7 +170,7 @@
   .quiz-header-card h2 {
     font-size: 18px;
     font-weight: 800;
-    color: #1e1b4b;
+    color: #111827;
     margin: 0 0 4px 0;
   }
 
@@ -204,7 +204,7 @@
     text-transform: uppercase;
   }
 
-  .sec-badge.sfia { background: #f0edff; color: #635bff; }
+  .sec-badge.sfia { background: var(--primary-light); color: var(--primary); }
   .sec-badge.comptia { background: #fef2f2; color: #ef4444; }
   .sec-badge.googleit { background: #eff6ff; color: #3b82f6; }
   .sec-badge.cisco { background: #ecfdf5; color: #10b981; }
@@ -218,7 +218,7 @@
   .q-text {
     font-size: 15px;
     font-weight: 700;
-    color: #1e1b4b;
+    color: #111827;
     margin: 0 0 16px 0;
     line-height: 1.4;
   }
@@ -243,13 +243,13 @@
   }
 
   .opt-card:hover {
-    border-color: #635bff;
-    background: #f8f7ff;
+    border-color: var(--primary);
+    background: var(--primary-light);
   }
 
   .opt-card.selected {
-    border-color: #635bff;
-    background: #f0edff;
+    border-color: var(--primary);
+    background: var(--primary-light);
   }
 
   .opt-card input[type="radio"] {
@@ -270,7 +270,7 @@
   }
 
   .opt-card.selected .opt-label {
-    background: #635bff;
+    background: var(--primary);
     color: #ffffff;
   }
 
@@ -305,7 +305,7 @@
 }
 
 .track-tag {
-  background: #1e1b4b;
+  background: #111827;
   color: #ffffff;
   font-size: 11px;
   font-weight: 800;
@@ -355,7 +355,7 @@
 .quiz-intro-card h3 {
   font-size: 18px;
   font-weight: 800;
-  color: #1e1b4b;
+  color: #111827;
   margin: 0 0 12px 0;
 }
 
@@ -386,9 +386,9 @@
   margin-bottom: 24px;
   padding: 14px 16px;
   border-radius: 12px;
-  background: #f5f3ff;
-  border: 1px solid #ede9fe;
-  --timer-color: #635bff;
+  background: var(--primary-light);
+  border: 1px solid var(--primary-border);
+  --timer-color: var(--primary);
 }
 
 .quiz-timer.warning { background: #fffbeb; border-color: #fde68a; --timer-color: #d97706; }
@@ -451,3 +451,4 @@
   cursor: not-allowed;
   opacity: 0.6;
 }
+

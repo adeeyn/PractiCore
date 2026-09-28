@@ -2,8 +2,9 @@ from flask import current_app, jsonify, redirect, render_template, request, sess
 from flask.views import MethodView
 
 from . import student_bp
-from ...repositories import StudentRepository
-from ...services import AssessmentService
+from .context import current_student
+from ...repositories import AssessmentRepository, StudentRepository
+from ...services import AssessmentService, SkillTaxonomy
 
 
 class AssessmentView(MethodView):
@@ -28,7 +29,11 @@ class StartAssessmentView(MethodView):
         self.service = AssessmentService()
 
     def get(self):
-        questions, grouped_questions, domain_map = self.service.build()
+        # Resume skills drive the resume-triggered portion of the question bank.
+        student = current_student()
+        student_skills = SkillTaxonomy.parse_skill_string(student.get("skills") if student else "")
+
+        questions, grouped_questions, domain_map = self.service.build(student_skills)
 
         # Store question -> domain mapping in session for submission evaluation
         session["active_assessment_map"] = domain_map
@@ -47,10 +52,12 @@ class SubmitAssessmentView(MethodView):
 
     def __init__(self):
         self.students = StudentRepository()
+        self.assessments = AssessmentRepository()
         self.service = AssessmentService()
 
     def post(self):
         answers = request.get_json() or {}
+        student = current_student()
         try:
             results = self.service.grade(answers, session.get("active_assessment_map", {}))
             self.students.update_assessment(
@@ -59,6 +66,12 @@ class SubmitAssessmentView(MethodView):
                 results["total_questions"],
                 results["competency_level"],
             )
+            # Persist the per-domain breakdown so the ranker has real features
+            # and the results page survives a logout (migration 006).
+            if student:
+                self.assessments.save_results(
+                    student["id"], results, results.get("category_breakdown", {})
+                )
         except Exception as e:
             print(f"Error in submit_assessment: {e}")
             return jsonify({"status": "error", "message": str(e)}), 500

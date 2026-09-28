@@ -1,17 +1,36 @@
-from flask import render_template
+from flask import current_app, render_template
 from flask.views import MethodView
 
-from . import employer_bp, sample_data
+from . import employer_bp
+from .context import current_employer
+from ...repositories import ApplicationRepository
 
 
 class CandidateRankingView(MethodView):
+    """Applicants ordered by the match score the screening engine computed."""
+
+    def __init__(self):
+        self.applications = ApplicationRepository()
+
     def get(self):
-        ranked = sorted(sample_data.APPLICANTS, key=lambda a: a["match_score"], reverse=True)
+        employer = current_employer() or {}
+
+        # The scorer that produced the numbers is also what the page advertises,
+        # so the footnote can never claim an algorithm that did not run.
+        matcher = current_app.extensions.get("matching_service")
+        ranking_note = matcher.status_line() if matcher else ""
+
+        ranked = sorted(
+            self.applications.for_employer(employer.get("id")),
+            key=lambda a: a["match_score"],
+            reverse=True,
+        )
         return render_template(
             "employer/ranking.html",
             active_page="ranking",
             ranked_applicants=ranked,
-            ranking_note="Ranking generated using Random Forest ranking algorithm",
+            ranking_note=ranking_note,
+            uses_model=bool(matcher and matcher.uses_model),
         )
 
 

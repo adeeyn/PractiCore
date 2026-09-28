@@ -81,10 +81,32 @@ class SkillTaxonomy:
 
     @classmethod
     def map_to_domain(cls, track_code, target_role=""):
-        """Maps a question's track code or target role to 1 of the 6 core job categories."""
+        """Maps a question's track code or target role to 1 of the 6 core job categories.
+
+        Exact matches are resolved first, on purpose. The substring fallback below
+        is convenient but ambiguous: "Business Systems & Project Management"
+        contains "NA" (in "Management") and would otherwise be filed under
+        Systems & Networks. Any question whose course_track already holds one of
+        the six category names must round-trip to itself, or the per-domain
+        competency breakdown silently reports the wrong domain.
+        """
         track = str(track_code or "").strip().upper()
         role = str(target_role or "").strip().lower()
 
+        if not track and not role:
+            return cls.DEFAULT_CATEGORY
+
+        # 1. An exact category name (the 6 canonical strings).
+        for domain in cls.SKILL_CATEGORY_MAP:
+            if track == domain.upper():
+                return domain
+
+        # 2. An exact short track code (DEV, NET, TSM, DATA, SEC, SYS).
+        for domain, code in cls.DOMAIN_TRACK_CODES.items():
+            if track == code.upper():
+                return domain
+
+        # 3. Fall back to substring matching on the track, then the role.
         if "SEC" in track or "CYBER" in track or any(k in role for k in ["security", "cyber", "risk", "soc", "penetration"]):
             return "Cybersecurity & Risk Management"
         if "DATA" in track or "AI" in track or "ANALYTICS" in track or any(k in role for k in ["data", "analytics", "ai", "machine learning"]):
@@ -101,8 +123,17 @@ class SkillTaxonomy:
 
     @staticmethod
     def parse_skill_string(skills_str):
-        """'Python, SQL' -> {'python', 'sql'}"""
-        return {s.strip().lower() for s in (skills_str or "").split(",") if s.strip()}
+        """'Python, SQL' -> {'python', 'sql'}
+
+        Callers sometimes hand over an already-parsed set/list (the route views
+        do), so anything that is not a string is normalised item by item rather
+        than being sent through .split(), which a set does not have.
+        """
+        if not isinstance(skills_str, str):
+            return {
+                str(s).strip().lower() for s in (skills_str or []) if str(s).strip()
+            }
+        return {s.strip().lower() for s in skills_str.split(",") if s.strip()}
 
     @staticmethod
     def match_required_skills(required_skills, student_skills):

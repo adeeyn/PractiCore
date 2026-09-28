@@ -1,101 +1,192 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
 :root {
-  --purple: #5b35e6;
-  --purple-dark: #4322bf;
-  --purple-hover: #4b2ac8;
-  --purple-light: #f3efff;
-  --purple-soft: #f3f0ff;
-  --text: #1d2433;
+  /* Brand: Deep Crimson / Maroon (Figma Student & Sign-In Theme) */
+  --primary: #801020;
+  --primary-dark: #630c1a;
+  --primary-hover: #6a0d1b;
+  --primary-light: #fff1f2;
+  --primary-soft: #ffe4e6;
+  --primary-border: #fecdd3;
+  --primary-glow: rgba(128, 16, 32, 0.15);
+
+  /* Legacy aliases for backwards compatibility */
+  --purple: var(--primary);
+  --purple-dark: var(--primary-dark);
+  --purple-hover: var(--primary-hover);
+  --purple-light: var(--primary-light);
+  --purple-soft: var(--primary-soft);
+
+  /* Neutrals */
+  --text: #1f2937;
   --text-dark: #111827;
-  --text-muted: #8a8f9d;
-  --border-color: #e9e8ee;
-  --border: #e9e8ee;
-  --bg: #f7f5ff;
-  --white: #fff;
-  --green: #15966b;
-  --orange: #e99a18;
-  --shadow: 0 2px 10px rgba(50, 35, 110, .08);
+  --text-muted: #6b7280;
+  --text-faint: #9ca3af;
+  --border-color: #e5e7eb;
+  --border: #e5e7eb;
+  --bg: #f8fafc;
+  --white: #ffffff;
+
+  /* Accents */
+  --green: #10b981;
+  --green-soft: #ecfdf5;
+  --orange: #f59e0b;
+  --orange-soft: #fffbeb;
+  --blue: #2563eb;
+  --blue-soft: #dbeafe;
+
+  --shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.04);
+  --radius: 14px;
+  --radius-sm: 8px;
 }
 
 * { box-sizing: border-box; }
-html, body { margin: 0; min-height: 100%; font-family: Inter, Arial, sans-serif; color: var(--text); }
-body { background: var(--bg); }
-button, input { font: inherit; }
+html, body {
+  margin: 0;
+  min-height: 100%;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  color: var(--text);
+  background: var(--bg);
+}
+button, input, select, textarea { font: inherit; }
 button { cursor: pointer; }
 a { text-decoration: none; color: inherit; }
 
 /* Reusable UI Components */
 .card {
   background: #ffffff;
-  border-radius: 20px;
+  border-radius: var(--radius);
   border: 1px solid var(--border-color);
   padding: 24px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
 }
 
-.field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; }
-.field label { font-size: 11px; font-weight: 700; color: #6b7280; text-transform: uppercase; letter-spacing: 0.5px; }
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+
+.field label {
+  font-size: 11px;
+  font-weight: 700;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
 .field input {
   width: 100%;
-  padding: 12px 16px;
-  border-radius: 10px;
-  border: 1px solid #e5e7eb;
-  background-color: #f9fafb;
-  color: #1f2937;
+  padding: 12px 14px;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  background-color: #ffffff;
+  color: var(--text-dark);
   font-size: 14px;
   outline: none;
   transition: all 0.2s ease;
 }
+
 .field input:focus {
-  border-color: var(--purple);
+  border-color: var(--primary);
   background-color: #ffffff;
-  box-shadow: 0 0 0 3px rgba(91, 53, 230, 0.1);
+  box-shadow: 0 0 0 3px var(--primary-glow);
 }
 
 .primary-btn {
-  background: var(--purple);
+  background: var(--primary);
   color: #ffffff;
   border: none;
-  padding: 10px 20px;
-  border-radius: 10px;
+  padding: 10px 22px;
+  border-radius: var(--radius-sm);
+  font-size: 14px;
   font-weight: 600;
   cursor: pointer;
-  transition: background 0.2s ease;
+  box-shadow: 0 2px 8px var(--primary-glow);
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
 }
-.primary-btn:hover { background: var(--purple-hover); }
+
+.primary-btn:hover {
+  background: var(--primary-hover);
+  box-shadow: 0 5px 14px var(--primary-glow);
+  transform: translateY(-1px);
+}
+
+.primary-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 6px var(--primary-glow);
+}
 
 .secondary-btn {
-  background: var(--purple-light);
-  color: var(--purple);
-  border: none;
-  padding: 8px 16px;
-  border-radius: 8px;
+  background: var(--primary-light);
+  color: var(--primary);
+  border: 1px solid var(--primary-border);
+  padding: 8px 18px;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
   font-weight: 600;
   cursor: pointer;
+  transition: all 0.15s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.secondary-btn:hover {
+  background: var(--primary-soft);
+  border-color: var(--primary);
 }
 
 .save-btn {
   width: 100%;
-  padding: 14px;
-  background-color: var(--purple);
+  padding: 13px;
+  background-color: var(--primary);
   color: #ffffff;
   border: none;
-  border-radius: 12px;
-  font-size: 15px;
+  border-radius: var(--radius-sm);
+  font-size: 14px;
   font-weight: 700;
   cursor: pointer;
   margin-top: 12px;
+  letter-spacing: 0.01em;
+  box-shadow: 0 2px 10px var(--primary-glow);
+  transition: all 0.2s ease;
 }
-.save-btn:hover { background-color: var(--purple-hover); }
 
-.tag-list { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+.save-btn:hover {
+  background-color: var(--primary-hover);
+  box-shadow: 0 5px 16px var(--primary-glow);
+  transform: translateY(-1px);
+}
+
+.save-btn:active {
+  transform: translateY(0);
+}
+
+.tag-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
 .tag {
-  background-color: var(--purple-light);
-  color: var(--purple);
-  padding: 6px 16px;
-  border-radius: 20px;
-  font-size: 13px;
+  background-color: var(--primary-light);
+  color: var(--primary);
+  padding: 4px 11px;
+  border-radius: 6px;
+  font-size: 12px;
   font-weight: 600;
   display: inline-block;
+  border: 1px solid var(--primary-border);
+  transition: background 0.15s ease;
+}
+
+.tag:hover {
+  background-color: var(--primary-soft);
 }

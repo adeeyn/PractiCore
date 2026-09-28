@@ -4,6 +4,17 @@ from . import employer_bp
 from ...repositories import EmployerRepository
 
 
+def split_skills(value):
+    """'Python, SQL , Python' -> ['Python', 'SQL'] (case kept, order kept, no dupes)."""
+    seen, skills = set(), []
+    for part in (value or "").split(","):
+        clean = part.strip()
+        if clean and clean.lower() not in seen:
+            seen.add(clean.lower())
+            skills.append(clean)
+    return skills
+
+
 def current_employer():
     """The logged-in employer's company row, loaded once per request."""
     if "current_employer" not in g:
@@ -15,4 +26,16 @@ def current_employer():
 @employer_bp.context_processor
 def inject_current_employer():
     # Available in every employer template, e.g. {{ current_employer.company_name }}
-    return {"current_employer": current_employer()}
+    employer = current_employer() or {}
+
+    # Handy derived values so templates do not repeat the same fallbacks
+    employer.setdefault("required_skill_list", split_skills(employer.get("required_skills")))
+    employer.setdefault("display_name", employer.get("contact_name")
+                        or employer.get("company_logo_text")
+                        or employer.get("company_name") or "Employer")
+    employer.setdefault("display_role", employer.get("contact_position") or "Hiring Manager")
+
+    return {
+        "current_employer": current_employer(),
+        "employer": employer,
+    }

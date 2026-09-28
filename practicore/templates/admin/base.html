@@ -19,5 +19,27 @@
     <main class="admin-content">
         {% block content %}{% endblock %}
     </main>
+
+    <script>
+        // A logged-out page can still be restored from the browser cache on Back,
+        // so re-check the session and send the user to login if it has gone.
+        window.addEventListener('pageshow', function (event) {
+            if (!event.persisted) {
+                return;
+            }
+
+            fetch('/', { method: 'HEAD', cache: 'no-store' })
+                .then(function (response) {
+                    const target = new URL(response.url, window.location.origin);
+
+                    if (target.pathname === '/login') {
+                        window.location.replace(target.href);
+                    }
+                })
+                .catch(function () {
+                    // Offline or blocked: leave the page as it is
+                });
+        });
+    </script>
 </body>
 </html>

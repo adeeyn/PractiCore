@@ -5,42 +5,126 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}PractiCore{% endblock %}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='student/style.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/lucide@0.469.0/dist/umd/lucide.min.js"></script>
+    {% block head %}{% endblock %}
 </head>
 <body>
     <div class="app-shell">
-        <!-- SHARED SIDEBAR -->
+        <!-- SHARED CRIMSON SIDEBAR -->
         <aside class="sidebar">
-            <div class="sidebar-brand">PractiCore</div>
-            <div class="profile-mini">
-                <div class="avatar">👤</div>
-                <div>
-                    <strong>{{ current_student.name if current_student else session.get('username', 'Student') }}</strong>
-                    {% if current_student %}
-                    <span>{{ current_student.course }}{% if current_student.year_level %} — {{ current_student.year_level }}{% endif %}</span>
-                    {% endif %}
-                </div>
+            <div class="sidebar-brand">
+                <svg class="brand-cap-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M22 10v6M2 10l10-5 10 5-10 5z"></path>
+                    <path d="M6 12v5c3 3 9 3 12 0v-5"></path>
+                </svg>
+                <span>PractiCore</span>
             </div>
+
             <nav class="nav">
-                <a href="{{ url_for('student.dashboard') }}" class="nav-item {% if active_page | default('dashboard') == 'dashboard' %}active{% endif %}"><span class="icon">📈</span> Dashboard</a>
-                <a href="{{ url_for('student.profile') }}" class="nav-item {% if active_page | default('dashboard') == 'profile' %}active{% endif %}"><span class="icon">👤</span> Profile</a>
-                <a href="{{ url_for('student.resume') }}" class="nav-item {% if active_page | default('dashboard') == 'upload_resume' %}active{% endif %}"><span class="icon">📄</span> My Resume</a>
-                <a href="{{ url_for('student.assessment') }}" class="nav-item {% if active_page | default('dashboard') == 'assessment' %}active{% endif %}"><span class="nav-icon">📝</span> Assessment</a>
-                <a href="{{ url_for('student.recommendation') }}" class="nav-item {% if active_page | default('dashboard') == 'recommendation' %}active{% endif %}"><span class="nav-icon">⭐</span> Recommendations</a>
-                <a href="{{ url_for('student.application') }}" class="nav-item {% if active_page | default('dashboard') == 'application' %}active{% endif %}"><span class="nav-icon">💼</span> My Applications</a>
-                <a href="#"><span class="nav-icon">💬</span> Messages</a>
-                <a href="#"><span class="nav-icon">⚙</span> Settings</a>
+                <a href="{{ url_for('student.dashboard') }}" class="nav-item {% if active_page | default('dashboard') == 'dashboard' %}active{% endif %}">
+                    <i data-lucide="layout-grid"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="{{ url_for('student.profile') }}" class="nav-item {% if active_page | default('dashboard') == 'profile' %}active{% endif %}">
+                    <i data-lucide="user"></i>
+                    <span>Profile</span>
+                </a>
+                <a href="{{ url_for('student.resume') }}" class="nav-item {% if active_page | default('dashboard') == 'upload_resume' %}active{% endif %}">
+                    <i data-lucide="file-text"></i>
+                    <span>Resume</span>
+                </a>
+                <a href="{{ url_for('student.assessment') }}" class="nav-item {% if active_page | default('dashboard') in ['assessment', 'start_assessment', 'assessment_results'] %}active{% endif %}">
+                    <i data-lucide="award"></i>
+                    <span>Skill Assessment</span>
+                </a>
+                <a href="{{ url_for('student.recommendation') }}" class="nav-item {% if active_page | default('dashboard') == 'recommendation' %}active{% endif %}">
+                    <i data-lucide="search"></i>
+                    <span>Internship Opportunities</span>
+                </a>
+                <a href="{{ url_for('student.application') }}" class="nav-item {% if active_page | default('dashboard') == 'application' %}active{% endif %}">
+                    <i data-lucide="briefcase"></i>
+                    <span>Applications</span>
+                </a>
             </nav>
-            <div class="logout">
-                <a href="{{ url_for('auth.logout') }}"><span>➔</span> Logout</a>
+
+            <div class="sidebar-footer">
+                <div class="sidebar-slogan">
+                    Elevate your skills.<br>
+                    Build your future.
+                </div>
+                <div class="logout">
+                    <a href="{{ url_for('auth.logout') }}">
+                        <i data-lucide="log-out"></i>
+                        <span>Logout</span>
+                    </a>
+                </div>
             </div>
         </aside>
 
         <!-- DYNAMIC MAIN CONTENT AREA -->
         <main class="main">
-            {% block content %}{% endblock %}
+            <!-- Topbar with greeting and student profile chip -->
+            <header class="topbar">
+                <div class="topbar-left">
+                    {% block topbar_left %}
+                    <div class="welcome">
+                        <span class="welcome-greeting">Good morning,</span>
+                        <h1>{{ username or (current_student.name if current_student else 'John') }} 👋</h1>
+                        <p class="subtitle">Here's what's happening with your internship journey.</p>
+                    </div>
+                    {% endblock %}
+                </div>
+
+                <div class="topbar-right">
+                    <button class="notification-btn" type="button" aria-label="Notifications" title="Notifications">
+                        <i data-lucide="bell"></i>
+                        <span class="notification-dot"></span>
+                    </button>
+
+                    <a class="user-chip" href="{{ url_for('student.profile') }}" title="View profile" aria-label="View your profile">
+                        <div class="user-avatar">
+                            {% include "student/_avatar.html" %}
+                        </div>
+                        <div class="user-meta">
+                            <strong class="user-name">{{ current_student.name if current_student and current_student.name else (username or 'John Dela Cruz') }}</strong>
+                            <span class="user-role">Student</span>
+                        </div>
+                    </a>
+                </div>
+            </header>
+
+            <div class="content-body">
+                {% block content %}{% endblock %}
+            </div>
         </main>
     </div>
 
     <script src="{{ url_for('static', filename='student/main.js') }}"></script>
+    <script>
+        if (window.lucide) {
+            lucide.createIcons();
+        }
+
+        // A logged-out page can still be restored from the browser cache on Back,
+        // so re-check the session and send the user to login if it has gone.
+        window.addEventListener('pageshow', function (event) {
+            if (!event.persisted) {
+                return;
+            }
+
+            fetch('/', { method: 'HEAD', cache: 'no-store' })
+                .then(function (response) {
+                    const target = new URL(response.url, window.location.origin);
+
+                    if (target.pathname === '/login') {
+                        window.location.replace(target.href);
+                    }
+                })
+                .catch(function () {
+                    // Offline or blocked: leave the page as it is
+                });
+        });
+    </script>
+    {% block scripts %}{% endblock %}
 </body>
 </html>

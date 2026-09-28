@@ -5,65 +5,76 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Employer{% endblock %} | PractiCore</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='employer/style.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/lucide@0.469.0/dist/umd/lucide.min.js"></script>
     {% block head %}{% endblock %}
 </head>
 <body>
     {% set nav_items = [
-        ('dashboard', 'employer.dashboard', 'layout-grid', 'Overview'),
+        ('dashboard', 'employer.dashboard', 'layout-grid', 'Dashboard'),
+        ('employees', 'employer.applicants', 'users', 'Employees'),
+        ('postings', 'employer.postings', 'briefcase', 'Internships'),
+        ('management', 'employer.applicant_management', 'file-text', 'Applications'),
+        ('ranking', 'employer.ranking', 'bar-chart-2', 'Reports'),
         ('profile', 'employer.profile', 'building-2', 'Company Profile'),
-        ('postings', 'employer.postings', 'file-text', 'Internship Posting'),
-        ('applicants', 'employer.applicants', 'users', 'Applicants'),
-        ('ranking', 'employer.ranking', 'chart-column', 'Candidate Ranking'),
-        ('management', 'employer.applicant_management', 'clipboard-list', 'Applicant Management'),
-        ('messages', None, 'message-square', 'Messages'),
-        ('settings', None, 'settings', 'Settings'),
     ] %}
 
     <div class="emp-shell">
-        <!-- SIDEBAR -->
+        <!-- GOLDEN YELLOW SIDEBAR -->
         <aside class="emp-sidebar">
             <div class="emp-brand">
-                <span class="emp-brand-logo"><i data-lucide="briefcase"></i></span>
-                Practicore
-            </div>
-
-            <div class="emp-user">
-                <div class="avatar avatar-brand">{{ current_employer.company_logo_text if current_employer else '?' }}</div>
-                <div class="emp-user-info">
-                    <strong>{{ session.get('email', 'Employer') }}</strong>
-                    <span>Employer</span>
-                </div>
+                <svg class="brand-cap-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M22 10v6M2 10l10-5 10 5-10 5z"></path>
+                    <path d="M6 12v5c3 3 9 3 12 0v-5"></path>
+                </svg>
+                <span>PractiCore</span>
             </div>
 
             <nav class="emp-nav">
                 {% for key, endpoint, icon, label in nav_items %}
-                <a href="{{ url_for(endpoint) if endpoint else '#' }}" class="{% if active_page == key %}active{% endif %}">
+                <a href="{{ url_for(endpoint) }}" class="emp-nav-item {% if active_page == key %}active{% endif %}">
                     <i data-lucide="{{ icon }}"></i>
                     <span>{{ label }}</span>
                 </a>
                 {% endfor %}
             </nav>
 
-            <div class="emp-logout">
-                <a href="{{ url_for('auth.logout') }}"><i data-lucide="log-out"></i> Logout</a>
+            <div class="emp-sidebar-footer">
+                <div class="emp-sidebar-slogan">
+                    Build great teams. Create brighter futures.
+                </div>
+                <div class="emp-logout">
+                    <a href="{{ url_for('auth.logout') }}">
+                        <i data-lucide="log-out"></i>
+                        <span>Logout</span>
+                    </a>
+                </div>
             </div>
         </aside>
 
-        <!-- MAIN -->
+        <!-- MAIN AREA -->
         <div class="emp-main">
+            <!-- TOPBAR WITH SEARCH & HR PROFILE CHIP -->
             <header class="emp-topbar">
-                <span class="emp-topbar-title">{% block topbar_title %}{% endblock %}</span>
+                <div class="emp-search-wrap">
+                    <i data-lucide="search" class="search-icon"></i>
+                    <input type="text" placeholder="Search anything..." class="emp-search-input">
+                </div>
+
                 <div class="emp-topbar-right">
-                    <button type="button" class="emp-bell" aria-label="Notifications">
+                    <button type="button" class="emp-bell" aria-label="Notifications" title="Notifications">
                         <i data-lucide="bell"></i>
                         <span class="emp-bell-dot"></span>
                     </button>
-                    <div class="emp-company-chip">
-                        <div class="avatar avatar-brand">{{ current_employer.company_logo_text if current_employer else '?' }}</div>
-                        <div>
-                            <strong>{{ current_employer.company_name if current_employer else 'Company' }}</strong>
-                            <span>Employer</span>
+
+                    <div class="emp-user-chip">
+                        <div class="emp-avatar emp-avatar-brand">
+                            <span>{{ employer.display_name[:1]|upper }}</span>
                         </div>
+                        <div class="emp-user-meta">
+                            <strong class="emp-user-name">{{ employer.display_name }}</strong>
+                            <span class="emp-user-role">{{ employer.display_role }}</span>
+                        </div>
+                        <i data-lucide="chevron-down" class="emp-dropdown-icon"></i>
                     </div>
                 </div>
             </header>
@@ -76,6 +87,31 @@
 
     <script src="https://cdn.jsdelivr.net/npm/lucide@0.469.0/dist/umd/lucide.min.js"></script>
     <script src="{{ url_for('static', filename='employer/js/employer.js') }}"></script>
+    <script>
+        if (window.lucide) {
+            lucide.createIcons();
+        }
+
+        // A logged-out page can still be restored from the browser cache on Back,
+        // so re-check the session and send the user to login if it has gone.
+        window.addEventListener('pageshow', function (event) {
+            if (!event.persisted) {
+                return;
+            }
+
+            fetch('/', { method: 'HEAD', cache: 'no-store' })
+                .then(function (response) {
+                    const target = new URL(response.url, window.location.origin);
+
+                    if (target.pathname === '/login') {
+                        window.location.replace(target.href);
+                    }
+                })
+                .catch(function () {
+                    // Offline or blocked: leave the page as it is
+                });
+        });
+    </script>
     {% block scripts %}{% endblock %}
 </body>
 </html>

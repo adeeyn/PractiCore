@@ -2,9 +2,34 @@ import mysql.connector
 
 from ..database import Database
 
+# Read model for the employer pages. The column aliases match the keys the
+# employer templates and the _macros.html helpers expect.
+APPLICANT_COLUMNS = """
+    a.id               AS id,
+    a.student_id       AS student_id,
+    a.posting_id       AS posting_id,
+    s.name             AS name,
+    s.email            AS email,
+    s.skills           AS skills,
+    s.assessment_score AS assessment_score,
+    p.title            AS position,
+    a.status           AS status,
+    a.match_score      AS match_score,
+    a.employer_notes   AS notes,
+    a.applied_on       AS applied_on
+"""
+
+
+def initials_for(name):
+    """'Juan Dela Cruz' -> 'JD', the same style the student module uses."""
+    parts = [part for part in (name or "").split() if part]
+    return "".join(part[0] for part in parts[:2]).upper() or "?"
+
 
 class ApplicationRepository:
     """All SQL touching the `applications` table."""
+
+    # ---------- Student side ----------
 
     def count_for_student(self, student_id):
         if not student_id:
@@ -20,3 +45,191 @@ class ApplicationRepository:
         except mysql.connector.Error:
             # Fallback if applications table hasn't been created yet
             return 0
+
+    def for_student(self, student_id):
+        if not student_id:
+            return []
+
+        with Database.cursor() as cursor:
+            cursor.execute(f"""
+                SELECT {APPLICANT_COLUMNS}, e.company_name, e.company_logo_text
+                FROM applications a
+                JOIN students s ON a.student_id = s.id
+                JOIN internship_postings p ON a.posting_id = p.id
+                JOIN employers e ON p.employer_id = e.id
+                WHERE a.student_id = %s
+                ORDER BY a.applied_on DESC
+            """, (student_id,))
+            return [self._shape(row) for row in cursor.fetchall()]
+
+    def applied_posting_ids(self, student_id):
+        """The posting ids this student already applied to, for the Apply button state."""
+        if not student_id:
+            return set()
+
+        with Database.cursor() as cursor:
+            cursor.execute(
+                "SELECT posting_id FROM applications WHERE student_id = %s", (student_id,)
+            )
+            return {row["posting_id"] for row in cursor.fetchall()}
+
+    def apply(self, student_id, posting_id, match_score):
+        """Records an application. Returns False when the student already applied."""
+        if not student_id or not posting_id:
+            return False
+
+        with Database.cursor(commit=True) as cursor:
+            cursor.execute(
+                "SELECT id FROM applications WHERE student_id = %s AND posting_id = %s",
+                (student_id, posting_id),
+            )
+            if cursor.fetchone():
+                return False
+
+            cursor.execute("""
+                INSERT INTO applications (student_id, posting_id, status, match_score)
+                VALUES (%s, %s, 'Pending', %s)
+            """, (student_id, posting_id, match_score))
+            return True
+
+    def withdraw(self, application_id, student_id):
+        """Removes one of the student's own applications. Returns True when deleted."""
+        if not application_id or not student_id:
+            return False
+
+        with Database.cursor(commit=True) as cursor:
+            cursor.execute(
+                "DELETE FROM applications WHERE id = %s AND student_id = %s",
+                (application_id, student_id),
+            )
+            return cursor.rowcount > 0
+
+    # ---------- Employer side ----------
+
+    def for_employer(self, employer_id, posting_id=None):
+        """Applicants for one of the employer's postings, or across all of them."""
+        if not employer_id:
+            return []
+
+        query = f"""
+            SELECT {APPLICANT_COLUMNS}
+            FROM applications a
+            JOIN students s ON a.student_id = s.id
+            JOIN internship_postings p ON a.posting_id = p.id
+            WHERE p.employer_id = %s
+        """
+        params = [employer_id]
+
+        if posting_id:
+            query += " AND p.id = %s"
+            params.append(posting_id)
+
+        query += " ORDER BY a.applied_on DESC, a.id DESC"
+
+        with Database.cursor() as cursor:
+            cursor.execute(query, tuple(params))
+            return [self._shape(row) for row in cursor.fetchall()]
+
+    def find_for_employer(self, employer_id, application_id):
+        """One applicant, but only when it belongs to this employer."""
+        if not employer_id or not application_id:
+            return None
+
+        with Database.cursor() as cursor:
+            cursor.execute(f"""
+                SELECT {APPLICANT_COLUMNS}
+                FROM applications a
+                JOIN students s ON a.student_id = s.id
+                JOIN internship_postings p ON a.posting_id = p.id
+                WHERE p.employer_id = %s AND a.id = %s
+                LIMIT 1
+            """, (employer_id, application_id))
+            row = cursor.fetchone()
+            return self._shape(row) if row else None
+
+    def counts_for_employer(self, employer_id):
+        """Dashboard totals: applicants, the per-status counts and the average score."""
+        keys = ("total", "shortlisted", "hired", "pending", "avg_match")
+        if not employer_id:
+            return dict.fromkeys(keys, 0)
+
+        with Database.cursor() as cursor:
+            cursor.execute("""
+                SELECT
+                    COUNT(*)                                   AS total,
+                    COALESCE(SUM(a.status = 'Shortlisted'), 0) AS shortlisted,
+                    COALESCE(SUM(a.status = 'Hired'), 0)      AS hired,
+                    COALESCE(SUM(a.status = 'Pending'), 0)     AS pending,
+                    COALESCE(ROUND(AVG(a.match_score)), 0)     AS avg_match
+                FROM applications a
+                JOIN internship_postings p ON a.posting_id = p.id
+                WHERE p.employer_id = %s
+            """, (employer_id,))
+            row = cursor.fetchone() or {}
+
+        return {key: int(row.get(key) or 0) for key in keys}
+
+    def update_status_and_notes(self, application_id, status, notes):
+        with Database.cursor(commit=True) as cursor:
+            cursor.execute(
+                "UPDATE applications SET status = %s, employer_notes = %s WHERE id = %s",
+                (status, notes, application_id),
+            )
+
+    def create_if_missing(self, student_id, posting_id, status, match_score, notes=None):
+        """Seeds an application without breaking the unique (student, posting) key."""
+        with Database.cursor(commit=True) as cursor:
+            cursor.execute("""
+                INSERT INTO applications (student_id, posting_id, status, match_score, employer_notes)
+                VALUES (%s, %s, %s, %s, %s)
+                ON DUPLICATE KEY UPDATE match_score = VALUES(match_score)
+            """, (student_id, posting_id, status, match_score, notes))
+
+    def for_training(self):
+        """Every application with the fields the ranking trainer needs.
+
+        One row per application, carrying the student's resume skills, their
+        assessment totals and the posting's required skills, so the trainer can
+        rebuild exactly the feature vector the live scorer builds.
+        """
+        try:
+            with Database.cursor() as cursor:
+                cursor.execute("""
+                    SELECT
+                        a.id               AS id,
+                        a.student_id       AS student_id,
+                        a.posting_id       AS posting_id,
+                        a.status           AS status,
+                        a.match_score      AS match_score,
+                        s.skills           AS skills,
+                        s.assessment_score AS assessment_score,
+                        s.total_questions  AS total_questions
+                    FROM applications a
+                    JOIN students s ON a.student_id = s.id
+                """)
+                applications = cursor.fetchall()
+
+                # Required skills live in a second table, so this stays a plain
+                # per-posting lookup instead of another join fan-out.
+                for application in applications:
+                    cursor.execute(
+                        "SELECT skill_name FROM posting_skills WHERE posting_id = %s",
+                        (application["posting_id"],),
+                    )
+                    application["skills_required"] = [
+                        row["skill_name"] for row in cursor.fetchall()
+                    ]
+
+                return applications
+        except mysql.connector.Error:
+            return []
+
+    # ---------- Helpers ----------
+
+    @staticmethod
+    def _shape(row):
+        """Adds the display fields the employer templates read."""
+        row["initials"] = initials_for(row["name"])
+        applied_on = row.get("applied_on")
+        row["applied_on"] = applied_on.strftime("%b %d, %Y") if applied_on else "-"
+        return row

@@ -64,7 +64,7 @@
   </div>
 
   <!-- Parsed Extraction Results Card -->
-  <div class="resume-card {% if not (student and (student.skills or categorized_skills)) %}hidden{% endif %}" id="parsed-results-card">
+  <div class="resume-card {% if not (student and (student.skills or categorized_skills or (resume_sections and (resume_sections.education or resume_sections.certifications or resume_sections.experience or resume_sections.projects)))) %}hidden{% endif %}" id="parsed-results-card">
     <div class="card-header">
       <h2>Extracted Resume Data (SpaCy NLP)</h2>
     </div>
@@ -107,6 +107,25 @@
         {% else %}
           <span class="no-skills">No matching skills detected.</span>
         {% endif %}
+      </div>
+    </div>
+
+    <!-- Career sections extracted by the NLP step (migration 007) -->
+    {% set any_section = resume_sections and (resume_sections.education or resume_sections.certifications or resume_sections.experience or resume_sections.projects) %}
+    <div class="career-sections {% if not any_section %}hidden{% endif %}" id="career-sections">
+      <label class="section-label">Career Sections (Education / Certifications / Experience / Projects)</label>
+      <div class="sections-grid" id="career-sections-container">
+        {% for key, label in [('education','Education'), ('certifications','Certifications'), ('experience','Experience'), ('projects','Projects')] %}
+          {% set items = resume_sections.get(key) if resume_sections else [] %}
+          {% if items %}
+            <div class="section-block" data-section="{{ key }}">
+              <h4 class="category-title">{{ label }}</h4>
+              <ul class="section-list">
+                {% for item in items %}<li>{{ item }}</li>{% endfor %}
+              </ul>
+            </div>
+          {% endif %}
+        {% endfor %}
       </div>
     </div>
   </div>
@@ -207,6 +226,8 @@ function uploadAndParse(file) {
         container.innerHTML = '<span class="no-skills">No matching skills detected.</span>';
       }
 
+      renderCareerSections(parsed);
+
       parsedCard.style.display = 'block';
       statusBadge.innerText = "Active";
       statusBadge.className = "status-badge active";
@@ -221,6 +242,49 @@ function uploadAndParse(file) {
     console.error(err);
     alert("An error occurred while uploading.");
   });
+}
+
+const SECTION_LABELS = {
+  education: 'Education',
+  certifications: 'Certifications',
+  experience: 'Experience',
+  projects: 'Projects'
+};
+
+function renderCareerSections(parsed) {
+  const wrapper = document.getElementById('career-sections');
+  const container = document.getElementById('career-sections-container');
+  if (!wrapper || !container) return;
+
+  container.innerHTML = '';
+  let rendered = 0;
+
+  for (const [key, label] of Object.entries(SECTION_LABELS)) {
+    const items = parsed[key];
+    if (!items || items.length === 0) continue;
+
+    const block = document.createElement('div');
+    block.className = 'section-block';
+    block.dataset.section = key;
+
+    const title = document.createElement('h4');
+    title.className = 'category-title';
+    title.innerText = label;
+    block.appendChild(title);
+
+    const list = document.createElement('ul');
+    list.className = 'section-list';
+    items.forEach(item => {
+      const li = document.createElement('li');
+      li.innerText = item;
+      list.appendChild(li);
+    });
+    block.appendChild(list);
+    container.appendChild(block);
+    rendered++;
+  }
+
+  wrapper.classList.toggle('hidden', rendered === 0);
 }
 
 document.getElementById('remove-file-btn').addEventListener('click', () => {
