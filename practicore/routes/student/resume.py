@@ -1,16 +1,13 @@
 import io
 
-import mysql.connector
 from flask import abort, current_app, jsonify, render_template, request, send_file, session
 from flask.views import MethodView
 from werkzeug.utils import secure_filename
 
 from . import student_bp
 from .context import current_student
+from ...database import DatabaseError
 from ...repositories import ResumeRepository, StudentRepository
-
-# MySQL errors raised when the file is bigger than the server's max_allowed_packet
-PACKET_TOO_LARGE_ERRNOS = {1153, 2006, 2013, 2055}
 
 
 class UploadResumeView(MethodView):
@@ -78,9 +75,11 @@ class UploadResumeView(MethodView):
                 ", ".join(parsed_data["skills"]),
                 sections={key: parsed_data.get(key) for key in ResumeRepository.SECTION_COLUMNS},
             )
-        except mysql.connector.Error as e:
-            if e.errno in PACKET_TOO_LARGE_ERRNOS:
-                return jsonify({"error": "File is too large for the database. Increase max_allowed_packet in MySQL."}), 500
+        except DatabaseError as e:
+            # Postgres rejects an oversized bytea write outright; the 5 MB
+            # app-level cap above normally stops this first.
+            if getattr(e, "pgcode", "") in ("53400", "54000", "22001"):
+                return jsonify({"error": "File is too large for the database."}), 500
             return jsonify({"error": str(e)}), 500
         except Exception as e:
             return jsonify({"error": str(e)}), 500

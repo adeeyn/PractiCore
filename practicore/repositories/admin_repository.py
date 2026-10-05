@@ -5,14 +5,11 @@ Read-only for everything the employer owns. The administrator observes
 postings, competencies and scores; this module never writes to the matching,
 assessment or ranking data.
 """
-import mysql.connector
-
-from ..database import Database
+from ..database import Database, DatabaseError, upsert_sql
 from ..initials import initials_for
 from .user_repository import UserRepository
 
-# Re-exported so callers can catch it without importing mysql directly.
-DatabaseError = mysql.connector.Error
+# Re-exported so callers can catch it without importing psycopg2 directly.
 
 
 class AdminRepository:
@@ -368,12 +365,10 @@ class AdminRepository:
                    p.is_remote, p.positions_available, p.posted_date,
                    e.id AS employer_id, e.company_name, e.company_logo_text,
                    e.location,
-                   (SELECT GROUP_CONCAT(s.skill_name ORDER BY s.skill_name SEPARATOR ', ')
+                   (SELECT string_agg(s.skill_name, ', ' ORDER BY s.skill_name)
                       FROM posting_skills s WHERE s.posting_id = p.id) AS skills,
-                   (SELECT GROUP_CONCAT(CONCAT(r.competency_code,
-                                               ' (', r.importance, ')')
-                                          ORDER BY r.importance, r.competency_code
-                                          SEPARATOR ', ')
+                   (SELECT string_agg(r.competency_code || ' (' || r.importance || ')',
+                                      ', ' ORDER BY r.importance, r.competency_code)
                       FROM internship_competency_requirements r
                      WHERE r.posting_id = p.id) AS competencies,
                    (SELECT COUNT(*) FROM applications a

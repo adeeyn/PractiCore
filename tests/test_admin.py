@@ -333,7 +333,7 @@ class TestPartnerCompanyCreation:
         assert "valid email" in response.get_data(as_text=True)
 
     def test_a_database_error_shows_a_readable_message(self):
-        import mysql.connector
+        from practicore.database import DatabaseError
         from practicore.repositories import admin_repository
 
         client = _client("admin")
@@ -341,8 +341,8 @@ class TestPartnerCompanyCreation:
                                "company_name_taken", return_value=False), \
              mock.patch.object(admin_repository.AdminRepository,
                                "create_partner_company",
-                               side_effect=mysql.connector.Error(
-                                   "Table 'practicore.employers' doesn't exist")):
+                               side_effect=DatabaseError(
+                                   'relation "practicore.employers" does not exist')):
             response = client.post("/admin/companies/new", data=self.form())
         body = response.get_data(as_text=True)
         assert "could not be created" in body
@@ -562,7 +562,7 @@ class TestSettings:
     def test_no_stack_trace_or_sql_escapes_to_the_page(self):
         body = self._post("' OR 1=1 --", "x", "x")
         assert "Traceback" not in body
-        assert "mysql.connector" not in body
+        assert "psycopg2" not in body
 
     def test_it_is_protected_from_students(self):
         assert _denied(_client("student"), "/admin/settings")

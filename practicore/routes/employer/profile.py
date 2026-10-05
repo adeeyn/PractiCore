@@ -1,7 +1,6 @@
 import os
 import uuid
 
-import mysql.connector
 from flask import (
     current_app,
     jsonify,
@@ -15,6 +14,7 @@ from flask.views import MethodView
 
 from . import employer_bp
 from .context import current_employer, split_skills
+from ...database import DatabaseError
 from ...initials import initials_for
 from ...repositories import EmployerRepository
 from ...services import AuthService
@@ -123,10 +123,11 @@ class CompanyProfileView(MethodView):
                 company_size=form["company_size"],
                 is_hiring=1 if request.form.get("is_hiring") else 0,
             )
-        except mysql.connector.IntegrityError:
-            # users.email carries a UNIQUE index, so a clash locks the company out
-            return redirect(url_for("employer.profile", error="taken"))
-        except mysql.connector.Error:
+        except DatabaseError as err:
+            # users.email carries a UNIQUE index, so a clash (Postgres 23505)
+            # locks the company out -- hence "taken"; anything else is "failed".
+            if getattr(err, "pgcode", "") == "23505":
+                return redirect(url_for("employer.profile", error="taken"))
             return redirect(url_for("employer.profile", error="failed"))
 
         # The login email changed with the profile, so keep the session truthful
@@ -194,7 +195,7 @@ class CompanyLogoView(MethodView):
         logo_path = LOGO_UPLOAD_PREFIX + filename
         try:
             self.employers.update_logo(employer["id"], logo_path)
-        except mysql.connector.Error:
+        except DatabaseError:
             # Migration 013 has not been applied, so the file is written but
             # unreachable. Drop it rather than leave an orphan behind.
             self.remove_file(logo_path)
@@ -217,7 +218,7 @@ class CompanyLogoView(MethodView):
 
         try:
             self.employers.update_logo(employer["id"], None)
-        except mysql.connector.Error:
+        except DatabaseError:
             return jsonify({"error": "Logo storage is not set up yet."}), 500
 
         self.remove_file(employer.get("logo_path"))

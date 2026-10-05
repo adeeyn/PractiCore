@@ -13,9 +13,8 @@ silently distort the competency profile.
 """
 
 
-import mysql.connector
+from .database import Database, upsert_sql
 
-from .database import Database
 from .services.research_bank import answer_key_distribution, balanced_rows, expected_track_counts
 
 # Columns written by the seeder. `question_code` needs migration 008; the rest
@@ -29,8 +28,12 @@ CORE_COLUMNS = [
 
 
 def _table_columns(cursor):
-    cursor.execute("SHOW COLUMNS FROM assessment_questions")
-    return {row["Field"] for row in cursor.fetchall()}
+    # Postgres catalog lookup (replaces MySQL SHOW COLUMNS).
+    cursor.execute("""
+        SELECT column_name FROM information_schema.columns
+        WHERE table_name = 'assessment_questions'
+    """)
+    return {row["column_name"] for row in cursor.fetchall()}
 
 
 def seed_questions(replace=True):
@@ -54,20 +57,26 @@ def seed_questions(replace=True):
             if has_code:
                 payload["question_code"] = row["question_code"]
                 # Upsert on the published code so a re-run refreshes in place.
+                # Postgres reports rowcount 1 for both insert and update, so
+                # updated rows are counted by checking existence first.
                 cursor.execute(
-                    """
-                    INSERT INTO assessment_questions
-                        (question_code, %s)
-                    VALUES (%%s, %s)
-                    ON DUPLICATE KEY UPDATE
-                        %s
-                    """ % (
-                        ", ".join(columns),
-                        ", ".join(["%s"] * len(columns)),
-                        ", ".join(f"{c} = VALUES({c})" for c in columns),
+                    "SELECT id FROM assessment_questions WHERE question_code = %s",
+                    (payload["question_code"],),
+                )
+                existed = cursor.fetchone() is not None
+                cursor.execute(
+                    upsert_sql(
+                        "assessment_questions",
+                        ["question_code"] + columns,
+                        ["question_code"],
+                        columns,
                     ),
                     (payload["question_code"],) + tuple(payload[c] for c in columns),
                 )
+                if existed:
+                    updated += 1
+                else:
+                    inserted += 1
             else:
                 placeholders = ", ".join(["%s"] * len(columns))
                 cursor.execute(
@@ -75,9 +84,7 @@ def seed_questions(replace=True):
                     f"VALUES ({placeholders})",
                     tuple(payload[c] for c in columns),
                 )
-            # rowcount is 1 for an insert, 2 for an update on a duplicate key.
-            inserted += 1 if cursor.rowcount == 1 else 0
-            updated += 1 if cursor.rowcount == 2 else 0
+                inserted += 1
 
     return {
         "items": len(rows),

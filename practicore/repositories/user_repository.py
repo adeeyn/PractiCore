@@ -1,4 +1,4 @@
-from ..database import Database
+from ..database import Database, DatabaseError, upsert_sql
 
 
 class UserRepository:
@@ -25,7 +25,7 @@ class UserRepository:
     def insert(cursor, email, username, password_hash, role):
         """Inserts using the caller's cursor so it can share a transaction. Returns the new id."""
         cursor.execute(
-            "INSERT INTO users (email, username, password_hash, role) VALUES (%s, %s, %s, %s)",
+            "INSERT INTO users (email, username, password_hash, role) VALUES (%s, %s, %s, %s) RETURNING id",
             (email, username, password_hash, role),
         )
         return cursor.lastrowid

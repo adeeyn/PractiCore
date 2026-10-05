@@ -1,4 +1,4 @@
-from ..database import Database
+from ..database import Database, DatabaseError, upsert_sql
 from ..initials import initials_for
 from .user_repository import UserRepository
 

@@ -1,7 +1,5 @@
-import mysql.connector
-
 from ..competency_scoring import strength_level_for
-from ..database import Database
+from ..database import Database, DatabaseError, upsert_sql
 
 
 class CompetencyRepository:
@@ -19,22 +17,27 @@ class CompetencyRepository:
         """Writes the competency list and the skill map. Idempotent."""
         with Database.cursor(commit=True) as cursor:
             for order, (code, (name, track, is_core, description)) in enumerate(competencies.items()):
-                cursor.execute("""
-                    INSERT INTO competencies (code, name, track, is_core, description, sort_order)
-                    VALUES (%s, %s, %s, %s, %s, %s)
-                    ON DUPLICATE KEY UPDATE
-                        name = VALUES(name), track = VALUES(track),
-                        is_core = VALUES(is_core), description = VALUES(description),
-                        sort_order = VALUES(sort_order)
-                """, (code, name, track, 1 if is_core else 0, description, order))
+                cursor.execute(
+                    upsert_sql(
+                        "competencies",
+                        ["code", "name", "track", "is_core", "description", "sort_order"],
+                        ["code"],
+                        ["name", "track", "is_core", "description", "sort_order"],
+                    ),
+                    (code, name, track, 1 if is_core else 0, description, order),
+                )
 
             for skill, mapping in skill_map.items():
                 for code, strength in mapping.items():
-                    cursor.execute("""
-                        INSERT INTO competency_skill_map (skill_key, competency_code, strength)
-                        VALUES (%s, %s, %s)
-                        ON DUPLICATE KEY UPDATE strength = VALUES(strength)
-                    """, (skill, code, strength))
+                    cursor.execute(
+                        upsert_sql(
+                            "competency_skill_map",
+                            ["skill_key", "competency_code", "strength"],
+                            ["skill_key", "competency_code"],
+                            ["strength"],
+                        ),
+                        (skill, code, strength),
+                    )
         return len(competencies), len(skill_map)
 
     def all_competencies(self):
@@ -191,7 +194,7 @@ class CompetencyRepository:
                     (student_id,),
                 )
                 return {row["question_id"]: row for row in cursor.fetchall()}
-        except mysql.connector.Error:
+        except DatabaseError:
             return {}
 
     def record_seen_questions(self, student_id, attempt_id, entries):
@@ -211,14 +214,14 @@ class CompetencyRepository:
                         INSERT INTO question_seen_history
                             (student_id, question_id, competency_code, attempt_id, times_seen)
                         VALUES (%s, %s, %s, %s, 1)
-                        ON DUPLICATE KEY UPDATE
-                            times_seen = times_seen + 1,
+                        ON CONFLICT (student_id, question_id) DO UPDATE SET
+                            times_seen = question_seen_history.times_seen + 1,
                             last_seen_at = CURRENT_TIMESTAMP,
-                            attempt_id = VALUES(attempt_id)
+                            attempt_id = EXCLUDED.attempt_id
                         """,
                         (student_id, entry["question_id"], entry["competency_code"], attempt_id),
                     )
-        except mysql.connector.Error:
+        except DatabaseError:
             # Exposure tracking must never cost a student their attempt.
             pass
 
@@ -238,15 +241,13 @@ class CompetencyRepository:
             for order, (q_id, outcome) in enumerate(ordered, start=1):
                 raw = answers.get("q_%s" % q_id) or answers.get(str(q_id))
                 cursor.execute(
-                    """
-                    INSERT INTO attempt_questions
-                        (attempt_id, question_id, display_order, selected_answer, is_correct)
-                    VALUES (%s, %s, %s, %s, %s)
-                    ON DUPLICATE KEY UPDATE
-                        display_order = VALUES(display_order),
-                        selected_answer = VALUES(selected_answer),
-                        is_correct = VALUES(is_correct)
-                    """,
+                    upsert_sql(
+                        "attempt_questions",
+                        ["attempt_id", "question_id", "display_order",
+                         "selected_answer", "is_correct"],
+                        ["attempt_id", "question_id"],
+                        ["display_order", "selected_answer", "is_correct"],
+                    ),
                     (attempt_id, q_id, order, raw or None,
                      1 if outcome.get("correct") else 0),
                 )
@@ -259,7 +260,7 @@ class CompetencyRepository:
         with Database.cursor() as cursor:
             cursor.execute("""
                 SELECT COALESCE(MAX(attempt_no), 0) AS n FROM assessment_attempts
-                WHERE student_id = %s AND posting_id <=> %s
+                WHERE student_id = %s AND posting_id IS NOT DISTINCT FROM %s
             """, (student_id, posting_id))
             return (cursor.fetchone() or {"n": 0})["n"] + 1
 
@@ -277,6 +278,7 @@ class CompetencyRepository:
                     (student_id, posting_id, attempt_no, total_questions, total_correct,
                      overall_percentage, competency_level, submitted_at)
                 VALUES (%s, %s, %s, %s, %s, %s, %s, NOW())
+                RETURNING id
             """, (student_id, posting_id, attempt_no, results["total_questions"],
                   results["total_correct"], results["overall_percentage"],
                   results["competency_level"]))
@@ -294,18 +296,21 @@ class CompetencyRepository:
                 # The profile keeps the LATEST score and the best ever seen, so a
                 # bad retake does not erase demonstrated ability and a good
                 # retake is not thrown away either.
-                cursor.execute("""
+                cursor.execute(
+                    """
                     INSERT INTO student_competency_scores
                         (student_id, competency_code, score_percent, attempts_count,
                          best_percent, last_attempt_id)
                     VALUES (%s, %s, %s, 1, %s, %s)
-                    ON DUPLICATE KEY UPDATE
-                        score_percent = VALUES(score_percent),
-                        attempts_count = attempts_count + 1,
-                        best_percent = GREATEST(best_percent, VALUES(best_percent)),
-                        last_attempt_id = VALUES(last_attempt_id)
-                """, (student_id, code, stats["score_percent"],
-                      stats["score_percent"], attempt_id))
+                    ON CONFLICT (student_id, competency_code) DO UPDATE SET
+                        score_percent = EXCLUDED.score_percent,
+                        attempts_count = student_competency_scores.attempts_count + 1,
+                        best_percent = GREATEST(student_competency_scores.best_percent, EXCLUDED.best_percent),
+                        last_attempt_id = EXCLUDED.last_attempt_id
+                    """,
+                    (student_id, code, stats["score_percent"],
+                     stats["score_percent"], attempt_id),
+                )
             return attempt_id
 
     # ---------- Profile ----------
@@ -468,19 +473,19 @@ class CompetencyRepository:
         """Stores what the resume claims, separately from any score."""
         with Database.cursor(commit=True) as cursor:
             for code, ev in evidence_map.items():
-                cursor.execute("""
-                    INSERT INTO resume_competency_evidence
-                        (student_id, competency_code, evidence_skills, evidence_count,
-                         has_project, has_experience)
-                    VALUES (%s, %s, %s, %s, %s, %s)
-                    ON DUPLICATE KEY UPDATE
-                        evidence_skills = VALUES(evidence_skills),
-                        evidence_count = VALUES(evidence_count),
-                        has_project = VALUES(has_project),
-                        has_experience = VALUES(has_experience)
-                """, (student_id, code, ", ".join(ev["skills"]), len(ev["skills"]),
-                      1 if ev.get("has_project") else 0,
-                      1 if ev.get("has_experience") else 0))
+                cursor.execute(
+                    upsert_sql(
+                        "resume_competency_evidence",
+                        ["student_id", "competency_code", "evidence_skills",
+                         "evidence_count", "has_project", "has_experience"],
+                        ["student_id", "competency_code"],
+                        ["evidence_skills", "evidence_count",
+                         "has_project", "has_experience"],
+                    ),
+                    (student_id, code, ", ".join(ev["skills"]), len(ev["skills"]),
+                     1 if ev.get("has_project") else 0,
+                     1 if ev.get("has_experience") else 0),
+                )
 
     # ---------- Internship requirements ----------
 
@@ -498,31 +503,30 @@ class CompetencyRepository:
     def save_posting_requirements(self, posting_id, mapping):
         with Database.cursor(commit=True) as cursor:
             for code, meta in mapping.items():
-                cursor.execute("""
-                    INSERT INTO internship_competency_requirements
-                        (posting_id, competency_code, importance, required_percent)
-                    VALUES (%s, %s, %s, %s)
-                    ON DUPLICATE KEY UPDATE
-                        importance = VALUES(importance),
-                        required_percent = VALUES(required_percent)
-                """, (posting_id, code, meta.get("importance", "preferred"),
-                      meta.get("required_percent", 60)))
+                cursor.execute(
+                    upsert_sql(
+                        "internship_competency_requirements",
+                        ["posting_id", "competency_code", "importance", "required_percent"],
+                        ["posting_id", "competency_code"],
+                        ["importance", "required_percent"],
+                    ),
+                    (posting_id, code, meta.get("importance", "preferred"),
+                     meta.get("required_percent", 60)),
+                )
 
     def save_compatibility(self, student_id, posting_id, result):
         with Database.cursor(commit=True) as cursor:
-            cursor.execute("""
-                INSERT INTO compatibility_scores
-                    (student_id, posting_id, assessment_score, evidence_score, total_score,
-                     competencies_met, competencies_total, detail)
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
-                ON DUPLICATE KEY UPDATE
-                    assessment_score = VALUES(assessment_score),
-                    evidence_score = VALUES(evidence_score),
-                    total_score = VALUES(total_score),
-                    competencies_met = VALUES(competencies_met),
-                    competencies_total = VALUES(competencies_total),
-                    detail = VALUES(detail)
-                """, (student_id, posting_id, result["assessment_score"],
-                      result["evidence_score"], result["total_score"],
-                      result["competencies_met"], result["competencies_total"],
-                      result.get("detail_json")))
+            cursor.execute(
+                upsert_sql(
+                    "compatibility_scores",
+                    ["student_id", "posting_id", "assessment_score", "evidence_score",
+                     "total_score", "competencies_met", "competencies_total", "detail"],
+                    ["student_id", "posting_id"],
+                    ["assessment_score", "evidence_score", "total_score",
+                     "competencies_met", "competencies_total", "detail"],
+                ),
+                (student_id, posting_id, result["assessment_score"],
+                 result["evidence_score"], result["total_score"],
+                 result["competencies_met"], result["competencies_total"],
+                 result.get("detail_json")),
+            )

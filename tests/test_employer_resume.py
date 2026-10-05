@@ -68,15 +68,22 @@ def _signed_in_client(role="employer"):
 
 
 def _patches(**overrides):
-    """Context managers for the applicants route module.
+    """Context managers for the applicants route module + its context processor.
 
     Keys: employer (logged-in company), application (find_for_employer result),
     applicants (for_employer result), has_resume (has_file result).
+
+    The context processor (context.current_employer) is patched as well, so the
+    page renders without touching a database - the tests must not depend on
+    which database driver happens to be installed or reachable.
     """
     from practicore.routes.employer import applicants as applicants_mod
+    from practicore.routes.employer import context as context_mod
 
     return [
         mock.patch.object(applicants_mod, "current_employer",
+                          return_value=dict(overrides.get("employer") or EMPLOYER)),
+        mock.patch.object(context_mod, "current_employer",
                           return_value=dict(overrides.get("employer") or EMPLOYER)),
         mock.patch.object(applicants_mod.ApplicationRepository, "find_for_employer",
                           return_value=overrides.get("application", dict(APPLICANT))),
@@ -105,7 +112,7 @@ class TestResumeAuthorisation:
 
     def test_another_employers_application_is_not_served(self):
         client = _signed_in_client()
-        employer_patch, find_patch, _, _ = _patches(application=None)
+        employer_patch, _ctx_patch, find_patch, _, _ = _patches(application=None)
         with employer_patch, find_patch, \
                 mock.patch.object(ResumeRepository, "get_file") as get_file:
             response = client.get(RESUME_URL)
@@ -119,7 +126,7 @@ class TestResumeStreaming:
 
     def test_the_stored_file_is_streamed_to_the_employer(self):
         client = _signed_in_client()
-        employer_patch, find_patch, _, _ = _patches()
+        employer_patch, _ctx_patch, find_patch, _, _ = _patches()
         with employer_patch, find_patch, \
                 mock.patch.object(ResumeRepository, "get_file",
                                   return_value=dict(RESUME)) as get_file:
@@ -133,7 +140,7 @@ class TestResumeStreaming:
 
     def test_a_student_without_a_resume_gets_a_404(self):
         client = _signed_in_client()
-        employer_patch, find_patch, _, _ = _patches()
+        employer_patch, _ctx_patch, find_patch, _, _ = _patches()
         with employer_patch, find_patch, \
                 mock.patch.object(ResumeRepository, "get_file", return_value=None):
             response = client.get(RESUME_URL)
@@ -146,10 +153,10 @@ class TestViewResumeButton:
 
     def _page(self, has_resume):
         client = _signed_in_client()
-        employer_patch, find_patch, list_patch, has_patch = _patches(
+        employer_patch, ctx_patch, find_patch, list_patch, has_patch = _patches(
             has_resume=has_resume
         )
-        with employer_patch, find_patch, list_patch, has_patch:
+        with employer_patch, ctx_patch, find_patch, list_patch, has_patch:
             return client.get("/employer/applicants/manage/42").get_data(as_text=True)
 
     def test_the_button_is_rendered_when_a_resume_exists(self):

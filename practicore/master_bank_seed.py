@@ -16,7 +16,7 @@ The bank is ADDITIVE to the taxonomy rather than a replacement: `seed_competenci
 still owns the competencies and parallel forms, and this module only writes questions.
 """
 
-from .database import Database
+from .database import Database, upsert_sql
 from .services.master_question_bank import (
     answer_key_distribution,
     balanced_rows,
@@ -47,8 +47,12 @@ TRACK_BY_COMPETENCY = {
 
 
 def _table_columns(cursor):
-    cursor.execute("SHOW COLUMNS FROM assessment_questions")
-    return {row["Field"] for row in cursor.fetchall()}
+    # Postgres: introspect via the information schema (no SHOW COLUMNS).
+    cursor.execute(
+        "SELECT column_name FROM information_schema.columns "
+        "WHERE table_name = 'assessment_questions'"
+    )
+    return {row["column_name"] for row in cursor.fetchall()}
 
 
 def _to_row(item):
@@ -88,22 +92,17 @@ def _write_corrections(cursor, rows):
     now grades against.
     """
     written = 0
+    sql = upsert_sql(
+        "question_key_corrections",
+        ["question_code", "recorded_option", "applied_option",
+         "recorded_option_text", "applied_option_text", "explanation", "rule"],
+        ["question_code"],
+        ["recorded_option", "applied_option", "recorded_option_text",
+         "applied_option_text", "explanation", "rule"],
+    )
     for record in corrections():
         cursor.execute(
-            """
-            INSERT INTO question_key_corrections
-                (question_code, recorded_option, applied_option, recorded_option_text,
-                 applied_option_text, explanation, rule)
-            VALUES (%s, %s, %s, %s, %s, %s, %s)
-            ON DUPLICATE KEY UPDATE
-                recorded_option = VALUES(recorded_option),
-                applied_option = VALUES(applied_option),
-                recorded_option_text = VALUES(recorded_option_text),
-                applied_option_text = VALUES(applied_option_text),
-                explanation = VALUES(explanation),
-                rule = VALUES(rule),
-                corrected_at = CURRENT_TIMESTAMP
-            """,
+            sql + ", corrected_at = CURRENT_TIMESTAMP",
             (record["question_code"], record["recorded_option"], record["applied_option"],
              record["recorded_option_text"], record["applied_option_text"],
              record["explanation"], record["rule"]),
@@ -130,22 +129,28 @@ def seed_master_bank():
                 "before seeding the master bank."
             )
 
-        assignments = ", ".join("%s = VALUES(%s)" % (c, c) for c in columns)
-        sql = (
-            "INSERT INTO assessment_questions (question_code, %s) VALUES (%%s, %s) "
-            "ON DUPLICATE KEY UPDATE %s"
-            % (", ".join(columns), ", ".join(["%s"] * len(columns)), assignments)
+        sql = upsert_sql(
+            "assessment_questions",
+            ["question_code"] + list(columns),
+            ["question_code"],
+            list(columns),
         )
 
+        cursor.execute("SELECT question_code FROM assessment_questions")
+        counts = {
+            row["question_code"]
+            for row in cursor.fetchall()
+            if row["question_code"]
+        }
         for row in rows:
             cursor.execute(sql, (row["question_code"],) + tuple(row[c] for c in columns))
-            # MySQL reports 1 for an insert, 2 for an updated duplicate key.
-            if cursor.rowcount == 1:
-                inserted += 1
-            elif cursor.rowcount == 2:
+            # Postgres reports rowcount 1 for both insert and update, so the
+            # pre-run set decides: an existing code is an update.
+            if row["question_code"] in counts:
                 updated += 1
             else:
-                skipped += 1
+                inserted += 1
+                counts.add(row["question_code"])
 
         corrected = _write_corrections(cursor, rows)
 

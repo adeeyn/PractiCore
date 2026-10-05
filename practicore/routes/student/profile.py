@@ -1,12 +1,12 @@
 import os
 import uuid
 
-import mysql.connector
 from flask import current_app, jsonify, redirect, render_template, request, session, url_for
 from flask.views import MethodView
 
 from . import student_bp
 from .context import current_student
+from ...database import DatabaseError
 from ...repositories import StudentRepository
 
 # Query-string codes for the profile redirects (same idiom as auth.login's ?failed=1)
@@ -70,10 +70,11 @@ class StudentProfileView(MethodView):
                 year_level=form["year"],
                 course=form["course"],
             )
-        except mysql.connector.IntegrityError:
-            # students.email and users.email both carry a UNIQUE index
-            return redirect(url_for("student.profile", error="taken"))
-        except mysql.connector.Error:
+        except DatabaseError as err:
+            # students.email and users.email both carry a UNIQUE index, so a
+            # clash (Postgres 23505) means "taken"; anything else is "failed".
+            if getattr(err, "pgcode", "") == "23505":
+                return redirect(url_for("student.profile", error="taken"))
             return redirect(url_for("student.profile", error="failed"))
 
         # The login email changed with the profile, so keep the session truthful

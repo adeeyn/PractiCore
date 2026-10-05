@@ -1,16 +1,20 @@
 # PractiCore runtime dependencies.
 # Install with: pip install -r requirements.txt
-# then download the NLP model once: python -m spacy download en_core_web_sm
+#
+# The spaCy NLP model is pulled straight from its release wheel, so a fresh
+# install (and the Vercel build) can parse resumes with no extra step.
 
 Flask>=3.0
-mysql-connector-python>=8.0
-spacy>=3.7
+psycopg2-binary>=2.9        # Supabase/Postgres driver (practicore/database.py)
+spacy>=3.8,<4.0
 pdfplumber>=0.10
 python-docx>=1.1
 
-# Ranking model (Random Forest). The app still runs without these: it falls
-# back to the weighted content-based scorer and says so in the employer UI.
-# They are only required to TRAIN a model (flask --app app retrain-ranking).
-scikit-learn>=1.3
-numpy>=1.24
-joblib>=1.3
+# en_core_web_sm 3.8.0 (requires spacy>=3.8,<3.9): PERSON name extraction.
+en-core-web-sm @ https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.8.0/en_core_web_sm-3.8.0-py3-none-any.whl
+
+# Training-only dependencies (Random Forest ranking model) live in
+# requirements-train.txt: scikit-learn + scipy + numpy + joblib add ~170 MB and
+# keeping them out is what fits the deployment under Vercel's 500 MB Python
+# function limit. The app runs without them - MatchingService falls back to the
+# weighted content-based scorer and the employer Reports page says so.

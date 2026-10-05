@@ -27,7 +27,7 @@ class Config:
         "pdf": "application/pdf",
         "docx": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
     }
-    RESUME_MAX_BYTES = 5 * 1024 * 1024  # 5 MB; MySQL max_allowed_packet must be larger
+    RESUME_MAX_BYTES = 5 * 1024 * 1024  # 5 MB app-level upload cap
     MAX_CONTENT_LENGTH = 16 * 1024 * 1024  # hard limit for any request
 
     # Avatar uploads (written to static/uploads/avatars and served by Flask)
@@ -52,7 +52,8 @@ class Config:
     LOGO_MAX_BYTES = 3 * 1024 * 1024  # 3 MB
     LOGO_UPLOAD_DIR = os.path.join(STATIC_FOLDER, "uploads", "logos")
 
-    # MySQL Configuration
+    # Postgres configuration (Supabase). Discrete vars or DATABASE_URL;
+    # see practicore/database.py for the priority order.
     DB_CONFIG = {
         "host": "127.0.0.1",
         "user": "root",
