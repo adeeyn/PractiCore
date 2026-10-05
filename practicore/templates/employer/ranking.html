@@ -17,10 +17,11 @@
             {% if loop.first %}<i data-lucide="star"></i>{% else %}{{ loop.index }}{% endif %}
         </span>
         {{ ui.person(applicant, applicant.position) }}
-        <div class="rank-bar-track">
-            <div class="rank-bar {{ ui.score_class(applicant.match_score) }}" style="width: {{ applicant.match_score }}%"></div>
-        </div>
-        {{ ui.score(applicant.match_score) }}
+        {# No blended bar: the two separated meters come from the shared
+           match_components macro, so this page, the applicant list and the detail
+           panel all render the same numbers identically. The rank itself still
+           comes from the internal blend. #}
+        {{ ui.match_components(applicant) }}
     </a>
     {% else %}
     <div class="empty-state">No candidates to rank yet.</div>

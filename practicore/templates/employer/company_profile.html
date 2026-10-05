@@ -18,19 +18,30 @@
 
 <form class="card card-pad" method="POST">
     <div class="logo-row">
-        <div class="avatar avatar-xl avatar-brand">{{ company.logo_text }}</div>
+        {% if company.logo_path %}
+        <div class="logo-preview" id="company-logo">
+            <img src="{{ url_for('static', filename=company.logo_path) }}" alt="{{ company.name }} logo">
+        </div>
+        {% else %}
+        <div class="avatar avatar-xl avatar-brand" id="company-logo">{{ company.logo_text }}</div>
+        {% endif %}
         <div>
             <span class="logo-row-label">Company Logo</span>
-            <button type="button" class="btn btn-outline btn-sm" data-demo-action="Logo upload is not connected yet.">
-                <i data-lucide="upload"></i> Change Logo
-            </button>
+            <div class="logo-actions">
+                <button type="button" class="btn btn-outline btn-sm" id="logo-pick"
+                        data-logo-endpoint="{{ url_for('employer.profile_logo') }}">
+                    <i data-lucide="upload"></i> Change Logo
+                </button>
+                {% if company.logo_path %}
+                <button type="button" class="btn btn-outline btn-sm" id="logo-remove">
+                    <i data-lucide="trash-2"></i> Remove
+                </button>
+                {% endif %}
+                <input type="file" id="logo-input" accept="image/png,image/jpeg,image/webp" hidden>
+            </div>
+            <span class="logo-status" id="logo-status" role="status" aria-live="polite"></span>
+            <p class="form-hint">PNG, JPG or WEBP, up to 3 MB. Without a logo we use the initials of your company name.</p>
         </div>
-    </div>
-
-    <div class="form-group">
-        <label class="form-label" for="logo_text">Logo Text (max 10 characters)</label>
-        <input class="form-control form-control-sm" type="text" id="logo_text" name="logo_text"
-               maxlength="10" value="{{ company.logo_text }}" placeholder="e.g. TS">
     </div>
 
     <div class="form-group">

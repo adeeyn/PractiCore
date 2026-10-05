@@ -66,9 +66,11 @@ class ApplyView(MethodView):
             return redirect(url_for("student.application", error="missing"))
 
         # Same shared scorer the recommendation page and employer ranking use, so
-        # the stored match_score is exactly the number everyone else saw.
+        # the stored match_score is exactly the number everyone else saw. The two
+        # component percentages travel with it, so the employer can be shown which
+        # half of the evidence is actually carrying the match.
         matcher = current_app.extensions.get("matching_service")
-        match_score = matcher.score(
+        components = matcher.score_components(
             {
                 "skills": student_skills,
                 "domain_scores": self.assessments.for_student(student["id"]),
@@ -77,7 +79,12 @@ class ApplyView(MethodView):
             assessment_percentage=AssessmentService.score_percentage(student),
         )
 
-        if not self.applications.apply(student["id"], posting_id, match_score):
+        if not self.applications.apply(
+            student["id"], posting_id,
+            components["match_score"],
+            resume_match_score=components["resume_match_percent"],
+            assessment_match_score=components["assessment_match_percent"],
+        ):
             return redirect(url_for("student.application", error="duplicate"))
 
         return redirect(url_for("student.application", applied=1))

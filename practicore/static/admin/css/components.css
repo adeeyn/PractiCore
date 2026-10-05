@@ -1,0 +1,203 @@
+/* ==========================================
+   ADMIN COMPONENTS -- buttons, badges, panels, forms, flashes
+   ========================================== */
+
+/* ---------- Buttons ---------- */
+
+.adm-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 9px 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--card);
+  color: var(--text-body);
+  font-size: 0.86rem;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  font-family: inherit;
+  white-space: nowrap;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+.adm-btn:hover { background: var(--border-soft); }
+.adm-btn svg { width: 16px; height: 16px; }
+.adm-btn-primary { background: var(--primary); border-color: var(--primary); color: #fff; }
+.adm-btn-primary:hover { background: var(--primary-hover); border-color: var(--primary-hover); }
+.adm-btn-danger { background: var(--red); border-color: var(--red); color: #fff; }
+.adm-btn-danger:hover { background: #b91c1c; border-color: #b91c1c; }
+.adm-btn-ghost { background: transparent; border-color: transparent; color: var(--text-muted); }
+.adm-btn-ghost:hover { background: var(--border-soft); color: var(--text-body); }
+.adm-btn-sm { padding: 5px 11px; font-size: 0.79rem; }
+
+/* Icon-only actions used in table rows */
+.adm-btn-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border-radius: 8px;
+  color: var(--text-muted);
+  background: transparent;
+  border: 1px solid transparent;
+  cursor: pointer;
+}
+.adm-btn-icon:hover { background: var(--border-soft); color: var(--primary-hover); }
+.adm-btn-icon svg { width: 16px; height: 16px; }
+.adm-btn-icon.is-danger:hover { background: var(--red-soft); color: var(--red); }
+
+/* ---------- Badges ---------- */
+
+.adm-badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 0.74rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.adm-badge-ok { background: var(--green-soft); color: var(--green); }
+.adm-badge-off { background: #f1f5f9; color: var(--text-muted); }
+.adm-badge-warn { background: var(--amber-soft); color: var(--amber); }
+.adm-badge-danger { background: var(--red-soft); color: var(--red); }
+.adm-badge-role-admin { background: var(--purple-soft); color: var(--purple); }
+.adm-badge-role-employer { background: var(--green-soft); color: var(--green); }
+.adm-badge-role-student { background: var(--blue-soft); color: var(--blue); }
+
+/* ---------- Panels ---------- */
+
+.adm-panel-grid {
+  display: grid;
+  gap: 20px;
+  grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
+}
+.adm-panel {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+.adm-panel-narrow { max-width: 640px; padding: 4px 0; }
+.adm-panel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 15px 18px;
+  border-bottom: 1px solid var(--border-soft);
+}
+.adm-panel-head h2 { margin: 0; font-size: 0.98rem; color: var(--text-dark); font-weight: 600; }
+.adm-panel-head a { font-size: 0.82rem; color: var(--primary-hover); text-decoration: none; font-weight: 600; }
+.adm-panel-head a:hover { text-decoration: underline; }
+
+/* ---------- Flash messages ---------- */
+
+.adm-flashes {
+  margin: 16px 28px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.adm-flash {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  border-radius: var(--radius-sm);
+  font-size: 0.88rem;
+  font-weight: 500;
+  border: 1px solid transparent;
+}
+.adm-flash svg { width: 18px; height: 18px; flex: 0 0 18px; }
+.adm-flash-success { background: var(--green-soft); color: #065f46; border-color: #a7f3d0; }
+.adm-flash-error { background: var(--red-soft); color: #991b1b; border-color: #fecaca; }
+.adm-flash-message { background: var(--amber-soft); color: #92400e; border-color: #fde68a; }
+
+/* ---------- Forms ---------- */
+
+.adm-form { display: flex; flex-direction: column; gap: 18px; }
+.adm-form-grid {
+  display: grid;
+  gap: 16px;
+  padding: 18px;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+}
+.adm-field { display: flex; flex-direction: column; gap: 6px; }
+.adm-field > span { font-size: 0.82rem; font-weight: 600; color: var(--text-body); }
+.adm-field em { color: var(--red); font-style: normal; }
+.adm-field input,
+.adm-field textarea,
+.adm-field select {
+  padding: 9px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 0.88rem;
+  font-family: inherit;
+  background: var(--card);
+  color: var(--text-body);
+  width: 100%;
+}
+.adm-field textarea { resize: vertical; min-height: 62px; }
+.adm-field input:focus,
+.adm-field textarea:focus,
+.adm-field select:focus,
+.adm-search input:focus,
+.adm-select:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-soft);
+}
+.adm-span-2 { grid-column: 1 / -1; }
+.adm-check { display: flex; align-items: center; gap: 9px; font-size: 0.86rem; }
+.adm-check input { width: 16px; height: 16px; accent-color: var(--primary); }
+.adm-form-actions { display: flex; gap: 10px; justify-content: flex-end; }
+
+.adm-pw { position: relative; display: flex; }
+.adm-pw input { padding-right: 42px; }
+.adm-pw-toggle {
+  position: absolute;
+  right: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: 0;
+  cursor: pointer;
+  padding: 6px;
+  color: var(--text-faint);
+}
+.adm-pw-toggle:hover { color: var(--text-body); }
+.adm-pw-toggle svg { width: 17px; height: 17px; }
+
+/* ---------- Chips ---------- */
+
+.adm-chips { display: flex; flex-wrap: wrap; gap: 6px; padding: 0 18px; }
+.adm-chip {
+  background: var(--border-soft);
+  color: var(--text-body);
+  padding: 4px 11px;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  border: 1px solid var(--border);
+}
+.adm-chip-comp { background: var(--primary-soft); border-color: var(--primary-border); color: var(--primary-hover); }
+
+/* ---------- Coverage pips ---------- */
+
+.adm-cover { display: inline-flex; gap: 4px; }
+.adm-cover-pip { width: 20px; height: 7px; border-radius: 3px; background: #e2e8f0; }
+.adm-cover-pip.on { background: var(--green); }
+
+/* ---------- Notes ---------- */
+
+.adm-note { padding: 0 18px; font-size: 0.79rem; color: var(--text-muted); line-height: 1.55; }
+.adm-note-block {
+  margin: 18px;
+  padding: 14px 16px;
+  background: var(--border-soft);
+  border-radius: var(--radius-sm);
+  border-left: 3px solid var(--primary);
+}

@@ -1,0 +1,140 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Add Partner Company{% endblock %}
+
+{% block content %}
+<div class="adm-page-head">
+  <div>
+    <h1>Partner Company Account Creation</h1>
+    <p class="adm-sub">Creates the company and its employer login in one step</p>
+  </div>
+  <a href="{{ url_for('admin.companies') }}" class="adm-btn adm-btn-ghost">
+    <i data-lucide="arrow-left"></i> Back
+  </a>
+</div>
+
+{% if error %}
+<div class="adm-flash adm-flash-error"><i data-lucide="alert-circle"></i><span>{{ error }}</span></div>
+{% endif %}
+
+{# Client-side checks mirror the server rules. The server still validates
+   everything: this only saves the administrator a round trip. #}
+<form method="post" action="{{ url_for('admin.create_company') }}" class="adm-form" novalidate>
+  {% set v = form.get %}
+  <section class="adm-panel">
+    <header class="adm-panel-head"><h2>Company Information</h2></header>
+    <div class="adm-form-grid">
+      <label class="adm-field adm-span-2">
+        <span>Company Name <em>*</em></span>
+        <input type="text" name="company_name" required maxlength="150"
+               value="{{ v('company_name', '') }}" placeholder="e.g. AgileDev Studios">
+      </label>
+      <label class="adm-field">
+        <span>Location <em>*</em></span>
+        <input type="text" name="location" required maxlength="100"
+               value="{{ v('location', '') }}" placeholder="City, Region">
+      </label>
+      <label class="adm-field">
+        <span>Industry</span>
+        <input type="text" name="industry" maxlength="120" value="{{ v('industry', '') }}">
+      </label>
+      <label class="adm-field">
+        <span>Website</span>
+        <input type="text" name="website" maxlength="150" value="{{ v('website', '') }}"
+               placeholder="https://">
+      </label>
+      <label class="adm-field">
+        <span>Company Size</span>
+        <input type="text" name="company_size" maxlength="50" value="{{ v('company_size', '') }}"
+               placeholder="e.g. 50-200 employees">
+      </label>
+      <label class="adm-field adm-span-2">
+        <span>Company Description</span>
+        <textarea name="about" rows="3"
+                  placeholder="What the company does and the kind of interns it takes">{{ v('about', '') }}</textarea>
+      </label>
+      <label class="adm-field adm-span-2">
+        <span>Internship Requirements</span>
+        <textarea name="required_skills" rows="2"
+                  placeholder="e.g. HTML, CSS, JavaScript, Git">{{ v('required_skills', '') }}</textarea>
+      </label>
+    </div>
+  </section>
+
+  <section class="adm-panel">
+    <header class="adm-panel-head"><h2>Contact Person</h2></header>
+    <div class="adm-form-grid">
+      <label class="adm-field">
+        <span>Contact Name <em>*</em></span>
+        <input type="text" name="contact_name" required maxlength="100"
+               value="{{ v('contact_name', '') }}">
+      </label>
+      <label class="adm-field">
+        <span>Contact Position</span>
+        <input type="text" name="contact_position" maxlength="100"
+               value="{{ v('contact_position', '') }}" placeholder="e.g. HR Manager">
+      </label>
+      <label class="adm-field">
+        <span>Contact Number</span>
+        <input type="tel" name="contact_phone" maxlength="30"
+               value="{{ v('contact_phone', '') }}" placeholder="+63 917 000 0000">
+      </label>
+    </div>
+  </section>
+
+  <section class="adm-panel">
+    <header class="adm-panel-head"><h2>Employer Account</h2></header>
+    <div class="adm-form-grid">
+      <label class="adm-field">
+        <span>Email <em>*</em></span>
+        <input type="email" name="email" required maxlength="120"
+               value="{{ v('email', '') }}" placeholder="hr@company.com">
+      </label>
+      <label class="adm-field">
+        <span>Password <em>*</em></span>
+        <input type="password" name="password" required minlength="6" placeholder="At least 6 characters">
+      </label>
+      <label class="adm-field">
+        <span>Confirm Password</span>
+        <input type="password" name="confirm_password" minlength="6">
+      </label>
+      <label class="adm-check adm-span-2">
+        <input type="checkbox" name="is_hiring" value="1" {% if v('is_hiring') %}checked{% endif %}>
+        <span>This company is currently accepting interns</span>
+      </label>
+    </div>
+  </section>
+
+  <div class="adm-form-actions">
+    <a href="{{ url_for('admin.companies') }}" class="adm-btn adm-btn-ghost">Cancel</a>
+    <button type="submit" class="adm-btn adm-btn-primary">
+      <i data-lucide="check"></i> Create Partner Company
+    </button>
+  </div>
+</form>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  // Password visibility toggle.
+  document.querySelectorAll('input[type="password"]').forEach(function (input) {
+    var wrap = document.createElement('div');
+    wrap.className = 'adm-pw';
+    input.parentNode.insertBefore(wrap, input);
+    wrap.appendChild(input);
+    var btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'adm-pw-toggle';
+    btn.setAttribute('aria-label', 'Show password');
+    btn.innerHTML = '<i data-lucide="eye"></i>';
+    btn.addEventListener('click', function () {
+      var show = input.type === 'password';
+      input.type = show ? 'text' : 'password';
+      btn.setAttribute('aria-label', show ? 'Hide password' : 'Show password');
+      btn.innerHTML = '<i data-lucide="' + (show ? 'eye-off' : 'eye') + '"></i>';
+      if (window.lucide) { window.lucide.createIcons(); }
+    });
+    wrap.appendChild(btn);
+  });
+</script>
+{% endblock %}

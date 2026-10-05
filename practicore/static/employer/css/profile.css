@@ -16,6 +16,55 @@
   font-weight: 600;
 }
 
+/* ---------- Uploaded company logo ----------
+   Same 56px box as the .avatar-xl initials, so swapping between the two never
+   shifts the row. The image is contained rather than cropped: a company logo is
+   usually not square, and cutting the edges off would cut the wordmark. */
+.logo-preview {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 56px;
+  height: 56px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: #fff;
+}
+
+.logo-preview img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+/* A company with no logo starts as the .avatar-brand initials box, which has a
+   coloured background. Once an image replaces the initials on that same element,
+   the tint has to go or it shows through around a transparent logo. */
+.logo-preview.has-image,
+.has-image.avatar-brand {
+  background: #fff;
+}
+
+.logo-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.logo-status {
+  display: block;
+  min-height: 16px;
+  margin-top: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--green);
+}
+
+.logo-status.error {
+  color: var(--red);
+}
+
 .form-control-sm {
   max-width: 180px;
 }

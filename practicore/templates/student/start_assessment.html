@@ -37,6 +37,32 @@
       <li>You <strong>cannot go back</strong> to a previous question. Unanswered questions are scored as incorrect.</li>
       <li>Maximum total time: about {{ (total_seconds / 60)|round|int }} minutes.</li>
     </ul>
+
+    {# Explains the selection: a competency the student cannot see the reason
+       for is an assessment they do not understand the purpose of. #}
+    <h4 style="margin-top:1.5rem;">Why you are seeing these sections</h4>
+    <p class="subtitle" style="font-size:.9rem;">
+      Your assessment is built from a small core, your resume, and
+      {% if target_posting %}the <strong>{{ target_posting.title }}</strong> posting{% else %}
+      the internships you are targeting{% endif %}.
+      A skill on your resume is treated as a <strong>claim to verify</strong>, never as proof.
+    </p>
+    <div class="role-grid" style="display:flex; flex-direction:column; gap:.4rem; margin-top:.75rem; text-align:left;">
+      {% for code, meta in per_competency.items() %}
+      <div style="font-size:.85rem; padding:.4rem .6rem; background:rgba(255,255,255,.05); border-radius:.4rem;">
+        <strong>{{ meta.name }}</strong>
+        <span style="opacity:.7;"> — included because: {{ meta.triggered_by|join(', ') }}</span>
+        {% if meta.is_core %}<span class="track-tag" style="margin-left:.3rem;">core</span>{% endif %}
+      </div>
+      {% endfor %}
+    </div>
+    {% if shortfall %}
+    <p class="subtitle" style="font-size:.8rem; margin-top:.75rem; opacity:.8;">
+      {{ shortfall|length }} selected competenc{{ 'y' if shortfall|length == 1 else 'ies' }}
+      could not be included because no questions are published yet.
+    </p>
+    {% endif %}
+
     <button type="button" class="start-btn-primary" id="start-quiz-btn">Start Assessment</button>
   </div>
 
@@ -54,15 +80,14 @@
     </div>
 
     {% set global_counter = namespace(value=1) %}
-    {% for track_name, track_questions in grouped_questions.items() %}
-      {% for q in track_questions %}
+    {% for section in sections %}
+      {% for q in section.questions %}
       <div class="question-block quiz-question" id="block-q-{{ q.id }}" data-qid="{{ q.id }}"
            data-time-limit="{{ q.time_limit }}" hidden>
         <div class="q-meta">
           <div class="q-tags">
-            <span class="track-tag">{{ track_name }}</span>
+            <span class="track-tag">{{ section.name }}</span>
             <span class="difficulty-badge {{ q.difficulty }}">{{ q.difficulty|capitalize }} · {{ q.time_limit }}s</span>
-            {% if q.target_role %}<span class="sec-badge role-badge">🎯 {{ q.target_role }}</span>{% endif %}
             {% if q.standard_ref %}<span class="q-reference">📜 {{ q.standard_ref }}</span>{% endif %}
           </div>
           <span class="q-number">Question {{ global_counter.value }} of {{ total_questions }}</span>

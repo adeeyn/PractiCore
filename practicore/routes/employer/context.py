@@ -1,6 +1,7 @@
 from flask import g, session
 
 from . import employer_bp
+from ...initials import initials_for
 from ...repositories import EmployerRepository
 
 
@@ -30,8 +31,10 @@ def inject_current_employer():
 
     # Handy derived values so templates do not repeat the same fallbacks
     employer.setdefault("required_skill_list", split_skills(employer.get("required_skills")))
+    # The initials are derived from the company name, so the topbar chip and the
+    # profile page always show the same two letters for the same company.
+    employer.setdefault("logo_text", initials_for(employer.get("company_name")))
     employer.setdefault("display_name", employer.get("contact_name")
-                        or employer.get("company_logo_text")
                         or employer.get("company_name") or "Employer")
     employer.setdefault("display_role", employer.get("contact_position") or "Hiring Manager")
 

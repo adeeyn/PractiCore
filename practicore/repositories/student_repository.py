@@ -71,9 +71,16 @@ class StudentRepository:
             return row.get("skills") if row else None
 
     def get_assessment_stats(self, username):
+        """The summary columns the dashboards and the assessment page read.
+
+        `id` is selected because the assessment page needs it to load the
+        student's competency profile. It used to be omitted, and a caller
+        reaching for it got a KeyError that took the whole page down.
+        """
         with Database.cursor() as cursor:
             cursor.execute(
-                "SELECT assessment_score, total_questions, competency_level FROM students WHERE username = %s",
+                "SELECT id, assessment_score, total_questions, competency_level "
+                "FROM students WHERE username = %s",
                 (username,),
             )
             return cursor.fetchone()

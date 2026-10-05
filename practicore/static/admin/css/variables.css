@@ -1,0 +1,37 @@
+/* Administrator module theme.
+ *
+ * Reuses the shared PractiCore scales from the employer module so all three
+ * modules read as one product, then overrides only the brand colours: the admin
+ * module is violet-and-blue where the employer module is amber.
+ *
+ * Path note: this file lives at /static/admin/css/, so '../../employer/...'
+ * resolves to /static/employer/... -- one '..' too few here would fall out of
+ * /static and 404, leaving every var() below undefined and the page unstyled. */
+
+@import url('../../employer/css/variables.css');
+
+:root {
+  /* Admin brand: violet shell, blue primary actions */
+  --primary: #2563eb;
+  --primary-hover: #1d4ed8;
+  --primary-soft: #dbeafe;
+  --primary-border: #bfdbfe;
+
+  --sidebar-bg: #5b4ae0;
+  --sidebar-bg-deep: #4938c7;
+  --sidebar-item: rgba(255, 255, 255, 0.86);
+  --sidebar-item-hover: rgba(255, 255, 255, 0.14);
+  --sidebar-item-active: rgba(255, 255, 255, 0.22);
+  --sidebar-border: rgba(255, 255, 255, 0.18);
+
+  /* Surfaces */
+  --bg: #f6f7fb;
+  --card: #ffffff;
+  --border: #e7e8f0;
+  --border-soft: #f3f4f9;
+
+  --radius: 14px;
+  --radius-sm: 9px;
+  --shadow: 0 1px 2px rgba(16, 24, 40, 0.04), 0 1px 3px rgba(16, 24, 40, 0.03);
+  --shadow-lift: 0 4px 16px rgba(16, 24, 40, 0.06);
+}

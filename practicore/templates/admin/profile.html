@@ -1,0 +1,38 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Profile{% endblock %}
+
+{% block content %}
+<div class="adm-page-head">
+  <div>
+    <h1>Administrator Profile</h1>
+    <p class="adm-sub">Your own account on PractiCore</p>
+  </div>
+</div>
+
+<section class="adm-panel adm-panel-narrow">
+  {% if account %}
+  <dl class="adm-detail">
+    <dt>Email</dt><dd>{{ account.email }}</dd>
+    <dt>Username</dt><dd>{{ account.username or '—' }}</dd>
+    <dt>Role</dt><dd><span class="adm-badge adm-badge-ok">Administrator</span></dd>
+    <dt>Status</dt>
+    <dd>
+      <span class="adm-badge {{ 'adm-badge-ok' if account.is_active else 'adm-badge-off' }}">
+        {{ 'Active' if account.is_active else 'Inactive' }}
+      </span>
+    </dd>
+    <dt>Registered</dt><dd>{{ account.created_at.strftime('%B %d, %Y') }}</dd>
+  </dl>
+
+  <div class="adm-note adm-note-block">
+    As an administrator you manage partner company accounts, monitor registered
+    employers, and oversee internship postings. Screening applicants, ranking
+    candidates and maintaining assessment content remain the responsibility of
+    the employer and student modules.
+  </div>
+  {% else %}
+  <p class="adm-empty">Your administrator account could not be loaded.</p>
+  {% endif %}
+</section>
+{% endblock %}

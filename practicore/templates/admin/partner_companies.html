@@ -1,0 +1,112 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Partner Companies{% endblock %}
+
+{% block content %}
+<div class="adm-page-head">
+  <div>
+    <h1>Employer Accounts</h1>
+    <p class="adm-sub">Partner companies registered and managed by the administrator</p>
+  </div>
+  <a href="{{ url_for('admin.create_company') }}" class="adm-btn adm-btn-primary">
+    <i data-lucide="plus"></i> Add New Employer
+  </a>
+</div>
+
+<form class="adm-filters" method="get" action="{{ url_for('admin.companies') }}">
+  <div class="adm-search">
+    <i data-lucide="search"></i>
+    <input type="search" name="q" value="{{ search }}"
+           placeholder="Search company, email, contact or location">
+  </div>
+  <select name="status" class="adm-select" onchange="this.form.submit()">
+    <option value="" {% if status not in ('active', 'inactive', 'pending') %}selected{% endif %}>
+      All statuses
+    </option>
+    <option value="active" {% if status == 'active' %}selected{% endif %}>Active</option>
+    <option value="inactive" {% if status == 'inactive' %}selected{% endif %}>Inactive</option>
+    <option value="pending" {% if status == 'pending' %}selected{% endif %}>No account</option>
+  </select>
+  <button type="submit" class="adm-btn">Filter</button>
+  {% if search or status %}
+  <a href="{{ url_for('admin.companies') }}" class="adm-btn adm-btn-ghost">Clear</a>
+  {% endif %}
+</form>
+
+<div class="adm-panel">
+  <table class="adm-table">
+    <thead>
+      <tr>
+        <th>Company</th><th>Contact Person</th><th>Email</th>
+        <th>Status</th><th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+    {% for row in companies %}
+      <tr>
+        <td>
+          <a href="{{ url_for('admin.company_detail', employer_id=row.id) }}">{{ row.company_name }}</a>
+          {# Location, industry, posting count and registration date ride along
+             under the name so the narrower table loses no information. #}
+          <div class="adm-sub-cell">
+            {{ row.location or '—' }}{% if row.industry %} · {{ row.industry }}{% endif %}
+            · {{ row.posting_count }} posting{{ '' if row.posting_count == 1 else 's' }}
+            · Joined {{ (row.registered_at or row.created_at).strftime('%b %d, %Y') }}
+          </div>
+        </td>
+        <td>
+          {{ row.contact_name or '—' }}
+          {% if row.contact_position %}<div class="adm-sub-cell">{{ row.contact_position }}</div>{% endif %}
+        </td>
+        <td class="adm-muted">{{ row.email or '—' }}</td>
+        <td>
+          {% if row.user_id is none %}
+            <span class="adm-badge adm-badge-warn">No account</span>
+          {% elif row.is_active %}
+            <span class="adm-badge adm-badge-ok">Active</span>
+          {% else %}
+            <span class="adm-badge adm-badge-danger">Inactive</span>
+          {% endif %}
+        </td>
+        <td>
+          <div class="adm-actions">
+            <a href="{{ url_for('admin.company_detail', employer_id=row.id) }}"
+               class="adm-btn-icon" title="View employer account"
+               aria-label="View {{ row.company_name }}">
+              <i data-lucide="pencil"></i>
+            </a>
+            {% if row.user_id %}
+              {# Deactivating disables the login but never deletes it: the company's
+                 internship postings reference the employer row. #}
+              <form method="post" class="adm-inline-form"
+                    action="{{ url_for('admin.employer_status', employer_id=row.id) }}"
+                    data-confirm="Are you sure you want to {{ 'deactivate' if row.is_active else 'activate' }} {{ row.company_name }}?">
+                <input type="hidden" name="action" value="{{ 'deactivate' if row.is_active else 'activate' }}">
+                <button type="submit" class="adm-btn-icon"
+                        title="{{ 'Deactivate' if row.is_active else 'Activate' }} account"
+                        aria-label="{{ 'Deactivate' if row.is_active else 'Activate' }} {{ row.company_name }}">
+                  <i data-lucide="power"></i>
+                </button>
+              </form>
+            {% endif %}
+          </div>
+        </td>
+      </tr>
+    {% else %}
+      <tr><td colspan="5" class="adm-empty">No partner companies match your search.</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  // Confirm before any status change (ADM-10).
+  document.addEventListener('submit', function (event) {
+    var form = event.target;
+    if (!form.dataset || !form.dataset.confirm) { return; }
+    if (!window.confirm(form.dataset.confirm)) { event.preventDefault(); }
+  });
+</script>
+{% endblock %}

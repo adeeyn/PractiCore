@@ -1,0 +1,85 @@
+/* ==========================================
+   MATCH SPLIT - the two percentages, shown apart
+   ==========================================
+
+   One component, used on the dashboard, the recommendation cards and My
+   Applications, so the same two numbers always look and behave identically.
+
+   There is no blended "match score" on purpose. A single average cannot say
+   whether someone is genuinely strong, merely well-annotated on a resume, or the
+   reverse - and that is the distinction the whole design turns on: a skill on a
+   resume is a CLAIM, an assessment result is EVIDENCE. So each gets its own
+   labelled meter instead of being averaged into one number.
+
+   The colours are semantic, not decorative. The resume meter is deliberately the
+   quieter slate because it is self-reported; the assessment meter carries the
+   strong green because it is measured. The two never trade colours, on any page. */
+
+.match-split {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  width: 100%;
+}
+
+.match-split-row {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 8px;
+  cursor: help;
+}
+
+.match-split-name {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: #94a3b8;
+  white-space: nowrap;
+}
+
+.match-split-track {
+  height: 4px;
+  border-radius: 999px;
+  background: #e2e8f0;
+  overflow: hidden;
+}
+
+.match-split-fill {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+}
+
+.match-split-fill.resume     { background: #94a3b8; }
+.match-split-fill.assessment { background: #059669; }
+
+.match-split-value {
+  font-size: 12px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  color: #0f172a;
+  min-width: 30px;
+  text-align: right;
+  white-space: nowrap;
+}
+
+/* The card the meters sit in. A white ground and a hairline border keep the two
+   meters legible whatever the page puts behind them. */
+.match-badge {
+  display: flex;
+  flex-direction: column;
+  min-width: 180px;
+  padding: 10px 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  background: #ffffff;
+}
+
+/* Overall-strength tint for the container only. It is a light wash: the meters
+   inside keep their own semantic colours, so the tint can never be misread as
+   "this particular percentage is the weak one". */
+.match-badge.high   { background: #f0fdf4; border-color: #bbf7d0; }
+.match-badge.medium { background: #fffbeb; border-color: #fde68a; }
+.match-badge.low    { background: #f8fafc; border-color: #e2e8f0; }

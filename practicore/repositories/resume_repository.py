@@ -87,3 +87,18 @@ class ResumeRepository:
                 (student_id,),
             )
             return cursor.fetchone()
+
+    def has_file(self, student_id):
+        """True when a resume is stored for this student (the BLOB is not read).
+
+        Lets a page decide whether to offer a "View Resume" button without
+        pulling a multi-megabyte file into memory first.
+        """
+        if not student_id:
+            return False
+        with Database.cursor() as cursor:
+            cursor.execute(
+                "SELECT 1 FROM student_resumes WHERE student_id = %s",
+                (student_id,),
+            )
+            return cursor.fetchone() is not None

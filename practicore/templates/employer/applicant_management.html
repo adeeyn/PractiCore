@@ -49,9 +49,20 @@
                 </div>
             </div>
             <div class="manage-score">
-                {{ ui.score(selected.match_score) }}
-                <span>Match Score</span>
+                {{ ui.match_components(selected) }}
+                <span>Match Breakdown</span>
             </div>
+        </div>
+
+        <div class="manage-actions">
+            {% if has_resume %}
+            <a class="btn btn-outline" href="{{ url_for('employer.applicant_resume', application_id=selected.id) }}"
+               target="_blank" rel="noopener" title="Open the applicant's resume in a new tab">
+                <i data-lucide="file-text"></i> View Resume
+            </a>
+            {% else %}
+            <span class="manage-no-resume">This applicant has not uploaded a resume yet.</span>
+            {% endif %}
         </div>
 
         <div class="form-group">

@@ -1,0 +1,119 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Users{% endblock %}
+
+{% block content %}
+<div class="adm-page-head">
+  <div>
+    <h1>Users</h1>
+    <p class="adm-sub">Every registered account on the platform</p>
+  </div>
+</div>
+
+<div class="adm-stat-grid adm-stat-grid-4">
+  <div class="adm-stat">
+    <div class="adm-stat-icon adm-ic-student"><i data-lucide="graduation-cap"></i></div>
+    <div class="adm-stat-body">
+      <span class="adm-stat-number">{{ counts.students }}</span>
+      <span class="adm-stat-label">Students</span>
+    </div>
+  </div>
+  <div class="adm-stat">
+    <div class="adm-stat-icon adm-ic-employer"><i data-lucide="user-check"></i></div>
+    <div class="adm-stat-body">
+      <span class="adm-stat-number">{{ counts.employers }}</span>
+      <span class="adm-stat-label">Employers</span>
+    </div>
+  </div>
+  <div class="adm-stat">
+    <div class="adm-stat-icon adm-ic-company"><i data-lucide="shield"></i></div>
+    <div class="adm-stat-body">
+      <span class="adm-stat-number">{{ counts.admins }}</span>
+      <span class="adm-stat-label">Administrators</span>
+    </div>
+  </div>
+  <div class="adm-stat">
+    <div class="adm-stat-icon adm-ic-users"><i data-lucide="users"></i></div>
+    <div class="adm-stat-body">
+      <span class="adm-stat-number">{{ counts.total }}</span>
+      <span class="adm-stat-label">Total Users</span>
+    </div>
+  </div>
+</div>
+
+<form class="adm-filters" method="get" action="{{ url_for('admin.users') }}">
+  <div class="adm-search">
+    <i data-lucide="search"></i>
+    <input type="search" name="q" value="{{ search }}"
+           placeholder="Search name, email or username">
+  </div>
+  <select name="status" class="adm-select" onchange="this.form.submit()">
+    <option value="">All roles</option>
+    <option value="student" {% if status == 'student' %}selected{% endif %}>Students</option>
+    <option value="employer" {% if status == 'employer' %}selected{% endif %}>Employers</option>
+    <option value="admin" {% if status == 'admin' %}selected{% endif %}>Administrators</option>
+    <option value="active" {% if status == 'active' %}selected{% endif %}>Active only</option>
+    <option value="inactive" {% if status == 'inactive' %}selected{% endif %}>Inactive only</option>
+  </select>
+  <button type="submit" class="adm-btn">Filter</button>
+  {% if search or status %}
+  <a href="{{ url_for('admin.users') }}" class="adm-btn adm-btn-ghost">Clear</a>
+  {% endif %}
+</form>
+
+<div class="adm-panel">
+  <table class="adm-table">
+    <thead>
+      <tr>
+        <th>Name</th><th>Email</th><th>Username</th>
+        <th>Role</th><th>Status</th><th>Registered</th><th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+    {% for row in users %}
+      <tr>
+        <td>
+          {{ row.display_name or '—' }}
+          {% if row.company_name %}<div class="adm-sub-cell">{{ row.company_name }}</div>{% endif %}
+        </td>
+        <td class="adm-muted">{{ row.email }}</td>
+        <td class="adm-muted">{{ row.username or '—' }}</td>
+        <td><span class="adm-badge adm-badge-role-{{ row.role }}">{{ row.role|capitalize }}</span></td>
+        <td>
+          <span class="adm-badge {{ 'adm-badge-ok' if row.is_active else 'adm-badge-off' }}">
+            {{ 'Active' if row.is_active else 'Inactive' }}
+          </span>
+        </td>
+        <td class="adm-muted">{{ row.created_at.strftime('%b %d, %Y') }}</td>
+        <td>
+          {% if row.role != 'admin' %}
+          <form method="post" class="adm-inline-form"
+                action="{{ url_for('admin.user_status', user_id=row.id) }}"
+                data-confirm="Are you sure you want to {{ 'deactivate' if row.is_active else 'activate' }} {{ row.email }}?">
+            <input type="hidden" name="action" value="{{ 'deactivate' if row.is_active else 'activate' }}">
+            <button type="submit" class="adm-btn adm-btn-sm {{ 'adm-btn-danger' if row.is_active else '' }}">
+              {{ 'Deactivate' if row.is_active else 'Activate' }}
+            </button>
+          </form>
+          {% else %}
+          <span class="adm-muted">—</span>
+          {% endif %}
+        </td>
+      </tr>
+    {% else %}
+      <tr><td colspan="7" class="adm-empty">No users match your search.</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  document.addEventListener('submit', function (event) {
+    var form = event.target;
+    if (!form.dataset || !form.dataset.confirm) { return; }
+    if (!window.confirm(form.dataset.confirm)) { event.preventDefault(); }
+  });
+</script>
+{% endblock %}

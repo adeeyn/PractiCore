@@ -1,0 +1,76 @@
+{% extends "admin/base.html" %}
+
+{% block title %}{{ company.company_name }}{% endblock %}
+
+{% block content %}
+<div class="adm-page-head">
+  <div>
+    <h1>{{ company.company_name }}</h1>
+    <p class="adm-sub">Partner company and employer account</p>
+  </div>
+  <a href="{{ url_for('admin.companies') }}" class="adm-btn adm-btn-ghost">
+    <i data-lucide="arrow-left"></i> Back
+  </a>
+</div>
+
+<div class="adm-panel-grid">
+  <section class="adm-panel">
+    <header class="adm-panel-head"><h2>Company Information</h2></header>
+    <dl class="adm-detail">
+      <dt>Company Name</dt><dd>{{ company.company_name }}</dd>
+      <dt>Location</dt><dd>{{ company.location }}</dd>
+      <dt>Industry</dt><dd>{{ company.industry or '—' }}</dd>
+      <dt>Company Size</dt><dd>{{ company.company_size or '—' }}</dd>
+      <dt>Website</dt><dd>{{ company.website or '—' }}</dd>
+      <dt>Accepting Interns</dt><dd>{{ 'Yes' if company.is_hiring else 'No' }}</dd>
+      <dt>Description</dt><dd class="adm-wrap">{{ company.about or '—' }}</dd>
+      <dt>Internship Requirements</dt><dd class="adm-wrap">{{ company.required_skills or '—' }}</dd>
+    </dl>
+  </section>
+
+  <section class="adm-panel">
+    <header class="adm-panel-head"><h2>Account</h2></header>
+    <dl class="adm-detail">
+      <dt>Email</dt><dd>{{ company.email or 'No account created' }}</dd>
+      <dt>Contact Person</dt><dd>{{ company.contact_name or '—' }}</dd>
+      <dt>Contact Position</dt><dd>{{ company.contact_position or '—' }}</dd>
+      <dt>Contact Number</dt><dd>{{ company.contact_phone or '—' }}</dd>
+      <dt>Status</dt>
+      <dd>
+        {% if company.user_id is none %}
+          <span class="adm-badge adm-badge-warn">No account</span>
+        {% elif company.is_active %}
+          <span class="adm-badge adm-badge-ok">Active</span>
+        {% else %}
+          <span class="adm-badge adm-badge-off">Inactive</span>
+        {% endif %}
+      </dd>
+      <dt>Date Registered</dt>
+      <dd>{{ (company.registered_at or company.created_at).strftime('%B %d, %Y') }}</dd>
+    </dl>
+
+    {# No password field anywhere: the administrator sets it at creation and
+       there is deliberately no way to read it back. #}
+    {% if company.user_id %}
+    <form method="post" class="adm-status-form"
+          action="{{ url_for('admin.employer_status', employer_id=company.id) }}"
+          data-confirm="Are you sure you want to {{ 'deactivate' if company.is_active else 'activate' }} this account?">
+      <input type="hidden" name="action" value="{{ 'deactivate' if company.is_active else 'activate' }}">
+      <button type="submit" class="adm-btn {{ 'adm-btn-danger' if company.is_active else 'adm-btn-primary' }}">
+        {{ 'Deactivate Account' if company.is_active else 'Activate Account' }}
+      </button>
+    </form>
+    {% endif %}
+  </section>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  document.addEventListener('submit', function (event) {
+    var form = event.target;
+    if (!form.dataset || !form.dataset.confirm) { return; }
+    if (!window.confirm(form.dataset.confirm)) { event.preventDefault(); }
+  });
+</script>
+{% endblock %}

@@ -1,0 +1,39 @@
+{% extends "student/base.html" %}
+
+{% block title %}PractiCore - Assessment Unavailable{% endblock %}
+
+{% block content %}
+<header class="topbar">
+  <div class="welcome">
+    <h1>Assessment Not Yet Available</h1>
+    <p class="subtitle">No published questions match the competencies selected for you</p>
+  </div>
+</header>
+
+<div class="assessment-container">
+  <div class="assessment-card">
+    <h3>What happened</h3>
+    <p>
+      Your assessment is built from your core competencies, your resume, and the
+      internships you are targeting. Some of the competencies that were selected
+      for you do not yet have published questions, so an assessment cannot be
+      assembled right now.
+    </p>
+    <p style="margin-top:1rem;"><strong>Do not worry — this is not a result.</strong>
+      No score has been recorded against you.</p>
+
+    {% if shortfall %}
+    <h4 style="margin-top:1.5rem;">Pending competencies</h4>
+    <ul style="margin-top:.5rem; text-align:left;">
+      {% for code, reason in shortfall.items() %}
+      <li><code>{{ code }}</code> — {{ reason }}</li>
+      {% endfor %}
+    </ul>
+    {% endif %}
+
+    <a href="{{ url_for('student.assessment') }}" class="action-btn" style="margin-top:1.5rem;">
+      Back to Assessment
+    </a>
+  </div>
+</div>
+{% endblock %}

@@ -6,13 +6,35 @@
   <div class="avatar {{ size }} avatar-c{{ (applicant.id - 1) % 5 }}">{{ applicant.initials }}</div>
 {%- endmacro %}
 
-{# CSS class for a match score: green >= 90, blue >= 80, orange below #}
-{% macro score_class(score) -%}
-  {%- if score >= 90 %}score-high{% elif score >= 80 %}score-mid{% else %}score-low{% endif -%}
-{%- endmacro %}
+{# The two halves of a match, each drawn as its own labelled meter. Styled by
+   employer/css/match-split.css - the same component the student module uses.
 
-{% macro score(value) -%}
-  <span class="score {{ score_class(value) }}">{{ value }}%</span>
+   There is deliberately no blended "match score" here. The blend still exists
+   internally (it is what the ranking sorts by), but one number cannot show
+   whether an applicant is genuinely strong, merely well-annotated on a resume,
+   or the reverse, and that is the distinction the research design turns on: a
+   skill on a resume is a CLAIM, an assessment result is EVIDENCE.
+
+   `applicant` needs `resume_match_score` and `assessment_match_score`, both of
+   which are NULL for rows written before migration 011; the pair is then hidden
+   rather than shown as a misleading 0%. #}
+{% macro match_components(applicant) -%}
+  {%- if applicant.resume_match_score is not none and applicant.assessment_match_score is not none -%}
+  <div class="match-split">
+    <div class="match-split-row"
+         title="Share of this posting's required skills that the applicant's resume proves. Self-reported, so it corroborates the assessment rather than replacing it.">
+      <span class="match-split-name">Resume</span>
+      <span class="match-split-track"><span class="match-split-fill resume" style="width: {{ applicant.resume_match_score }}%"></span></span>
+      <span class="match-split-value">{{ applicant.resume_match_score }}%</span>
+    </div>
+    <div class="match-split-row"
+         title="The applicant's score on the objective assessment items for this posting's job category. The primary evidence of capability.">
+      <span class="match-split-name">Assessment</span>
+      <span class="match-split-track"><span class="match-split-fill assessment" style="width: {{ applicant.assessment_match_score }}%"></span></span>
+      <span class="match-split-value">{{ applicant.assessment_match_score }}%</span>
+    </div>
+  </div>
+  {%- endif -%}
 {%- endmacro %}
 
 {# "In Review" -> status-in-review #}

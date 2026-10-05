@@ -86,11 +86,7 @@ class MatchingService:
         `assessment_percentage` is passed separately because the call sites read
         it from students.assessment_score / total_questions.
         """
-        student = dict(student or {})
-        if assessment_percentage is not None:
-            student["assessment_overall"] = assessment_percentage
-        elif "assessment_overall" not in student:
-            student["assessment_overall"] = 0
+        student = self._normalize_student(student, assessment_percentage)
 
         if self.model is not None:
             try:
@@ -104,6 +100,67 @@ class MatchingService:
                 self.model = None
 
         return self.fallback_score(student, posting_skills)
+
+    def score_components(self, student, posting_skills, assessment_percentage=None):
+        """The combined match score plus the two separated percentages behind it.
+
+        `match_score` is the single number PractiCore ranks, stores and sorts by,
+        so ordering is unchanged by reporting the halves. The two components are
+        returned alongside it because one percentage on its own says nothing about
+        *why* an applicant scored what they did: 68% can mean a strong assessment
+        against a thin resume, or the exact reverse, and those two applicants
+        should not be presented identically.
+
+        When a trained model is loaded the combined score comes from the model,
+        but the components stay the deterministic, explainable inputs, so the UI
+        can always show how the number was reached.
+        """
+        student = self._normalize_student(student, assessment_percentage)
+
+        breakdown = RecommendationService.match_breakdown(
+            posting_skills,
+            student["skills"],
+            student.get("assessment_overall", 0),
+            domain_scores=student.get("domain_scores") or {},
+        )
+
+        return {
+            "match_score": self.score(student, posting_skills),
+            "resume_match_percent": breakdown["resume_match_percent"],
+            "assessment_match_percent": breakdown["assessment_match_percent"],
+            "assessment_overall": breakdown["assessment_overall"],
+            "assessment_weight": breakdown["assessment_weight"],
+            "resume_weight": breakdown["resume_weight"],
+            "matched_count": breakdown["matched_count"],
+            "required_count": breakdown["required_count"],
+            "matched_skills": breakdown["matched_skills"],
+            "missing_skills": breakdown["missing_skills"],
+        }
+
+    @staticmethod
+    def _normalize_student(student, assessment_percentage=None):
+        """Fills in the defaults the scorer relies on, without mutating the caller.
+
+        `student["skills"]` reaches this from both directions: the routes pass an
+        already-parsed set from SkillTaxonomy.parse_skill_string, while the
+        seeder passes a raw comma-separated string. Both shapes are normalised
+        here, once, so `score` and `score_components` can never disagree about
+        what a student actually has.
+        """
+        student = dict(student or {})
+
+        if assessment_percentage is not None:
+            student["assessment_overall"] = assessment_percentage
+        student.setdefault("assessment_overall", 0)
+        student.setdefault("domain_scores", {})
+
+        skills = student.get("skills")
+        if isinstance(skills, str):
+            student["skills"] = SkillTaxonomy.parse_skill_string(skills)
+        else:
+            student["skills"] = {str(s).strip().lower() for s in (skills or []) if str(s).strip()}
+
+        return student
 
     @staticmethod
     def fallback_score(student, posting_skills):

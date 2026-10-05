@@ -41,13 +41,21 @@ def _build_fixtures():
 
 
 def main():
+    import tests.test_admin as test_admin
+    import tests.test_competency_selection as test_competency_selection
+    import tests.test_derived_initials as test_derived_initials
+    import tests.test_employer_logo as test_employer_logo
+    import tests.test_employer_resume as test_employer_resume
+    import tests.test_master_bank as test_master_bank
     import tests.test_matching as test_matching
     import tests.test_question_bank as test_question_bank
     import tests.test_research_bank as test_research_bank
     import tests.test_resume_parser as test_resume_parser
     import tests.test_resume_repository as test_resume_repository
 
-    modules = [test_matching, test_question_bank, test_research_bank,
+    modules = [test_admin, test_competency_selection, test_derived_initials,
+               test_employer_logo, test_employer_resume, test_matching,
+               test_question_bank, test_master_bank, test_research_bank,
                test_resume_parser, test_resume_repository]
     fixtures = _build_fixtures()
 

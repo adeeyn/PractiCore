@@ -1,5 +1,6 @@
 from flask import current_app
 
+from ..initials import initials_for
 from ..repositories import PostingRepository
 from .skill_taxonomy import SkillTaxonomy
 
@@ -31,11 +32,21 @@ class RecommendationService:
 
     @staticmethod
     def _logo_for(posting):
-        # Extract initials for logo fallback (e.g., Tech Solution Inc -> TS)
-        logo = posting["company_logo_text"]
-        if not logo and posting["company_name"]:
-            logo = "".join(word[0] for word in posting["company_name"].split()[:2]).upper()
-        return logo or "IT"
+        """The company badge on a recommendation card.
+
+        Derived from the name so a card can never show initials that disagree
+        with the company it belongs to. 'IT' is the last resort for a posting
+        whose company name is somehow blank.
+
+        This is derived rather than read from employers.company_logo_text on
+        purpose. The posting query joins employers only for company_name and
+        location, so that column is not in the row at all - indexing it raised
+        KeyError: 'company_logo_text' and took the whole page down. Deriving it
+        also keeps the badge correct for a company renamed outside the profile
+        form, which is the same reason application_repository and
+        employer/context.py derive instead of storing.
+        """
+        return initials_for(posting.get("company_name"), fallback="IT")
 
     @staticmethod
     def relevant_assessment_score(posting_skills, domain_scores, overall_percentage):
@@ -91,6 +102,16 @@ class RecommendationService:
             "assessment_relevant": relevant,
             "assessment_weight": assessment_weight,
             "resume_weight": resume_weight,
+            # The two halves, reported on their own. They are the exact operands
+            # of `score` above, so:
+            #   score == round(assessment_match_percent * assessment_weight
+            #                 + resume_match_percent * resume_weight)
+            # Pages show both percentages beside the combined number, because one
+            # figure on its own cannot say whether an applicant is strong, thinly
+            # evidenced, or the reverse. `resume_percent` / `assessment_relevant`
+            # stay as the older aliases so nothing existing breaks.
+            "resume_match_percent": resume_pct,
+            "assessment_match_percent": relevant,
         }
 
     @staticmethod
@@ -118,15 +139,15 @@ class RecommendationService:
 
         for posting in self.postings.all_with_skills():
             posting_skills = posting["skills"]
-            matched = SkillTaxonomy.match_required_skills(posting_skills, student_skills)
-            resume_match_pct = round((len(matched) / len(posting_skills)) * 100) if posting_skills else 0
 
-            # Same shared scorer the employer ranks applicants on
-            match_score = matcher.score(
+            # Same shared scorer the employer ranks applicants on, asked for the
+            # combined number and the two separated percentages in one pass.
+            components = matcher.score_components(
                 student_profile, posting_skills, assessment_percentage=assessment_percentage
             )
+            match_score = components["match_score"]
 
-            resume_match_scores.append(resume_match_pct)
+            resume_match_scores.append(components["resume_match_percent"])
             recommendations.append({
                 "id": posting["id"],
                 "title": posting["title"],
@@ -136,6 +157,10 @@ class RecommendationService:
                 "is_remote": posting["is_remote"],
                 "match_score": match_score,
                 "match_color_class": "green" if match_score >= 85 else "amber",
+                # Shown beside the combined badge so the student can see which
+                # half of the evidence is producing it.
+                "resume_match_percent": components["resume_match_percent"],
+                "assessment_match_percent": components["assessment_match_percent"],
             })
 
         if resume_match_scores:
@@ -189,7 +214,7 @@ class RecommendationService:
                 "title": posting["title"],
                 "company": posting["company_name"],
                 "location": posting["location"],
-                "logo": posting["company_logo_text"],
+                "logo": self._logo_for(posting),
                 "description": posting["description"],
                 "is_remote": posting["is_remote"],
                 "skills": posting_skills,

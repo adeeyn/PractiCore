@@ -1,3 +1,5 @@
+from datetime import date, datetime
+
 from flask import Flask, request
 
 from .cli import register_commands
@@ -45,5 +47,38 @@ def create_app(config_class=Config):
             response.headers["Expires"] = "0"
 
         return response
+
+    @app.template_filter("timeago")
+    def timeago(value):
+        """Relative stamps ("2 hours ago") for the Recent Activity feeds.
+
+        Anything that is not a date/datetime falls back to an em dash, so a
+        null timestamp can never break the feed.
+        """
+        if isinstance(value, datetime):
+            stamp = value
+        elif isinstance(value, date):
+            stamp = datetime(value.year, value.month, value.day)
+        else:
+            return "—"
+
+        now = datetime.now(stamp.tzinfo) if stamp.tzinfo else datetime.now()
+        seconds = (now - stamp).total_seconds()
+        if seconds < 0:
+            return stamp.strftime("%b %d, %Y")
+        if seconds < 60:
+            return "just now"
+        minutes = int(seconds // 60)
+        if minutes < 60:
+            return "%d minute%s ago" % (minutes, "" if minutes == 1 else "s")
+        hours = minutes // 60
+        if hours < 24:
+            return "%d hour%s ago" % (hours, "" if hours == 1 else "s")
+        days = hours // 24
+        if days == 1:
+            return "Yesterday"
+        if days < 7:
+            return "%d days ago" % days
+        return stamp.strftime("%b %d, %Y")
 
     return app

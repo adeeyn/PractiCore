@@ -40,7 +40,9 @@
          data-name="{{ application.company_name }} {{ application.position }} {{ application.status }}">
       <div class="card-top-row">
         <div class="company-info-group">
-          <div class="avatar-badge purple-avatar">{{ application.company_logo_text or 'IN' }}</div>
+          {# Derived from the company name by the repository (migration 014), so this
+           badge agrees with the one on the recommendation card. #}
+        <div class="avatar-badge purple-avatar">{{ application.logo_text or '?' }}</div>
           <div class="company-details">
             <h3>{{ application.position }}</h3>
             <span class="company-name">{{ application.company_name }}</span>
@@ -49,9 +51,29 @@
             </div>
           </div>
         </div>
-        <span class="match-badge {{ 'green-match' if application.match_score >= 80 else 'yellow-match' }}">
-          {{ application.match_score }}% Match
-        </span>
+        {# Two labelled meters rather than one "% Match": it is clear which kind of
+           evidence is carrying - or holding back - this application. Styled by
+           css/match-split.css, shared with the dashboard and recommendation page. #}
+        <div class="match-badge">
+          {% if application.resume_match_score is not none and application.assessment_match_score is not none %}
+          <div class="match-split">
+            <div class="match-split-row"
+                 title="Required skills this posting lists that your resume proves. Self-reported, so it only corroborates the assessment.">
+              <span class="match-split-name">Resume</span>
+              <span class="match-split-track"><span class="match-split-fill resume" style="width: {{ application.resume_match_score }}%"></span></span>
+              <span class="match-split-value">{{ application.resume_match_score }}%</span>
+            </div>
+            <div class="match-split-row"
+                 title="Your score on the objective assessment items for this posting's track. The primary evidence of capability.">
+              <span class="match-split-name">Assessment</span>
+              <span class="match-split-track"><span class="match-split-fill assessment" style="width: {{ application.assessment_match_score }}%"></span></span>
+              <span class="match-split-value">{{ application.assessment_match_score }}%</span>
+            </div>
+          </div>
+          {% else %}
+          <span>Not scored yet</span>
+          {% endif %}
+        </div>
       </div>
 
       <div class="card-bottom-row">

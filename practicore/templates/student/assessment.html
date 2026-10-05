@@ -39,32 +39,75 @@
         </svg>
       </div>
 
-      <h2>Technical Skills Assessment</h2>
+      <h2>Competency Assessment</h2>
       
       <p class="assessment-description">
-        Answer questions to help us match you with the best internships. 
+        Your assessment is built for you: a small core set, the competencies your
+        resume claims, and what the internships you are targeting require. A skill on
+        your resume is treated as a <strong>claim to verify</strong>, never as proof.
         {% if student and student.total_questions and student.total_questions > 0 %}
-          Your current score is <span class="score-highlight">{{ score_percentage }}%</span>.
+          Your current overall score is <span class="score-highlight">{{ score_percentage }}%</span>.
         {% else %}
           You haven't taken the assessment yet.
         {% endif %}
       </p>
 
-      <!-- Stat Blocks -->
+      <!-- Stat Blocks: real figures, not placeholders -->
       <div class="stats-container">
         <div class="stat-item">
-          <span class="stat-number">10</span>
-          <span class="stat-title">Questions</span>
+          <span class="stat-number">{{ profile|length }}</span>
+          <span class="stat-title">Competenc{{ 'y' if profile|length == 1 else 'ies' }} Assessed</span>
         </div>
         <div class="stat-item">
-          <span class="stat-number">15 min</span>
-          <span class="stat-title">Duration</span>
+          <span class="stat-number">~{{ ((profile|length) * 2) }} min</span>
+          <span class="stat-title">Est. Duration</span>
         </div>
         <div class="stat-item">
-          <span class="stat-number">3 left</span>
-          <span class="stat-title">Attempts</span>
+          <span class="stat-number">3</span>
+          <span class="stat-title">Question Forms</span>
         </div>
       </div>
+
+      {% if profile %}
+      <div style="margin-top:1.75rem; text-align:left;">
+        <h3 style="font-size:1rem; margin-bottom:.75rem;">Your competency profile</h3>
+        <p style="font-size:.85rem; color:#6c757d; margin-bottom:.75rem;">
+          A percentage is what you <strong>demonstrated</strong> on the assessment.
+          Skills named on your resume are shown as <strong>Resume claims</strong> and
+          are verified, never scored — until a competency is assessed it reads
+          <strong>Assessment Required</strong>, because a claim is not a pass.
+        </p>
+        {% for code, entry in profile.items() %}
+        <div style="display:flex; justify-content:space-between; align-items:center;
+                    padding:.5rem .7rem; border:1px solid #e9ecef; border-radius:6px; margin-bottom:.35rem;">
+          <div>
+            <strong style="font-size:.9rem;">{{ entry.name }}</strong>
+            {% if entry.is_core %}<span class="track-tag" style="margin-left:.4rem;">core</span>{% endif %}
+            {% if entry.evidence_skills %}
+              <div style="font-size:.75rem; color:#6c757d;">Resume claims: {{ entry.evidence_skills|join(', ') }}</div>
+            {% endif %}
+          </div>
+          <div style="text-align:right;">
+            {# The score is the result. strength_level is None whenever there is
+               no score, so a band can never be printed for an unmeasured
+               competency, and "Claimed" is never printed as a result. #}
+            {% if entry.score_percent is not none %}
+              <strong style="font-size:.95rem;">{{ entry.score_percent }}%</strong>
+              <div style="font-size:.72rem; color:#6c757d;">{{ entry.strength_level }}</div>
+            {% elif entry.assessment_required %}
+              <span style="color:#f39c12; font-size:.85rem;">Assessment Required</span>
+              <div style="font-size:.72rem; color:#6c757d;">
+                {{ entry.available_questions }} question{{ '' if entry.available_questions == 1 else 's' }} available
+              </div>
+            {% else %}
+              <span style="color:#6c757d;">Not assessed</span>
+              <div style="font-size:.72rem; color:#6c757d;">No questions published yet</div>
+            {% endif %}
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
 
       <!-- Start / Retake Button -->
       <a href="{{ url_for('student.start_assessment') }}" class="start-btn-primary">

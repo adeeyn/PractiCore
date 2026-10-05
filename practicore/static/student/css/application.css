@@ -179,17 +179,9 @@
   color: #a0aec0;
 }
 
-/* Match Tag Pill */
-.match-badge {
-  font-size: 12px;
-  font-weight: 700;
-  padding: 4px 12px;
-  border-radius: 12px;
-}
-
-.blue-match { background: #e6f6ff; color: #0088cc; }
-.yellow-match { background: #fff8e6; color: #d97706; }
-.green-match { background: #e6f9f0; color: #059669; }
+/* The match badge and the two separated meters live in css/match-split.css,
+   shared with the dashboard and the recommendation page so all three render
+   the same. */
 
 /* Card Bottom Section */
 .card-bottom-row {

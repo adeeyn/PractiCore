@@ -9,7 +9,10 @@
 
 .student-dashboard-layout {
   display: grid;
-  grid-template-columns: 1fr 310px;
+  /* minmax(0, 1fr) for the same reason as .internships-grid: a bare 1fr is
+     floored at min-content, so a wide child (the KPI row, the card grid) could
+     push this track wider than the column and slide under the sidebar. */
+  grid-template-columns: minmax(0, 1fr) 310px;
   gap: 24px;
   align-items: start;
 }
@@ -26,6 +29,7 @@
   flex-direction: column;
   gap: 20px;
   width: 310px;
+  min-width: 0;
   flex-shrink: 0;
 }
 
@@ -34,7 +38,9 @@
    ========================================== */
 .stat-grid-4 {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  /* minmax(0, 1fr): the KPI labels are long ("Recommended Internships") and a
+     bare 1fr would refuse to compress below their width, overflowing the row. */
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 16px;
 }
 
@@ -310,10 +316,19 @@
   text-decoration: underline;
 }
 
-/* 3-Column Internships Grid */
+/* 3-Column Internships Grid
+
+   minmax(0, 1fr), NOT 1fr. A bare 1fr track is floored at its content's
+   min-content width, so three cards each demanding ~357px (mostly the
+   .match-badge's min-width in the footer) forced the grid to need ~1103px and
+   overflow the column. That overflow ran underneath the Quick Links card, which
+   is a grid sibling, so it looked like the sidebar was drawn on top.
+
+   minmax(0, 1fr) lets a track shrink below its content, so the cards compress
+   instead of spilling. */
 .internships-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 16px;
 }
 
@@ -326,6 +341,9 @@
   flex-direction: column;
   justify-content: space-between;
   gap: 10px;
+  /* Without this the card is also floored at min-content and cannot compress,
+     regardless of the track size above. */
+  min-width: 0;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
   transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
@@ -412,18 +430,25 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  /* Wrap rather than force a width. The meters and the button are both
+     shrinkable, so stacking them is preferable to overflowing the card. */
+  flex-wrap: wrap;
+  gap: 10px;
   margin-top: auto;
   padding-top: 6px;
 }
 
-.match-badge {
-  background: #ecfdf5;
-  color: #059669;
-  font-size: 12px;
-  font-weight: 700;
-  padding: 4px 10px;
-  border-radius: 6px;
+/* Inside a dashboard card the meters must be allowed to shrink. The 180px floor
+   in match-split.css is sized for the wider recommendation/application cards;
+   here it would set a minimum the 3-up grid cannot honour. */
+.internship-card .match-badge {
+  min-width: 0;
+  flex: 1 1 150px;
 }
+
+/* The match badge and the two separated meters live in css/match-split.css,
+   shared with the recommendation page and My Applications so all three render
+   the same. */
 
 .details-btn {
   display: inline-flex;
@@ -626,26 +651,54 @@
   color: #801020;
 }
 
-/* Responsive */
-@media (max-width: 1200px) {
+/* Responsive
+
+   The previous first breakpoint was 1200px, but three cards stop fitting their
+   column well before that: the main column needs ~1103px for a 3-up grid, which
+   only happens around a 1767px viewport. Between 1201px and ~1766px the cards
+   overflowed their column and ran underneath the Quick Links card, which is a
+   grid sibling - so it looked as though the sidebar had been drawn on top.
+
+   Three steps, each chosen from the space actually available:
+     >1700px  3-up, comfortably sized
+     <=1700px 2-up, so a card is never squeezed below its content floor
+     <=1150px the sidebar drops below and the cards get the full width
+     <=900px  1-up
+*/
+@media (max-width: 1700px) {
+  .internships-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 1150px) {
   .student-dashboard-layout {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
   .dash-side-col {
     width: 100%;
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    align-items: start;
+  }
+}
+
+/* The fixed 250px sidebar leaves little room on small laptops; below this the
+   meters stack under the button so neither is squeezed into unreadability. */
+@media (max-width: 1024px) {
+  .internship-card .match-badge {
+    flex-basis: 100%;
   }
 }
 
 @media (max-width: 900px) {
   .stat-grid-4 {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
   .internships-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
   .dash-side-col {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 }

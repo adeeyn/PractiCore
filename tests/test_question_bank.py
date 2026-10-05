@@ -145,6 +145,89 @@ class TestMatchScoreWeighting:
             assert 0 <= score <= 100
 
 
+class TestSeparatedMatchPercentages:
+    """The resume and the assessment percentage are reported on their own.
+
+    The combined score stays the number PractiCore ranks and stores by, so nothing
+    about the ordering changes. Reporting only the blend, though, hides which kind
+    of evidence produced it: a student with a strong assessment and a thin resume
+    can land on exactly the same number as the mirror image, and those two need
+    opposite advice (add keywords vs. go and prove more competency).
+    """
+
+    REQUIRED = ["JavaScript", "HTML", "CSS", "React", "Flask", "Python", "Git"]
+    STRONG_RESUME = {"javascript", "html", "css", "react", "flask", "python", "git"}
+    THIN_RESUME = {"git"}  # 1 of 7
+
+    def _components(self, skills, assessment_pct):
+        # Built directly rather than through the app-wide scorer, so this always
+        # exercises the transparent weighted fallback and never a trained model.
+        from practicore.services.matching_service import MatchingService
+
+        return MatchingService().score_components(
+            {"skills": skills}, self.REQUIRED, assessment_percentage=assessment_pct
+        )
+
+    def test_both_percentages_are_reported(self):
+        components = self._components(self.THIN_RESUME, 80)
+        assert components["resume_match_percent"] == round(1 / 7 * 100)
+        assert components["assessment_match_percent"] == 80
+
+    def test_the_combined_score_is_the_weighted_blend_of_the_two(self):
+        """The displayed split must reconcile with the displayed total."""
+        from practicore.config import Config
+
+        components = self._components(self.THIN_RESUME, 80)
+        expected = round(
+            components["assessment_match_percent"] * Config.MATCH_ASSESSMENT_WEIGHT
+            + components["resume_match_percent"] * Config.MATCH_RESUME_WEIGHT
+        )
+        assert components["match_score"] == expected
+
+    def test_the_split_never_changes_the_stored_combined_score(self):
+        """Applications.match_score must still equal what the live pages rank by."""
+        for skills in (self.THIN_RESUME, self.STRONG_RESUME):
+            for pct in (0, 55, 100):
+                components = self._components(skills, pct)
+                assert components["match_score"] == RecommendationService.combined_match_score(
+                    self.REQUIRED, skills, pct
+                )
+
+    def test_the_same_combined_score_can_carry_two_different_splits(self):
+        """The whole reason for splitting: the blend alone cannot tell these apart."""
+        strong_evidence = self._components(self.STRONG_RESUME, 60)
+        thin_evidence = self._components(self.THIN_RESUME, 90)
+
+        assert strong_evidence["resume_match_percent"] > thin_evidence["resume_match_percent"]
+        assert thin_evidence["assessment_match_percent"] > strong_evidence["assessment_match_percent"]
+
+    def test_each_percentage_moves_only_with_its_own_evidence(self):
+        """A better assessment must never inflate the resume percentage."""
+        low = self._components(self.THIN_RESUME, 20)
+        high = self._components(self.THIN_RESUME, 95)
+
+        assert low["resume_match_percent"] == high["resume_match_percent"]
+        assert high["assessment_match_percent"] > low["assessment_match_percent"]
+
+    def test_a_perfect_resume_alone_cannot_manufacture_a_perfect_match(self):
+        """Skills on a resume are a claim, so they stay capped by their weight."""
+        components = self._components(self.STRONG_RESUME, 0)
+        assert components["resume_match_percent"] == 100
+        assert components["match_score"] < 100
+
+    def test_breakdown_publishes_the_split_under_its_own_names(self):
+        breakdown = RecommendationService.match_breakdown(self.REQUIRED, self.THIN_RESUME, 80)
+        assert breakdown["resume_match_percent"] == breakdown["resume_percent"]
+        assert breakdown["assessment_match_percent"] == breakdown["assessment_relevant"]
+
+    def test_both_percentages_are_always_bounded(self):
+        for skills in (self.THIN_RESUME, self.STRONG_RESUME):
+            for pct in (0, 50, 100):
+                components = self._components(skills, pct)
+                assert 0 <= components["resume_match_percent"] <= 100
+                assert 0 <= components["assessment_match_percent"] <= 100
+
+
 class TestDomainRelevantScoring:
     """A posting should be scored on the student's score in ITS category."""
 

@@ -1,0 +1,63 @@
+/* ==========================================
+   MATCH SPLIT - the two percentages, shown apart
+   ==========================================
+
+   One component, shared by the ranking page, the applicant list and the applicant
+   detail panel, so the same two numbers always look and behave identically.
+
+   There is no blended "match score" on purpose. A single average cannot show
+   whether an applicant is genuinely strong, merely well-annotated on a resume, or
+   the reverse - and that is the distinction the research design turns on: a skill
+   on a resume is a CLAIM, an assessment result is EVIDENCE. Each gets its own
+   labelled meter instead of being averaged into one number.
+
+   Colours are semantic, not decorative: the resume meter is the quieter slate
+   because it is self-reported, the assessment meter carries the strong green
+   because it is measured. They never trade colours. */
+
+.match-split {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+}
+
+.match-split-row {
+  display: grid;
+  grid-template-columns: 76px 1fr 40px;
+  align-items: center;
+  gap: 8px;
+  cursor: help;
+}
+
+.match-split-name {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.match-split-track {
+  height: 6px;
+  border-radius: 999px;
+  background: var(--border-soft);
+  overflow: hidden;
+}
+
+.match-split-fill {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+}
+
+.match-split-fill.resume     { background: var(--text-faint); }
+.match-split-fill.assessment { background: var(--green); }
+
+.match-split-value {
+  font-size: 12px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-dark);
+  text-align: right;
+  white-space: nowrap;
+}

@@ -1,0 +1,73 @@
+/* ==========================================
+   ADMIN DASHBOARD -- stat cards and the activity feed
+   ========================================== */
+
+.adm-stat-grid {
+  display: grid;
+  gap: 16px;
+  margin-bottom: 24px;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+}
+/* Four cards per row, matching the CP2 Figure 20 dashboard layout. */
+.adm-stat-grid-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+@media (max-width: 1180px) { .adm-stat-grid-4 { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 620px) { .adm-stat-grid-4 { grid-template-columns: 1fr; } }
+
+.adm-stat {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 18px;
+  box-shadow: var(--shadow);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  transition: box-shadow 0.15s ease;
+}
+.adm-stat:hover { box-shadow: var(--shadow-lift); }
+
+.adm-stat-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 11px;
+  display: grid;
+  place-items: center;
+}
+.adm-stat-icon svg { width: 20px; height: 20px; }
+.adm-ic-company { background: var(--purple-soft); color: var(--purple); }
+.adm-ic-posting { background: var(--green-soft); color: var(--green); }
+.adm-ic-apply { background: var(--blue-soft); color: var(--blue); }
+.adm-ic-users { background: var(--purple-soft); color: var(--purple); }
+.adm-ic-employer { background: var(--green-soft); color: var(--green); }
+.adm-ic-student { background: var(--blue-soft); color: var(--blue); }
+
+.adm-stat-body { min-width: 0; }
+.adm-stat-number {
+  display: block;
+  font-size: 1.7rem;
+  font-weight: 700;
+  color: var(--text-dark);
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+.adm-stat-label { display: block; font-size: 0.85rem; font-weight: 600; color: var(--text-body); margin-top: 2px; }
+.adm-stat-hint { display: block; font-size: 0.75rem; color: var(--text-muted); margin-top: 3px; }
+
+/* ---------- Activity feed ---------- */
+
+.adm-activity { list-style: none; margin: 0; padding: 6px 0; }
+.adm-activity li {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  padding: 11px 18px;
+  border-bottom: 1px solid var(--border-soft);
+}
+.adm-activity li:last-child { border-bottom: 0; }
+.adm-dot { width: 9px; height: 9px; border-radius: 50%; flex: 0 0 9px; margin-top: 6px; }
+.adm-dot-user { background: var(--primary); }
+.adm-dot-posting { background: var(--green); }
+.adm-activity-body { min-width: 0; flex: 1; }
+.adm-activity-text { margin: 0; font-size: 0.87rem; color: var(--text-body); }
+.adm-activity-who { color: var(--text-dark); font-weight: 600; }
+.adm-activity-time { display: block; font-size: 0.75rem; color: var(--text-muted); margin-top: 2px; }

@@ -130,9 +130,26 @@
               <span class="skill-pill">SQL</span>
             </div>
             <div class="card-footer">
-              <span class="match-badge">
-                {{ job.match_score|default(90) }}% Match
-              </span>
+              <div class="match-badge">
+                {% if job.resume_match_percent is defined and job.assessment_match_percent is defined %}
+                <div class="match-split">
+                  <div class="match-split-row"
+                       title="Required skills this posting lists that your resume proves. Self-reported, so it only corroborates the assessment.">
+                    <span class="match-split-name">Resume</span>
+                    <span class="match-split-track"><span class="match-split-fill resume" style="width: {{ job.resume_match_percent }}%"></span></span>
+                    <span class="match-split-value">{{ job.resume_match_percent }}%</span>
+                  </div>
+                  <div class="match-split-row"
+                       title="Your score on the objective assessment items for this posting's track. The primary evidence of capability.">
+                    <span class="match-split-name">Assessment</span>
+                    <span class="match-split-track"><span class="match-split-fill assessment" style="width: {{ job.assessment_match_percent }}%"></span></span>
+                    <span class="match-split-value">{{ job.assessment_match_percent }}%</span>
+                  </div>
+                </div>
+                {% else %}
+                <span>Not scored yet</span>
+                {% endif %}
+              </div>
               <a href="{{ url_for('student.recommendation') }}" class="details-btn">
                 <span>View Details</span>
                 <i data-lucide="arrow-right"></i>
@@ -161,7 +178,22 @@
               <span class="skill-pill">Go</span>
             </div>
             <div class="card-footer">
-              <span class="match-badge">92% Match</span>
+              {# Placeholder card: same two-meter format as the real ones, with
+                 values chosen so the internal blend lands on the 92 this used to show. #}
+              <div class="match-badge">
+                <div class="match-split">
+                  <div class="match-split-row" title="Required skills this posting lists that your resume proves.">
+                    <span class="match-split-name">Resume</span>
+                    <span class="match-split-track"><span class="match-split-fill resume" style="width: 80%"></span></span>
+                    <span class="match-split-value">80%</span>
+                  </div>
+                  <div class="match-split-row" title="Your score on the objective assessment items for this posting's track.">
+                    <span class="match-split-name">Assessment</span>
+                    <span class="match-split-track"><span class="match-split-fill assessment" style="width: 97%"></span></span>
+                    <span class="match-split-value">97%</span>
+                  </div>
+                </div>
+              </div>
               <a href="{{ url_for('student.recommendation') }}" class="details-btn">
                 <span>View Details</span>
                 <i data-lucide="arrow-right"></i>
@@ -188,7 +220,21 @@
               <span class="skill-pill">Node.js</span>
             </div>
             <div class="card-footer">
-              <span class="match-badge">88% Match</span>
+              {# Placeholder card: values blend to the 88 this used to show. #}
+              <div class="match-badge">
+                <div class="match-split">
+                  <div class="match-split-row" title="Required skills this posting lists that your resume proves.">
+                    <span class="match-split-name">Resume</span>
+                    <span class="match-split-track"><span class="match-split-fill resume" style="width: 70%"></span></span>
+                    <span class="match-split-value">70%</span>
+                  </div>
+                  <div class="match-split-row" title="Your score on the objective assessment items for this posting's track.">
+                    <span class="match-split-name">Assessment</span>
+                    <span class="match-split-track"><span class="match-split-fill assessment" style="width: 96%"></span></span>
+                    <span class="match-split-value">96%</span>
+                  </div>
+                </div>
+              </div>
               <a href="{{ url_for('student.recommendation') }}" class="details-btn">
                 <span>View Details</span>
                 <i data-lucide="arrow-right"></i>
@@ -215,7 +261,21 @@
               <span class="skill-pill">CSS</span>
             </div>
             <div class="card-footer">
-              <span class="match-badge">82% Match</span>
+              {# Placeholder card: values blend to the 82 this used to show. #}
+              <div class="match-badge">
+                <div class="match-split">
+                  <div class="match-split-row" title="Required skills this posting lists that your resume proves.">
+                    <span class="match-split-name">Resume</span>
+                    <span class="match-split-track"><span class="match-split-fill resume" style="width: 57%"></span></span>
+                    <span class="match-split-value">57%</span>
+                  </div>
+                  <div class="match-split-row" title="Your score on the objective assessment items for this posting's track.">
+                    <span class="match-split-name">Assessment</span>
+                    <span class="match-split-track"><span class="match-split-fill assessment" style="width: 92%"></span></span>
+                    <span class="match-split-value">92%</span>
+                  </div>
+                </div>
+              </div>
               <a href="{{ url_for('student.recommendation') }}" class="details-btn">
                 <span>View Details</span>
                 <i data-lucide="arrow-right"></i>

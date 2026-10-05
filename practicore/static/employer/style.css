@@ -1,6 +1,7 @@
 /* Employer module entry stylesheet (linked from employer/base.html) */
 @import url('./css/variables.css');
 @import url('./css/layout.css');
+@import url('./css/match-split.css');
 @import url('./css/components.css');
 @import url('./css/dashboard.css');
 @import url('./css/profile.css');

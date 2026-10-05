@@ -1,4 +1,5 @@
 from ..database import Database
+from ..initials import initials_for
 from .user_repository import UserRepository
 
 
@@ -31,10 +32,26 @@ class EmployerRepository:
             cursor.execute("SELECT * FROM employers WHERE company_name = %s", (company_name,))
             return cursor.fetchone()
 
-    def update_profile(self, employer_id, user_id, company_name, company_email, logo_text,
+    def update_logo(self, employer_id, logo_path):
+        """Points the company at its logo (path is relative to static/).
+
+        Passing None clears the logo, which sends the templates back to the
+        company_logo_text initials.
+        """
+        with Database.cursor(commit=True) as cursor:
+            cursor.execute(
+                "UPDATE employers SET logo_path = %s WHERE id = %s", (logo_path, employer_id)
+            )
+
+    def update_profile(self, employer_id, user_id, company_name, company_email,
                        industry, location, about, required_skills, contact_name,
                        contact_position, website, company_size, is_hiring):
-        """Saves the company profile and keeps the login account's email in step."""
+        """Saves the company profile and keeps the login account's email in step.
+
+        The logo initials are derived from company_name here rather than accepted
+        from the caller, so they can never disagree with the name they stand for
+        and no caller has to remember to recompute them.
+        """
         with Database.cursor(commit=True) as cursor:
             cursor.execute("""
                 UPDATE employers
@@ -42,17 +59,21 @@ class EmployerRepository:
                     about = %s, required_skills = %s, contact_name = %s, contact_position = %s,
                     website = %s, company_size = %s, is_hiring = %s
                 WHERE id = %s
-            """, (company_name, logo_text, industry, location, about, required_skills,
-                  contact_name, contact_position, website, company_size, is_hiring, employer_id))
+            """, (company_name, initials_for(company_name), industry, location, about,
+                  required_skills, contact_name, contact_position, website, company_size,
+                  is_hiring, employer_id))
 
             # Employers log in with their email, so a stale login email would lock them out
             if user_id:
                 UserRepository.update_email(cursor, user_id, company_email)
 
-    def create_with_account(self, email, password_hash, company_name, location, logo_text,
+    def create_with_account(self, email, password_hash, company_name, location,
                             industry=None, about=None, required_skills=None, contact_name=None,
                             contact_position=None, website=None, company_size=None, is_hiring=1):
-        """Creates the login account and a new company in one transaction."""
+        """Creates the login account and a new company in one transaction.
+
+        The logo initials come from company_name, like update_profile does.
+        """
         with Database.cursor(commit=True) as cursor:
             user_id = UserRepository.insert(cursor, email, None, password_hash, "employer")
             cursor.execute("""
@@ -60,8 +81,9 @@ class EmployerRepository:
                     (user_id, company_name, company_logo_text, industry, location, about,
                      required_skills, contact_name, contact_position, website, company_size, is_hiring)
                 VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-            """, (user_id, company_name, logo_text, industry, location, about, required_skills,
-                  contact_name, contact_position, website, company_size, is_hiring))
+            """, (user_id, company_name, initials_for(company_name), industry, location, about,
+                  required_skills, contact_name, contact_position, website, company_size,
+                  is_hiring))
 
     def attach_to_user(self, employer_id, user_id):
         """Points an existing company at a login account that has no company yet."""

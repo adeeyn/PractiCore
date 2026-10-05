@@ -134,42 +134,8 @@
   color: #64748b;
 }
 
-/* Match Badge */
-.match-badge {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  padding: 6px 14px;
-  border-radius: 12px;
-  background: #f8fafc;
-}
-
-.match-score {
-  font-size: 18px;
-  font-weight: 800;
-  line-height: 1;
-}
-
-.match-label {
-  font-size: 10px;
-  font-weight: 700;
-  color: #94a3b8;
-  text-transform: uppercase;
-  margin-top: 2px;
-}
-
-/* Badge colour follows the score band: high = best, low = weakest */
-.match-badge.high .match-score {
-  color: #10b981;
-}
-
-.match-badge.medium .match-score {
-  color: #f59e0b;
-}
-
-.match-badge.low .match-score {
-  color: #94a3b8;
-}
+/* The match badge and the two separated meters live in css/match-split.css,
+   shared with the dashboard and My Applications so all three render the same. */
 
 /* Description */
 .rec-description {

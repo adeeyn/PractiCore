@@ -1,0 +1,99 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Internship Posting{% endblock %}
+
+{% block content %}
+<div class="adm-page-head">
+  <div>
+    <h1>Internship Posting</h1>
+    <p class="adm-sub">Monitor postings created by partner companies</p>
+  </div>
+
+  {# Search and status filter sit in the header, as in the target layout. #}
+  <form class="adm-filters adm-filters-inline" method="get" action="{{ url_for('admin.postings') }}">
+    <div class="adm-search">
+      <i data-lucide="search"></i>
+      <input type="search" name="q" value="{{ search }}"
+             placeholder="Search Posting">
+    </div>
+    <select name="status" class="adm-select" aria-label="Filter by status"
+            onchange="this.form.submit()">
+      <option value="" {% if status not in ('active', 'closed') %}selected{% endif %}>All Status</option>
+      <option value="active" {% if status == 'active' %}selected{% endif %}>Active</option>
+      <option value="closed" {% if status == 'closed' %}selected{% endif %}>Closed</option>
+    </select>
+    <button type="submit" class="adm-btn">Filter</button>
+    {% if search or status %}
+    <a href="{{ url_for('admin.postings') }}" class="adm-btn adm-btn-ghost">Clear</a>
+    {% endif %}
+  </form>
+</div>
+
+<div class="adm-panel">
+  <table class="adm-table">
+    <thead>
+      <tr>
+        <th>Title</th><th>Company</th><th>Posted Date</th>
+        <th>Status</th><th>Applicants</th><th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+    {% for row in postings %}
+      <tr>
+        <td>
+          <a href="{{ url_for('admin.posting_detail', posting_id=row.id) }}">{{ row.title }}</a>
+          {# Department, remote flag and slot count ride along under the
+             title; skills stay on the detail page. #}
+          <div class="adm-sub-cell">
+            {{ row.department or '—' }}{% if row.is_remote %} · Remote{% endif %}
+            · {{ row.positions_available }} slot{{ '' if row.positions_available == 1 else 's' }}
+          </div>
+        </td>
+        <td class="adm-muted">{{ row.company_name }}</td>
+        <td class="adm-muted">{{ row.posted_date.strftime('%b %d, %Y') }}</td>
+        <td>
+          <span class="adm-badge {{ 'adm-badge-ok' if row.status == 'active' else 'adm-badge-danger' }}">
+            {{ row.status|capitalize }}
+          </span>
+        </td>
+        <td>{{ row.application_count }}</td>
+        <td>
+          <div class="adm-actions">
+            <a href="{{ url_for('admin.posting_detail', posting_id=row.id) }}"
+               class="adm-btn-icon" title="View posting"
+               aria-label="View {{ row.title }}">
+              <i data-lucide="pencil"></i>
+            </a>
+            {# Only the open/closed status is the administrator's to change; the
+               content belongs to the employer. #}
+            <form method="post" class="adm-inline-form"
+                  action="{{ url_for('admin.posting_status', posting_id=row.id) }}"
+                  data-confirm="Are you sure you want to {{ 'close' if row.status == 'active' else 'reopen' }} {{ row.title }}?">
+              <input type="hidden" name="status" value="{{ 'closed' if row.status == 'active' else 'active' }}">
+              <button type="submit" class="adm-btn-icon"
+                      title="{{ 'Close' if row.status == 'active' else 'Reopen' }} posting"
+                      aria-label="{{ 'Close' if row.status == 'active' else 'Reopen' }} {{ row.title }}">
+                <i data-lucide="{{ 'archive' if row.status == 'active' else 'rotate-ccw' }}"></i>
+              </button>
+            </form>
+          </div>
+        </td>
+      </tr>
+    {% else %}
+      <tr><td colspan="6" class="adm-empty">No internship postings match your search.</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  // Confirm before any status change, as on the partner companies page.
+  document.addEventListener('submit', function (event) {
+    var form = event.target;
+    if (!form.dataset || !form.dataset.confirm) { return; }
+    if (!window.confirm(form.dataset.confirm)) { event.preventDefault(); }
+  });
+</script>
+{% endblock %}

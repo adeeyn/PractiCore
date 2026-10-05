@@ -190,3 +190,8 @@ a { text-decoration: none; color: inherit; }
 .tag:hover {
   background-color: var(--primary-soft);
 }
+
+/* Utility: lets templates/JS toggle visibility with the "hidden" class */
+.hidden {
+  display: none !important;
+}

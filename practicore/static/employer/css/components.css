@@ -94,16 +94,8 @@
   color: var(--text-faint);
 }
 
-/* ---------- Match score text ---------- */
-.score {
-  font-size: 13px;
-  font-weight: 700;
-  font-variant-numeric: tabular-nums;
-}
-
-.score-high { color: var(--green); }
-.score-mid  { color: var(--blue); }
-.score-low  { color: var(--orange); }
+/* The match badge and the two separated meters live in css/match-split.css,
+   shared by the ranking page, the applicant list and the detail panel. */
 
 /* ---------- Status badges ---------- */
 .status {

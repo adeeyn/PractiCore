@@ -21,8 +21,8 @@
       </span>
     </div>
 
-    <!-- Drag & Drop Upload Box -->
-    <div class="upload-dropzone" id="dropzone">
+    <!-- Drag & Drop Upload Box (hidden until "Change Resume" is clicked when a resume exists) -->
+    <div class="upload-dropzone{% if student and student.resume_filename %} hidden{% endif %}" id="dropzone">
       <div class="upload-icon"> 
         <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
@@ -31,7 +31,7 @@
           <polyline points="9 15 12 12 15 15"></polyline>
         </svg>
       </div>
-      <h3 id="upload-status-title">Drag &amp; drop your resume here</h3>
+      <h3 id="upload-status-title">Drag &amp; drop your resume file here</h3>
       <p class="upload-hint">Supports PDF, DOCX (Max 5MB)</p>
       <label class="browse-btn">
         Browse File
@@ -57,6 +57,7 @@
         </div>
       </div>
       <div class="file-actions">
+        <button class="action-btn change" id="change-resume-btn" type="button">Change Resume</button>
         <a class="action-btn" href="{{ url_for('student.resume_file') }}" target="_blank" title="View">View</a>
         <button class="action-btn delete" id="remove-file-btn" title="Delete">Remove</button>
       </div>
@@ -66,66 +67,54 @@
   <!-- Parsed Extraction Results Card -->
   <div class="resume-card {% if not (student and (student.skills or categorized_skills or (resume_sections and (resume_sections.education or resume_sections.certifications or resume_sections.experience or resume_sections.projects)))) %}hidden{% endif %}" id="parsed-results-card">
     <div class="card-header">
-      <h2>Extracted Resume Data (SpaCy NLP)</h2>
+      <h2>Extracted Resume Profile (SpaCy NLP)</h2>
     </div>
 
     <div class="parsed-grid">
-      <div class="info-group">
-        <label>Detected Name</label>
-        <p id="extracted-name" class="info-value">{{ student.name if student and student.name else '--' }}</p>
-      </div>
-      <div class="info-group">
-        <label>Detected Email</label>
-        <p id="extracted-email" class="info-value">{{ student.email if student and student.email else '--' }}</p>
-      </div>
-      <div class="info-group">
-        <label>Detected Phone</label>
-        <p id="extracted-phone" class="info-value">{{ student.phone if student and student.phone else '--' }}</p>
-      </div>
-    </div>
-
-    <div class="skills-section">
-      <label class="section-label">Categorized Skills Taxonomy</label>
-      <div class="categorized-skills-wrapper" id="extracted-skills-container">
-        {% if categorized_skills %}
-          {% for category, cat_skills in categorized_skills.items() %}
-            <div class="skill-category-block">
-              <h4 class="category-title">{{ category }}</h4>
-              <div class="skills-tags-group">
-                {% for skill in cat_skills %}
-                  <span class="skill-tag">{{ skill }}</span>
-                {% endfor %}
-              </div>
-            </div>
-          {% endfor %}
-        {% elif skills %}
-          <div class="skills-tags-group">
-            {% for skill in skills %}
-              <span class="skill-tag">{{ skill }}</span>
-            {% endfor %}
+      <div class="info-group info-group--stacked">
+        <label>CONTACT INFORMATION</label>
+        <div class="info-content contact-rows">
+          <div class="info-row">
+            <span class="info-key">Name:</span>
+            <span class="info-value" id="extracted-name">{{ student.name if student and student.name else '--' }}</span>
           </div>
-        {% else %}
-          <span class="no-skills">No matching skills detected.</span>
-        {% endif %}
+          <div class="info-row">
+            <span class="info-key">Email:</span>
+            <span class="info-value" id="extracted-email">{{ student.email if student and student.email else '--' }}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-key">Phone:</span>
+            <span class="info-value" id="extracted-phone">{{ student.phone if student and student.phone else '--' }}</span>
+          </div>
+        </div>
+      </div>
+
+    <div class="info-group">
+      <label>SKILLS (Categorized)</label>
+      <div class="info-content">
+        <div class="skills-tags-group" id="extracted-skills-container">
+          {% if categorized_skills %}
+            {% for category, cat_skills in categorized_skills.items() %}
+              {% for skill in cat_skills %}<span class="skill-tag">{{ skill }}</span>{% endfor %}
+            {% endfor %}
+          {% elif skills %}
+            {% for skill in skills %}<span class="skill-tag">{{ skill }}</span>{% endfor %}
+          {% else %}
+            <span class="no-skills">No matching skills detected.</span>
+          {% endif %}
+        </div>
       </div>
     </div>
 
-    <!-- Career sections extracted by the NLP step (migration 007) -->
-    {% set any_section = resume_sections and (resume_sections.education or resume_sections.certifications or resume_sections.experience or resume_sections.projects) %}
-    <div class="career-sections {% if not any_section %}hidden{% endif %}" id="career-sections">
-      <label class="section-label">Career Sections (Education / Certifications / Experience / Projects)</label>
-      <div class="sections-grid" id="career-sections-container">
-        {% for key, label in [('education','Education'), ('certifications','Certifications'), ('experience','Experience'), ('projects','Projects')] %}
-          {% set items = resume_sections.get(key) if resume_sections else [] %}
-          {% if items %}
-            <div class="section-block" data-section="{{ key }}">
-              <h4 class="category-title">{{ label }}</h4>
-              <ul class="section-list">
-                {% for item in items %}<li>{{ item }}</li>{% endfor %}
-              </ul>
-            </div>
-          {% endif %}
-        {% endfor %}
+    <!-- Sections the NLP step detected (migration 007) -->
+    {% set detected_sections = [] %}
+    {% for key, label in [('education','Education'), ('certifications','Certifications'), ('experience','Experience'), ('projects','Projects')] %}
+      {% if resume_sections and resume_sections.get(key) %}{% if detected_sections.append(label) %}{% endif %}{% endif %}
+    {% endfor %}
+    <div class="info-group {% if not detected_sections %}hidden{% endif %}" id="sections-detected-group">
+      <label>SECTIONS DETECTED</label>
+      <div class="info-content">
+        <span class="info-value" id="sections-detected">{{ detected_sections | join(' / ') }}</span>
       </div>
     </div>
   </div>
@@ -142,6 +131,15 @@ const parsedCard = document.getElementById('parsed-results-card');
 fileInput.addEventListener('change', function(e) {
   const file = e.target.files[0];
   if (file) uploadAndParse(file);
+  // Reset so picking the very same file again still fires 'change'
+  fileInput.value = '';
+});
+
+// "Change Resume" reveals the drag & drop zone above the current file card
+document.getElementById('change-resume-btn').addEventListener('click', () => {
+  dropzone.classList.remove('hidden');
+  uploadTitle.innerText = "Drag & drop your resume file here";
+  dropzone.scrollIntoView({ behavior: 'smooth', block: 'center' });
 });
 
 dropzone.addEventListener('dragover', (e) => {
@@ -180,7 +178,9 @@ function uploadAndParse(file) {
 
       document.getElementById('display-file-name').innerText = data.filename;
       document.getElementById('file-ext-badge').innerText = data.filename.split('.').pop().toUpperCase();
+      filePreview.classList.remove('hidden');
       filePreview.style.display = 'flex';
+      dropzone.classList.add('hidden');
 
       if (parsed.name) document.getElementById('extracted-name').innerText = parsed.name;
       if (parsed.email) document.getElementById('extracted-email').innerText = parsed.email;
@@ -189,49 +189,29 @@ function uploadAndParse(file) {
       const container = document.getElementById('extracted-skills-container');
       container.innerHTML = '';
 
-      if (parsed.categorized_skills && Object.keys(parsed.categorized_skills).length > 0) {
-        for (const [category, catSkills] of Object.entries(parsed.categorized_skills)) {
-          const categoryBlock = document.createElement('div');
-          categoryBlock.className = 'skill-category-block';
+      // Flatten categorized output (if present) so pills always render as one row
+      const skillList = (parsed.skills && parsed.skills.length > 0)
+        ? parsed.skills
+        : Object.values(parsed.categorized_skills || {}).flat();
 
-          const catTitle = document.createElement('h4');
-          catTitle.className = 'category-title';
-          catTitle.innerText = category;
-
-          const tagsGroup = document.createElement('div');
-          tagsGroup.className = 'skills-tags-group';
-
-          catSkills.forEach(skill => {
-            const badge = document.createElement('span');
-            badge.className = 'skill-tag';
-            badge.innerText = skill;
-            tagsGroup.appendChild(badge);
-          });
-
-          categoryBlock.appendChild(catTitle);
-          categoryBlock.appendChild(tagsGroup);
-          container.appendChild(categoryBlock);
-        }
-      } else if (parsed.skills && parsed.skills.length > 0) {
-        const tagsGroup = document.createElement('div');
-        tagsGroup.className = 'skills-tags-group';
-        parsed.skills.forEach(skill => {
+      if (skillList.length > 0) {
+        skillList.forEach(skill => {
           const badge = document.createElement('span');
           badge.className = 'skill-tag';
           badge.innerText = skill;
-          tagsGroup.appendChild(badge);
+          container.appendChild(badge);
         });
-        container.appendChild(tagsGroup);
       } else {
         container.innerHTML = '<span class="no-skills">No matching skills detected.</span>';
       }
 
-      renderCareerSections(parsed);
+      renderSectionsDetected(parsed);
 
+      parsedCard.classList.remove('hidden');
       parsedCard.style.display = 'block';
       statusBadge.innerText = "Active";
       statusBadge.className = "status-badge active";
-      uploadTitle.innerText = "Drag & drop your resume here";
+      uploadTitle.innerText = "Drag & drop your resume file here";
     } else {
       alert("Error: " + data.error);
       statusBadge.innerText = "Failed";
@@ -251,40 +231,18 @@ const SECTION_LABELS = {
   projects: 'Projects'
 };
 
-function renderCareerSections(parsed) {
-  const wrapper = document.getElementById('career-sections');
-  const container = document.getElementById('career-sections-container');
-  if (!wrapper || !container) return;
+function renderSectionsDetected(parsed) {
+  const group = document.getElementById('sections-detected-group');
+  const target = document.getElementById('sections-detected');
+  if (!group || !target) return;
 
-  container.innerHTML = '';
-  let rendered = 0;
+  // One summary line: "Education / Certifications / ..." for every detected part
+  const detected = Object.entries(SECTION_LABELS)
+    .filter(([key]) => parsed[key] && parsed[key].length > 0)
+    .map(([, label]) => label);
 
-  for (const [key, label] of Object.entries(SECTION_LABELS)) {
-    const items = parsed[key];
-    if (!items || items.length === 0) continue;
-
-    const block = document.createElement('div');
-    block.className = 'section-block';
-    block.dataset.section = key;
-
-    const title = document.createElement('h4');
-    title.className = 'category-title';
-    title.innerText = label;
-    block.appendChild(title);
-
-    const list = document.createElement('ul');
-    list.className = 'section-list';
-    items.forEach(item => {
-      const li = document.createElement('li');
-      li.innerText = item;
-      list.appendChild(li);
-    });
-    block.appendChild(list);
-    container.appendChild(block);
-    rendered++;
-  }
-
-  wrapper.classList.toggle('hidden', rendered === 0);
+  target.innerText = detected.join(' / ');
+  group.classList.toggle('hidden', detected.length === 0);
 }
 
 document.getElementById('remove-file-btn').addEventListener('click', () => {
@@ -293,6 +251,10 @@ document.getElementById('remove-file-btn').addEventListener('click', () => {
   fileInput.value = '';
   statusBadge.innerText = "Ready";
   statusBadge.className = "status-badge active";
+
+  // No resume left on screen — bring the drag & drop zone back
+  dropzone.classList.remove('hidden');
+  uploadTitle.innerText = "Drag & drop your resume file here";
 });
 </script>
 {% endblock %}

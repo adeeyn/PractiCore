@@ -38,7 +38,7 @@
         <span class="rank-num">{{ loop.index }}</span>
         {{ ui.person(applicant, applicant.applied_on) }}
         <div class="applicant-row-right">
-            {{ ui.score(applicant.match_score) }}
+            {{ ui.match_components(applicant) }}
             {{ ui.status_badge(applicant.status) }}
         </div>
     </a>

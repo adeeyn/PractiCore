@@ -1,37 +1,72 @@
-{% extends 'admin/base.html' %}
+{% extends "admin/base.html" %}
 
-{% block title %}Admin Dashboard | PractiCore{% endblock %}
+{% block title %}Dashboard{% endblock %}
 
 {% block content %}
-<div class="page-header">
-    <h1>Employers</h1>
-    <a class="btn" href="{{ url_for('admin.create_employer') }}">+ New Employer Account</a>
+<div class="adm-page-head">
+  <div>
+    <h1>Dashboard</h1>
+    <p class="adm-sub">System overview</p>
+  </div>
+  <a href="{{ url_for('admin.create_company') }}" class="adm-btn adm-btn-primary">
+    <i data-lucide="plus"></i> Add Partner Company
+  </a>
 </div>
 
-<table class="admin-table">
-    <thead>
-        <tr>
-            <th>Company</th>
-            <th>Location</th>
-            <th>Login Email</th>
-            <th>Status</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for employer in employers %}
-        <tr>
-            <td>{{ employer.company_name }}</td>
-            <td>{{ employer.location }}</td>
-            <td>{{ employer.email or '—' }}</td>
-            <td>
-                {% if not employer.email %}<span class="badge muted">No account</span>
-                {% elif employer.is_active %}<span class="badge ok">Active</span>
-                {% else %}<span class="badge muted">Disabled</span>{% endif %}
-            </td>
-        </tr>
-        {% else %}
-        <tr><td colspan="4">No employers yet.</td></tr>
-        {% endfor %}
-    </tbody>
-</table>
+{# Four cards, exactly as in the CP2 Figure 20 layout. Every value is a live
+   count from AdminRepository, never a literal. #}
+<div class="adm-stat-grid adm-stat-grid-4">
+  <div class="adm-stat">
+    <div class="adm-stat-icon adm-ic-company"><i data-lucide="building-2"></i></div>
+    <div class="adm-stat-body">
+      <span class="adm-stat-number">{{ total_companies }}</span>
+      <span class="adm-stat-label">Partner Companies</span>
+      <span class="adm-stat-hint">+{{ new_companies }} this month</span>
+    </div>
+  </div>
+  <div class="adm-stat">
+    <div class="adm-stat-icon adm-ic-posting"><i data-lucide="briefcase"></i></div>
+    <div class="adm-stat-body">
+      <span class="adm-stat-number">{{ active_postings }}</span>
+      <span class="adm-stat-label">Active Postings</span>
+      <span class="adm-stat-hint">{{ closed_postings }} closed</span>
+    </div>
+  </div>
+  <div class="adm-stat">
+    <div class="adm-stat-icon adm-ic-apply"><i data-lucide="file-check-2"></i></div>
+    <div class="adm-stat-body">
+      <span class="adm-stat-number">{{ total_applications }}</span>
+      <span class="adm-stat-label">Total Applicants</span>
+      <span class="adm-stat-hint">Across all postings</span>
+    </div>
+  </div>
+  <div class="adm-stat">
+    <div class="adm-stat-icon adm-ic-users"><i data-lucide="users"></i></div>
+    <div class="adm-stat-body">
+      <span class="adm-stat-number">{{ total_users }}</span>
+      <span class="adm-stat-label">Total Users</span>
+      <span class="adm-stat-hint">Students &amp; employers</span>
+    </div>
+  </div>
+</div>
+
+<section class="adm-panel adm-panel-activity">
+  <header class="adm-panel-head"><h2>Recent Activity</h2></header>
+  <ul class="adm-activity">
+    {% for when, label, who, kind in activity %}
+    <li>
+      <span class="adm-dot adm-dot-{{ kind }}"></span>
+      <div class="adm-activity-body">
+        <p class="adm-activity-text">
+          {{ label }}
+          {% if who %}<span class="adm-activity-who"> — {{ who }}</span>{% endif %}
+        </p>
+        <span class="adm-activity-time">{{ when|timeago }}</span>
+      </div>
+    </li>
+    {% else %}
+    <li><span class="adm-empty">No activity yet.</span></li>
+    {% endfor %}
+  </ul>
+</section>
 {% endblock %}

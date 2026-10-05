@@ -1,6 +1,7 @@
 import mysql.connector
 
 from ..database import Database
+from ..initials import initials_for
 
 # Read model for the employer pages. The column aliases match the keys the
 # employer templates and the _macros.html helpers expect.
@@ -15,15 +16,11 @@ APPLICANT_COLUMNS = """
     p.title            AS position,
     a.status           AS status,
     a.match_score      AS match_score,
+    a.resume_match_score     AS resume_match_score,
+    a.assessment_match_score AS assessment_match_score,
     a.employer_notes   AS notes,
     a.applied_on       AS applied_on
 """
-
-
-def initials_for(name):
-    """'Juan Dela Cruz' -> 'JD', the same style the student module uses."""
-    parts = [part for part in (name or "").split() if part]
-    return "".join(part[0] for part in parts[:2]).upper() or "?"
 
 
 class ApplicationRepository:
@@ -51,8 +48,10 @@ class ApplicationRepository:
             return []
 
         with Database.cursor() as cursor:
+            # company_name is enough: the initials are derived from it, so the
+            # stored company_logo_text column is not needed here.
             cursor.execute(f"""
-                SELECT {APPLICANT_COLUMNS}, e.company_name, e.company_logo_text
+                SELECT {APPLICANT_COLUMNS}, e.company_name
                 FROM applications a
                 JOIN students s ON a.student_id = s.id
                 JOIN internship_postings p ON a.posting_id = p.id
@@ -73,8 +72,14 @@ class ApplicationRepository:
             )
             return {row["posting_id"] for row in cursor.fetchall()}
 
-    def apply(self, student_id, posting_id, match_score):
-        """Records an application. Returns False when the student already applied."""
+    def apply(self, student_id, posting_id, match_score,
+              resume_match_score=None, assessment_match_score=None):
+        """Records an application. Returns False when the student already applied.
+
+        The two component percentages are stored beside the combined score so the
+        employer pages can show a resume percentage and an assessment percentage
+        instead of one opaque figure (migration 011).
+        """
         if not student_id or not posting_id:
             return False
 
@@ -87,9 +92,12 @@ class ApplicationRepository:
                 return False
 
             cursor.execute("""
-                INSERT INTO applications (student_id, posting_id, status, match_score)
-                VALUES (%s, %s, 'Pending', %s)
-            """, (student_id, posting_id, match_score))
+                INSERT INTO applications
+                    (student_id, posting_id, status, match_score,
+                     resume_match_score, assessment_match_score)
+                VALUES (%s, %s, 'Pending', %s, %s, %s)
+            """, (student_id, posting_id, match_score,
+                  resume_match_score, assessment_match_score))
             return True
 
     def withdraw(self, application_id, student_id):
@@ -176,14 +184,38 @@ class ApplicationRepository:
                 (status, notes, application_id),
             )
 
-    def create_if_missing(self, student_id, posting_id, status, match_score, notes=None):
-        """Seeds an application without breaking the unique (student, posting) key."""
+    def create_if_missing(self, student_id, posting_id, status, match_score, notes=None,
+                          resume_match_score=None, assessment_match_score=None):
+        """Seeds an application without breaking the unique (student, posting) key.
+
+        Re-running the seeder refreshes the score and its two components, so the
+        demo data never keeps a split that disagrees with the combined number.
+        """
         with Database.cursor(commit=True) as cursor:
             cursor.execute("""
-                INSERT INTO applications (student_id, posting_id, status, match_score, employer_notes)
-                VALUES (%s, %s, %s, %s, %s)
-                ON DUPLICATE KEY UPDATE match_score = VALUES(match_score)
-            """, (student_id, posting_id, status, match_score, notes))
+                INSERT INTO applications
+                    (student_id, posting_id, status, match_score, employer_notes,
+                     resume_match_score, assessment_match_score)
+                VALUES (%s, %s, %s, %s, %s, %s, %s)
+                ON DUPLICATE KEY UPDATE
+                    match_score = VALUES(match_score),
+                    resume_match_score = VALUES(resume_match_score),
+                    assessment_match_score = VALUES(assessment_match_score)
+            """, (student_id, posting_id, status, match_score, notes,
+                  resume_match_score, assessment_match_score))
+
+    def set_match_components(self, application_id, resume_match_score, assessment_match_score):
+        """Backfills the two component percentages on one existing application.
+
+        Used by `flask --app app backfill-match-components` for the rows written
+        before migration 011 added the columns.
+        """
+        with Database.cursor(commit=True) as cursor:
+            cursor.execute("""
+                UPDATE applications
+                   SET resume_match_score = %s, assessment_match_score = %s
+                 WHERE id = %s
+            """, (resume_match_score, assessment_match_score, application_id))
 
     def for_training(self):
         """Every application with the fields the ranking trainer needs.
@@ -230,6 +262,18 @@ class ApplicationRepository:
     def _shape(row):
         """Adds the display fields the employer templates read."""
         row["initials"] = initials_for(row["name"])
+        # The company badge on the student's My Applications card, derived the
+        # same way as every other initials badge (migration 014).
+        row["logo_text"] = initials_for(row.get("company_name"))
         applied_on = row.get("applied_on")
         row["applied_on"] = applied_on.strftime("%b %d, %Y") if applied_on else "-"
+
+        # Normalise the two split percentages to int-or-None. A row written before
+        # migration 011 has NULL here, and NULL must stay distinguishable from 0:
+        # the templates hide the split when it is missing instead of implying the
+        # applicant scored nothing.
+        for key in ("resume_match_score", "assessment_match_score"):
+            value = row.get(key)
+            row[key] = int(value) if value is not None else None
+
         return row

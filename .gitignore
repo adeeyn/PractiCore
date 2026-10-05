@@ -14,8 +14,8 @@ env/
 # Flask
 instance/
 
-# User uploads (avatars, resumes) - created at runtime, never committed
-uploads/
+# Runtime-generated upload dirs (avatars, company logos) - never committed
+practicore/static/uploads/
 
 # IDE
 .vscode/

@@ -1,0 +1,80 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Assessment{% endblock %}
+
+{% block content %}
+<div class="adm-page-head">
+  <div>
+    <h1>Assessment</h1>
+    <p class="adm-sub">Competency categories and question bank coverage</p>
+  </div>
+</div>
+
+<div class="adm-stat-grid adm-stat-grid-4">
+  <div class="adm-stat">
+    <div class="adm-stat-icon adm-ic-company"><i data-lucide="layers"></i></div>
+    <div class="adm-stat-body">
+      <span class="adm-stat-number">{{ competencies|length }}</span>
+      <span class="adm-stat-label">Competencies</span>
+    </div>
+  </div>
+  <div class="adm-stat">
+    <div class="adm-stat-icon adm-ic-student"><i data-lucide="file-question"></i></div>
+    <div class="adm-stat-body">
+      <span class="adm-stat-number">{{ total_questions }}</span>
+      <span class="adm-stat-label">Questions</span>
+    </div>
+  </div>
+  <div class="adm-stat">
+    <div class="adm-stat-icon adm-ic-employer"><i data-lucide="copy-check"></i></div>
+    <div class="adm-stat-body">
+      <span class="adm-stat-number">{{ total_forms }}</span>
+      <span class="adm-stat-label">Parallel Forms</span>
+    </div>
+  </div>
+  <div class="adm-stat">
+    <div class="adm-stat-icon adm-ic-users"><i data-lucide="shield-check"></i></div>
+    <div class="adm-stat-body">
+      <span class="adm-stat-number">{{ full_coverage }}</span>
+      <span class="adm-stat-label">Full A/B/C Coverage</span>
+      <span class="adm-stat-hint">{{ thin_coverage }} still thin</span>
+    </div>
+  </div>
+</div>
+
+<div class="adm-panel">
+  <table class="adm-table">
+    <thead>
+      <tr><th>Code</th><th>Competency</th><th>Type</th><th>Questions</th><th>Forms</th><th>Coverage</th></tr>
+    </thead>
+    <tbody>
+    {% for row in competencies %}
+      <tr>
+        <td><code>{{ row.code }}</code></td>
+        <td>{{ row.name }}</td>
+        <td>
+          {% if row.is_core %}<span class="adm-badge adm-badge-ok">Core</span>
+          {% else %}<span class="adm-badge adm-badge-off">Targeted</span>{% endif %}
+        </td>
+        <td>{{ row.question_count }}</td>
+        <td>{{ row.form_count }} of 3</td>
+        <td>
+          <div class="adm-cover">
+            {% for i in range(3) %}
+              <span class="adm-cover-pip {{ 'on' if row.form_count > i else '' }}"></span>
+            {% endfor %}
+          </div>
+        </td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<p class="adm-note adm-note-block">
+  This page is read-only. The question bank is a validated research instrument and
+  its contents are seeded from code, so an edit made here would be overwritten by
+  the next seed run. Adding or reworded items is done deliberately, not through a
+  web form.
+</p>
+{% endblock %}

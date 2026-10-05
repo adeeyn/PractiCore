@@ -30,7 +30,6 @@ STATUS_FLOW = ["Pending", "In Review", "Reviewed", "Shortlisted", "Scheduled", "
 DUMMY_EMPLOYERS = [
     {
         "company_name": "Tech Solution Inc.",
-        "logo_text": "TS",
         "email": "hr@techsolution.com.ph",
         "location": "Cebu City, Philippines",
         "industry": "Information Technology",
@@ -66,7 +65,6 @@ DUMMY_EMPLOYERS = [
     },
     {
         "company_name": "DevPro Lab",
-        "logo_text": "DP",
         "email": "careers@devprolab.ph",
         "location": "Remote, Philippines",
         "industry": "Software & Application Development",
@@ -102,7 +100,6 @@ DUMMY_EMPLOYERS = [
     },
     {
         "company_name": "InnovaTech Solutions Inc.",
-        "logo_text": "IN",
         "email": "people@innovatech.com.ph",
         "location": "Makati City, Philippines",
         "industry": "Business Systems & Project Management",
@@ -138,7 +135,6 @@ DUMMY_EMPLOYERS = [
     },
     {
         "company_name": "Nexus Cyber Solutions",
-        "logo_text": "NC",
         "email": "talent@nexuscyber.ph",
         "location": "Tarlac City, Philippines",
         "industry": "Cybersecurity & Risk Management",
@@ -174,7 +170,6 @@ DUMMY_EMPLOYERS = [
     },
     {
         "company_name": "DataPulse Analytics",
-        "logo_text": "DA",
         "email": "careers@datapulse.ph",
         "location": "Clark, Pampanga, Philippines",
         "industry": "Data, AI & Analytics",
@@ -210,7 +205,6 @@ DUMMY_EMPLOYERS = [
     },
     {
         "company_name": "CloudScale Networks",
-        "logo_text": "CN",
         "email": "interns@cloudscale.ph",
         "location": "Makati City, Philippines",
         "industry": "Systems, Infrastructure & Networks",
@@ -246,7 +240,6 @@ DUMMY_EMPLOYERS = [
     },
     {
         "company_name": "AgileDev Studios",
-        "logo_text": "AG",
         "email": "hello@agiledev.ph",
         "location": "Quezon City, Philippines",
         "industry": "Software & Application Development",
@@ -282,7 +275,6 @@ DUMMY_EMPLOYERS = [
     },
     {
         "company_name": "CoreIT Service Management",
-        "logo_text": "CI",
         "email": "hrm@coreit.ph",
         "location": "Taguig City, Philippines",
         "industry": "IT Service Management & Operations",
@@ -316,17 +308,21 @@ def _join_skills(skills):
     return ", ".join(skills)
 
 
-def _score_for(student, posting_skills, matcher, assessments=None):
+def _components_for(student, posting_skills, matcher, assessments=None):
     """Scores through the shared MatchingService, exactly like the live pages.
 
     This used to re-implement the weighted formula by hand, which silently
     drifted away from the app the moment the real model was switched on.
+
+    Returns the combined score together with the two separated percentages
+    (resume overlap and the assessment score for this posting's category), so
+    seeded applications carry the same split the live pages display.
     """
     total_questions = student["total_questions"] or 0
     assessment_pct = round((student["assessment_score"] / total_questions) * 100) if total_questions else 0
     domain_scores = assessments.for_student(student["id"]) if assessments else {}
 
-    return matcher.score(
+    return matcher.score_components(
         {"skills": SkillTaxonomy.parse_skill_string(student["skills"]), "domain_scores": domain_scores},
         posting_skills,
         assessment_percentage=assessment_pct,
@@ -359,7 +355,7 @@ def _upsert_company(employers, company, password_hash, is_hiring, reset_password
     else:
         employers.create_with_account(
             company["email"], password_hash, company["company_name"], company["location"],
-            company["logo_text"], company["industry"], company["about"], skills,
+            company["industry"], company["about"], skills,
             company["contact_name"], company["contact_position"], company["website"],
             company["company_size"], is_hiring,
         )
@@ -368,7 +364,7 @@ def _upsert_company(employers, company, password_hash, is_hiring, reset_password
 
     employers.update_profile(
         employer["id"], employer["user_id"], company["company_name"], login_email,
-        company["logo_text"], company["industry"], company["location"], company["about"],
+        company["industry"], company["location"], company["about"],
         skills, company["contact_name"], company["contact_position"], company["website"],
         company["company_size"], is_hiring,
     )
@@ -433,13 +429,16 @@ def seed_employers(password=DEFAULT_PASSWORD, reset_passwords=False):
             posting_id = _upsert_posting(postings_repo, employer["id"], posting)
 
             for index, student in enumerate(students):
-                match_score = _score_for(student, posting["skills"], matcher, assessments)
+                components = _components_for(student, posting["skills"], matcher, assessments)
+                match_score = components["match_score"]
                 if match_score <= 0:
                     continue  # No skills and no assessment means nothing to screen on
 
                 applications.create_if_missing(
                     student["id"], posting_id, _status_for(index), match_score,
                     f"Seeded demo application for {posting['title']}.",
+                    resume_match_score=components["resume_match_percent"],
+                    assessment_match_score=components["assessment_match_percent"],
                 )
 
     return accounts

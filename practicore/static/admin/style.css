@@ -1,0 +1,24 @@
+/* Administrator module entry stylesheet (linked from admin/base.html).
+ *
+ * Imports the module's own theme first, then the layout, component, table and
+ * dashboard layers -- the same structure the employer and student modules use.
+ *
+ * Note: every @import must sit above all other rules or the browser ignores
+ * them, which leaves the page unstyled. */
+
+@import url('./css/variables.css');
+@import url('./css/layout.css');
+@import url('./css/components.css');
+@import url('./css/tables.css');
+@import url('./css/dashboard.css');
+
+/* ---------- Base ---------- */
+
+body {
+  margin: 0;
+  font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  background: var(--bg);
+  color: var(--text-body);
+  font-size: 14px;
+  line-height: 1.5;
+}

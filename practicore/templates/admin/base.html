@@ -3,43 +3,139 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}PractiCore Admin{% endblock %}</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='admin/css/layout.css') }}">
-    {% block head %}{% endblock %}
+    <title>{% block title %}Admin{% endblock %} | PractiCore</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='admin/style.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/lucide@0.469.0/dist/umd/lucide.min.js"></script>
 </head>
 <body>
-    <header class="admin-nav">
-        <span class="admin-brand">✦ PractiCore Admin</span>
-        <nav>
-            <a href="{{ url_for('admin.dashboard') }}" class="{% if active_page == 'dashboard' %}active{% endif %}">Dashboard</a>
-            <a href="{{ url_for('admin.create_employer') }}" class="{% if active_page == 'employers' %}active{% endif %}">New Employer Account</a>
-            <a href="{{ url_for('auth.logout') }}">Logout</a>
-        </nav>
-    </header>
-    <main class="admin-content">
-        {% block content %}{% endblock %}
-    </main>
+    {# The seven destinations match the CP2 administrator scope. Profile is the
+       signed-in administrator's own account; Settings is where they change
+       their own password. #}
+    {% set nav_items = [
+        ('dashboard',   'admin.dashboard',   'layout-dashboard', 'Dashboard'),
+        ('companies',   'admin.companies',   'building-2',       'Partner Companies'),
+        ('postings',    'admin.postings',    'briefcase',        'Internship Posting'),
+        ('users',       'admin.users',       'users',            'Users'),
+        ('assessment',  'admin.assessment',  'clipboard-check',  'Assessment'),
+        ('reports',     'admin.reports',     'bar-chart-3',      'Reports'),
+        ('settings',    'admin.settings',    'settings',         'Settings'),
+    ] %}
+
+    <div class="adm-shell">
+        <aside class="adm-sidebar" id="adm-sidebar">
+            <div class="adm-brand">
+                <svg class="brand-cap-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                     stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M22 10v6M2 10l10-5 10 5-10 5z"></path>
+                    <path d="M6 12v5c3 3 9 3 12 0v-5"></path>
+                </svg>
+                <span>PractiCore</span>
+            </div>
+
+            <nav class="adm-nav">
+                {% for key, endpoint, icon, label in nav_items %}
+                <a href="{{ url_for(endpoint) }}"
+                   class="adm-nav-item {% if active_page == key %}active{% endif %}">
+                    <i data-lucide="{{ icon }}"></i>
+                    <span>{{ label }}</span>
+                </a>
+                {% endfor %}
+            </nav>
+
+            <div class="adm-sidebar-footer">
+                <div class="adm-sidebar-slogan">Administer. Monitor. Maintain.</div>
+                <div class="adm-logout">
+                    <a href="{{ url_for('auth.logout') }}">
+                        <i data-lucide="log-out"></i>
+                        <span>Logout</span>
+                    </a>
+                </div>
+            </div>
+        </aside>
+
+        <div class="adm-main">
+            <header class="adm-topbar">
+                <button type="button" class="adm-menu-btn" id="adm-menu-btn"
+                        aria-label="Toggle navigation" aria-expanded="false">
+                    <i data-lucide="menu"></i>
+                </button>
+
+                <span class="adm-crumb">{{ self.title() if self.title is defined else 'Admin' }}</span>
+
+                <div class="adm-topbar-right">
+                    <button type="button" class="adm-bell" aria-label="Notifications">
+                        <i data-lucide="bell"></i>
+                        <span class="adm-bell-dot"></span>
+                    </button>
+                    <div class="adm-user-chip">
+                        <div class="adm-avatar">AD</div>
+                        <div class="adm-user-meta">
+                            <strong class="adm-user-name">Admin</strong>
+                            <span class="adm-user-role">System Admin</span>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            {% with messages = get_flashed_messages(with_categories=true) %}
+              {% if messages %}
+              <div class="adm-flashes">
+                {% for category, message in messages %}
+                <div class="adm-flash adm-flash-{{ category }}">
+                    <i data-lucide="{{ 'check-circle-2' if category == 'success' else 'alert-circle' }}"></i>
+                    <span>{{ message }}</span>
+                </div>
+                {% endfor %}
+              </div>
+              {% endif %}
+            {% endwith %}
+
+            <main class="adm-content">
+                {% block content %}{% endblock %}
+            </main>
+        </div>
+    </div>
+
+    <div class="adm-overlay" id="adm-overlay" hidden></div>
 
     <script>
+      (function () {
+        if (window.lucide) { window.lucide.createIcons(); }
+
+        var btn = document.getElementById('adm-menu-btn');
+        var sidebar = document.getElementById('adm-sidebar');
+        var overlay = document.getElementById('adm-overlay');
+        function setOpen(open) {
+          if (!sidebar) { return; }
+          sidebar.classList.toggle('open', open);
+          if (overlay) { overlay.hidden = !open; }
+          if (btn) { btn.setAttribute('aria-expanded', open ? 'true' : 'false'); }
+        }
+        if (btn && sidebar) {
+          btn.addEventListener('click', function () {
+            setOpen(!sidebar.classList.contains('open'));
+          });
+          if (overlay) { overlay.addEventListener('click', function () { setOpen(false); }); }
+          document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape') { setOpen(false); }
+          });
+        }
+
         // A logged-out page can still be restored from the browser cache on Back,
         // so re-check the session and send the user to login if it has gone.
         window.addEventListener('pageshow', function (event) {
-            if (!event.persisted) {
-                return;
-            }
-
-            fetch('/', { method: 'HEAD', cache: 'no-store' })
-                .then(function (response) {
-                    const target = new URL(response.url, window.location.origin);
-
-                    if (target.pathname === '/login') {
-                        window.location.replace(target.href);
-                    }
-                })
-                .catch(function () {
-                    // Offline or blocked: leave the page as it is
-                });
+          if (!event.persisted) { return; }
+          fetch('/', { method: 'HEAD', cache: 'no-store' })
+              .then(function (response) {
+                var target = new URL(response.url, window.location.origin);
+                if (target.pathname === '/login') { window.location.replace(target.href); }
+              })
+              .catch(function () {
+                // Offline or blocked: leave the page as it is
+              });
         });
+      })();
     </script>
+    {% block scripts %}{% endblock %}
 </body>
 </html>

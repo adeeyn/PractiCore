@@ -40,9 +40,25 @@
           <h2 class="rec-title">{{ rec.title }}</h2>
           <p class="rec-company">{{ rec.company }} &bull; <span>{{ rec.location }}</span></p>
         </div>
+        {# Two labelled meters, not one blended number: a student seeing only "68%"
+           cannot tell whether they need more resume keywords or more demonstrated
+           competency, and those two call for opposite responses. Styled by
+           css/match-split.css, shared with the dashboard and My Applications. #}
         <div class="match-badge {{ rec.match_badge_class }}">
-          <span class="match-score">{{ rec.match_score }}%</span>
-          <span class="match-label">Match Score</span>
+          <div class="match-split">
+            <div class="match-split-row"
+                 title="Required skills this posting lists that your resume proves. Self-reported, so it only corroborates the assessment.">
+              <span class="match-split-name">Resume</span>
+              <span class="match-split-track"><span class="match-split-fill resume" style="width: {{ rec.match_breakdown.resume_match_percent }}%"></span></span>
+              <span class="match-split-value">{{ rec.match_breakdown.resume_match_percent }}%</span>
+            </div>
+            <div class="match-split-row"
+                 title="Your score on the objective assessment items for this posting's track. The primary evidence of capability.">
+              <span class="match-split-name">Assessment</span>
+              <span class="match-split-track"><span class="match-split-fill assessment" style="width: {{ rec.match_breakdown.assessment_match_percent }}%"></span></span>
+              <span class="match-split-value">{{ rec.match_breakdown.assessment_match_percent }}%</span>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -90,29 +106,27 @@
         {% endif %}
       </div>
 
-      <!-- How the match score was reached, so the number is not a black box -->
+      <!-- Where the two percentages come from, so neither is a black box -->
       {% if rec.match_breakdown %}
       <details class="match-explain" style="margin-top: 10px;">
         <summary style="cursor: pointer; font-size: 0.85rem; color: #555;">
-          How this {{ rec.match_score }}% match score is calculated
+          How these two percentages are calculated
         </summary>
         {% set b = rec.match_breakdown %}
         <div style="margin-top: 8px; padding: 10px 12px; background: #f8f9fa; border: 1px solid #e9ecef; border-radius: 6px; font-size: 0.85rem; color: #444; line-height: 1.7;">
           <div>
-            <strong>Assessment ({{ b.assessment_relevant }}%)</strong>
-            &times; {{ (b.assessment_weight * 100)|int }}% weight
-            {%- if b.assessment_relevant != b.assessment_overall %}
-              <span style="color: #6c757d;">(your score in {{ rec.recommended_category }}; overall was {{ b.assessment_overall }}%)</span>
+            <strong>Assessment match ({{ b.assessment_match_percent }}%)</strong>
+            {%- if b.assessment_match_percent != b.assessment_overall %}
+              <span style="color: #6c757d;">(your score in {{ rec.recommended_category }}; your overall was {{ b.assessment_overall }}%)</span>
             {%- endif %}
             <br>
-            <span style="color: #6c757d;">Objective items &mdash; the primary evidence of capability.</span>
+            <span style="color: #6c757d;">Objective items &mdash; the primary evidence of capability. Counted at {{ (b.assessment_weight * 100)|int }}% when ranking candidates.</span>
           </div>
           <div style="margin-top: 4px;">
-            <strong>Resume overlap ({{ b.resume_percent }}%)</strong>
-            &times; {{ (b.resume_weight * 100)|int }}% weight
+            <strong>Resume match ({{ b.resume_match_percent }}%)</strong>
             <span style="color: #6c757d;">({{ b.matched_count }} of {{ b.required_count }} required skills listed)</span>
             <br>
-            <span style="color: #6c757d;">Self-reported, so it only corroborates the assessment.</span>
+            <span style="color: #6c757d;">Self-reported, so it only corroborates the assessment. Counted at {{ (b.resume_weight * 100)|int }}% when ranking candidates.</span>
           </div>
           {% if b.missing_skills %}
           <div style="margin-top: 6px; color: #6c757d;">

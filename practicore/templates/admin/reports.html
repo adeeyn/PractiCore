@@ -1,0 +1,101 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Reports{% endblock %}
+
+{% block content %}
+<div class="adm-page-head">
+  <div>
+    <h1>Reports</h1>
+    <p class="adm-sub">System activity at a glance</p>
+  </div>
+</div>
+
+<div class="adm-stat-grid adm-stat-grid-4">
+  <div class="adm-stat">
+    <div class="adm-stat-icon adm-ic-student"><i data-lucide="graduation-cap"></i></div>
+    <div class="adm-stat-body">
+      <span class="adm-stat-number">{{ summary.students }}</span>
+      <span class="adm-stat-label">Students</span>
+      <span class="adm-stat-hint">{{ summary.students_assessed }} assessed</span>
+    </div>
+  </div>
+  <div class="adm-stat">
+    <div class="adm-stat-icon adm-ic-employer"><i data-lucide="building-2"></i></div>
+    <div class="adm-stat-body">
+      <span class="adm-stat-number">{{ summary.companies }}</span>
+      <span class="adm-stat-label">Companies</span>
+      <span class="adm-stat-hint">{{ summary.employers }} employer logins</span>
+    </div>
+  </div>
+  <div class="adm-stat">
+    <div class="adm-stat-icon adm-ic-posting"><i data-lucide="briefcase"></i></div>
+    <div class="adm-stat-body">
+      <span class="adm-stat-number">{{ summary.postings }}</span>
+      <span class="adm-stat-label">Postings</span>
+      <span class="adm-stat-hint">{{ summary.active_postings }} active</span>
+    </div>
+  </div>
+  <div class="adm-stat">
+    <div class="adm-stat-icon adm-ic-users"><i data-lucide="clipboard-check"></i></div>
+    <div class="adm-stat-body">
+      <span class="adm-stat-number">{{ summary.attempts }}</span>
+      <span class="adm-stat-label">Assessment Attempts</span>
+      {% if summary.mean_assessment is not none %}
+      <span class="adm-stat-hint">mean {{ summary.mean_assessment }}%</span>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<div class="adm-panel-grid">
+  <section class="adm-panel">
+    <header class="adm-panel-head"><h2>Applications by Posting</h2></header>
+    <table class="adm-table">
+      <thead><tr><th>Posting</th><th>Company</th><th>Status</th><th>Applicants</th></tr></thead>
+      <tbody>
+      {% for row in top_postings %}
+        <tr>
+          <td>
+            <a href="{{ url_for('admin.posting_detail', posting_id=row.id) }}">{{ row.title }}</a>
+          </td>
+          <td class="adm-muted">{{ row.company_name }}</td>
+          <td>
+            <span class="adm-badge {{ 'adm-badge-ok' if row.status == 'active' else 'adm-badge-off' }}">
+              {{ row.status|capitalize }}
+            </span>
+          </td>
+          <td>{{ row.application_count }}</td>
+        </tr>
+      {% else %}
+        <tr><td colspan="4" class="adm-empty">No postings yet.</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </section>
+
+  <section class="adm-panel">
+    <header class="adm-panel-head"><h2>Recent Activity</h2></header>
+    <ul class="adm-activity">
+      {% for when, label, who, kind in activity %}
+      <li>
+        <span class="adm-dot adm-dot-{{ kind }}"></span>
+        <div class="adm-activity-body">
+          <p class="adm-activity-text">
+            {{ label }}{% if who %}<span class="adm-activity-who"> — {{ who }}</span>{% endif %}
+          </p>
+          <span class="adm-activity-time">{{ when|timeago }}</span>
+        </div>
+      </li>
+      {% else %}
+      <li><span class="adm-empty">No activity yet.</span></li>
+      {% endfor %}
+    </ul>
+  </section>
+</div>
+
+<p class="adm-note adm-note-block">
+  This report shows counts only. Individual student scores and candidate rankings
+  are deliberately not exposed here — those belong to the student and employer
+  modules respectively.
+</p>
+{% endblock %}

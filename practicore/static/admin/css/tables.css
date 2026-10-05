@@ -1,0 +1,98 @@
+/* ==========================================
+   ADMIN TABLES -- data grids, filters, detail lists
+   ========================================== */
+
+.adm-table { width: 100%; border-collapse: collapse; font-size: 0.87rem; }
+.adm-table th {
+  text-align: left;
+  padding: 11px 16px;
+  font-size: 0.71rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+  background: var(--border-soft);
+  font-weight: 600;
+  white-space: nowrap;
+}
+.adm-table td {
+  padding: 13px 16px;
+  border-top: 1px solid var(--border-soft);
+  vertical-align: middle;
+  color: var(--text-body);
+}
+.adm-table tbody tr:hover { background: #fbfbfe; }
+.adm-table a { color: var(--text-dark); text-decoration: none; font-weight: 600; }
+.adm-table a:hover { color: var(--primary-hover); }
+
+.adm-muted { color: var(--text-muted); }
+.adm-empty { text-align: center; color: var(--text-muted); padding: 28px 16px; }
+.adm-truncate { max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.adm-actions { display: flex; gap: 6px; align-items: center; }
+.adm-inline-form { display: inline; margin: 0; }
+
+/* ---------- Filter bar ---------- */
+
+.adm-filters {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items: center;
+  margin-bottom: 18px;
+}
+/* Used inside .adm-page-head, where the bar sits beside the title. */
+.adm-filters-inline { margin-bottom: 0; justify-content: flex-end; }
+.adm-filters-inline .adm-search { flex: 0 1 300px; }
+.adm-search { position: relative; flex: 1 1 280px; }
+.adm-search svg {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 17px;
+  height: 17px;
+  color: var(--text-faint);
+  pointer-events: none;
+}
+.adm-search input {
+  width: 100%;
+  padding: 9px 14px 9px 38px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 0.88rem;
+  font-family: inherit;
+  background: var(--card);
+  color: var(--text-body);
+}
+.adm-select {
+  padding: 9px 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 0.88rem;
+  font-family: inherit;
+  background: var(--card);
+  color: var(--text-body);
+  cursor: pointer;
+}
+
+/* ---------- Detail lists ---------- */
+
+.adm-detail { display: grid; grid-template-columns: minmax(140px, auto) 1fr; gap: 0; margin: 0; }
+.adm-detail dt {
+  padding: 11px 18px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  border-top: 1px solid var(--border-soft);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+.adm-detail dd {
+  margin: 0;
+  padding: 11px 18px;
+  font-size: 0.89rem;
+  color: var(--text-dark);
+  border-top: 1px solid var(--border-soft);
+}
+.adm-wrap { word-break: break-word; }
+.adm-body-text { padding: 0 18px 18px; color: var(--text-body); line-height: 1.65; white-space: pre-line; }
+.adm-status-form { padding: 4px 18px 18px; }

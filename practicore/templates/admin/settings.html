@@ -1,0 +1,70 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Settings{% endblock %}
+
+{% block content %}
+<div class="adm-page-head">
+  <div>
+    <h1>Settings</h1>
+    <p class="adm-sub">Your administrator account</p>
+  </div>
+</div>
+
+<div class="adm-panel-grid">
+  <section class="adm-panel">
+    <header class="adm-panel-head"><h2>Account</h2></header>
+    <dl class="adm-detail">
+      <dt>Email</dt><dd>{{ account.email if account else '—' }}</dd>
+      <dt>Username</dt><dd>{{ (account.username or '—') if account else '—' }}</dd>
+      <dt>Role</dt><dd>Administrator</dd>
+      <dt>Status</dt>
+      <dd>
+        <span class="adm-badge {{ 'adm-badge-ok' if account and account.is_active else 'adm-badge-off' }}">
+          {{ 'Active' if account and account.is_active else 'Inactive' }}
+        </span>
+      </dd>
+    </dl>
+    <p class="adm-note adm-note-block">
+      Your sign-in details are managed here. Student and employer accounts are
+      maintained by the administrator from the
+      <a href="{{ url_for('admin.users') }}">Users</a> page.
+    </p>
+  </section>
+
+  <section class="adm-panel">
+    <header class="adm-panel-head"><h2>Change Password</h2></header>
+    <form method="post" class="adm-form adm-panel-narrow" novalidate>
+      {% if error %}
+      <div class="adm-flashes" style="margin:14px 0 0">
+        <div class="adm-flash adm-flash-error">
+          <i data-lucide="alert-circle"></i><span>{{ error }}</span>
+        </div>
+      </div>
+      {% endif %}
+
+      <div class="adm-form-grid">
+        <label class="adm-field adm-span-2">
+          <span>Current password <em>*</em></span>
+          <input type="password" name="current_password" required autocomplete="current-password">
+        </label>
+        <label class="adm-field">
+          <span>New password <em>*</em></span>
+          <input type="password" name="new_password" required minlength="6"
+                 autocomplete="new-password">
+        </label>
+        <label class="adm-field">
+          <span>Confirm new password <em>*</em></span>
+          <input type="password" name="confirm_password" required minlength="6"
+                 autocomplete="new-password">
+        </label>
+      </div>
+
+      <div class="adm-form-actions">
+        <button type="submit" class="adm-btn adm-btn-primary">
+          <i data-lucide="key-round"></i> Update Password
+        </button>
+      </div>
+    </form>
+  </section>
+</div>
+{% endblock %}

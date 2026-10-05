@@ -1,9 +1,21 @@
+import os
+import uuid
+
 import mysql.connector
-from flask import redirect, render_template, request, session, url_for
+from flask import (
+    current_app,
+    jsonify,
+    redirect,
+    render_template,
+    request,
+    session,
+    url_for,
+)
 from flask.views import MethodView
 
 from . import employer_bp
 from .context import current_employer, split_skills
+from ...initials import initials_for
 from ...repositories import EmployerRepository
 from ...services import AuthService
 
@@ -18,6 +30,10 @@ PROFILE_MESSAGES = {
 
 COMPANY_SIZES = ["1-10", "11-50", "51-200", "201-500", "500+"]
 
+# Real uploads always live under this folder. Anything else in logo_path is not a
+# file we wrote, so it is never deleted when a logo is replaced or removed.
+LOGO_UPLOAD_PREFIX = "uploads/logos/"
+
 
 class CompanyProfileView(MethodView):
     """Shows the employer's own company details and saves the edit form."""
@@ -29,9 +45,13 @@ class CompanyProfileView(MethodView):
 
     def _company(self):
         employer = current_employer() or {}
+        name = employer.get("company_name", "")
         return {
-            "name": employer.get("company_name", ""),
-            "logo_text": employer.get("company_logo_text") or "?",
+            "name": name,
+            # Derived from the name rather than read back from the column, so a
+            # company renamed outside this form still shows matching initials.
+            "logo_text": initials_for(name),
+            "logo_path": employer.get("logo_path") or "",
             "industry": employer.get("industry") or "",
             "email": session.get("email", ""),
             "location": employer.get("location", ""),
@@ -69,7 +89,7 @@ class CompanyProfileView(MethodView):
     def post(self):
         form = {key: request.form.get(key, "").strip() for key in
                 ("company_name", "email", "industry", "location", "about", "required_skills",
-                 "contact_name", "contact_position", "website", "company_size", "logo_text")}
+                 "contact_name", "contact_position", "website", "company_size")}
         form["email"] = form["email"].lower()
 
         if not (form["company_name"] and form["email"] and form["location"]):
@@ -83,8 +103,8 @@ class CompanyProfileView(MethodView):
         if not employer:
             return redirect(url_for("employer.profile", error="noaccount"))
 
-        # Blank logo text falls back to the first letters of the company name
-        logo_text = form["logo_text"] or "".join(w[0] for w in form["company_name"].split()[:2]).upper()
+        # The logo initials are derived from the company name by the repository,
+        # so renaming the company here updates them without a second field.
         skills = split_skills(form["required_skills"])
 
         try:
@@ -93,7 +113,6 @@ class CompanyProfileView(MethodView):
                 user_id=employer["user_id"],
                 company_name=form["company_name"],
                 company_email=form["email"],
-                logo_text=logo_text[:10],
                 industry=form["industry"],
                 location=form["location"],
                 about=form["about"],
@@ -115,4 +134,101 @@ class CompanyProfileView(MethodView):
         return redirect(url_for("employer.profile", saved=1))
 
 
+class CompanyLogoView(MethodView):
+    """Saves, replaces or removes the logged-in employer's company logo.
+
+    Separate from the profile form so the picture appears as soon as it is
+    picked, without the employer having to re-submit and re-save the whole form.
+    """
+
+    def __init__(self):
+        self.employers = EmployerRepository()
+
+    @staticmethod
+    def file_extension(filename):
+        return filename.rsplit(".", 1)[1].lower() if "." in filename else ""
+
+    @staticmethod
+    def remove_file(logo_path):
+        """Deletes a logo this upload replaces, if it is a real upload."""
+        if not logo_path or not logo_path.startswith(LOGO_UPLOAD_PREFIX):
+            return
+
+        try:
+            os.remove(os.path.join(current_app.config["STATIC_FOLDER"], logo_path))
+        except OSError:
+            pass  # Already gone; nothing to clean up
+
+    def post(self):
+        if "logo" not in request.files:
+            return jsonify({"error": "No file submitted"}), 400
+
+        file = request.files["logo"]
+        if file.filename == "":
+            return jsonify({"error": "No file selected"}), 400
+
+        mime_types = current_app.config["LOGO_MIME_TYPES"]
+        extension = self.file_extension(file.filename)
+        if extension not in mime_types:
+            return jsonify({"error": "Invalid file extension"}), 400
+
+        data = file.read()
+        max_bytes = current_app.config["LOGO_MAX_BYTES"]
+        if len(data) > max_bytes:
+            return jsonify({"error": f"File is too large (max {max_bytes // (1024 * 1024)} MB)"}), 400
+
+        employer = current_employer()
+        if not employer:
+            return jsonify({"error": "Company profile not found"}), 404
+
+        # The stored name is generated here, so no user-supplied name reaches the disk
+        filename = f"{employer['id']}_{uuid.uuid4().hex[:8]}.{extension}"
+
+        try:
+            os.makedirs(current_app.config["LOGO_UPLOAD_DIR"], exist_ok=True)
+            with open(os.path.join(current_app.config["LOGO_UPLOAD_DIR"], filename), "wb") as logo:
+                logo.write(data)
+        except OSError as e:
+            return jsonify({"error": str(e)}), 500
+
+        logo_path = LOGO_UPLOAD_PREFIX + filename
+        try:
+            self.employers.update_logo(employer["id"], logo_path)
+        except mysql.connector.Error:
+            # Migration 013 has not been applied, so the file is written but
+            # unreachable. Drop it rather than leave an orphan behind.
+            self.remove_file(logo_path)
+            return jsonify({"error": "Logo storage is not set up yet."}), 500
+
+        # Only cleared once the new path is safely stored, so a failure above
+        # leaves the company with the logo it already had.
+        self.remove_file(employer.get("logo_path"))
+
+        return jsonify({
+            "status": "success",
+            "logo_path": logo_path,
+            "logo_url": url_for("static", filename=logo_path),
+        }), 200
+
+    def delete(self):
+        employer = current_employer()
+        if not employer:
+            return jsonify({"error": "Company profile not found"}), 404
+
+        try:
+            self.employers.update_logo(employer["id"], None)
+        except mysql.connector.Error:
+            return jsonify({"error": "Logo storage is not set up yet."}), 500
+
+        self.remove_file(employer.get("logo_path"))
+
+        # Handed back so the page falls back to the initials of the company name
+        return jsonify({
+            "status": "success",
+            "logo_path": None,
+            "logo_text": initials_for(employer.get("company_name")),
+        }), 200
+
+
 employer_bp.add_url_rule("/profile", view_func=CompanyProfileView.as_view("profile"))
+employer_bp.add_url_rule("/profile/logo", view_func=CompanyLogoView.as_view("profile_logo"))

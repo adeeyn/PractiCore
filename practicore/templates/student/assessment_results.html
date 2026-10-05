@@ -40,13 +40,13 @@
   <div class="assessment-card track-section-card" style="margin-top: 2rem;">
     <div class="track-section-header" style="margin-bottom: 1.5rem;">
       <div class="track-header-title">
-        <h3>Performance Breakdown by Job Opportunity</h3>
+        <h3>Performance Breakdown by Competency</h3>
       </div>
-      <span class="track-sub-badge">6 Job Domains Evaluated</span>
+      <span class="track-sub-badge">{{ category_breakdown|length }} Competenc{{ 'y' if category_breakdown|length == 1 else 'ies' }} Evaluated</span>
     </div>
 
     <div class="role-grid" style="display: flex; flex-direction: column; gap: 1.25rem;">
-      {% for category_name, stats in category_breakdown.items() %}
+      {% for code, stats in category_breakdown.items() %}
       
       {# Calculate progress bar color based on performance #}
       {% if stats.score_percent >= 80 %}
@@ -61,8 +61,8 @@
         
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; flex-wrap: wrap; gap: 8px;">
           <div>
-            <span class="track-tag" style="margin-right: 8px;">{{ stats.track }}</span>
-            <strong style="font-size: 1.1rem; color: #333;">{{ category_name }}</strong>
+            {% if stats.is_core %}<span class="track-tag" style="margin-right: 8px;">core</span>{% endif %}
+            <strong style="font-size: 1.1rem; color: #333;">{{ stats.name or code }}</strong>
           </div>
           <div style="text-align: right;">
             <span style="font-size: 1.1rem; font-weight: bold; color: #2c3e50;">{{ stats.score_percent }}%</span>
@@ -80,6 +80,12 @@
       </div>
       {% endfor %}
     </div>
+
+    <p class="subtitle" style="font-size:.85rem; margin-top:1.5rem; text-align:left;">
+      These scores measure what you demonstrated on the assessment. Skills named on
+      your resume are recorded separately as claims, and are shown separately on your
+      profile — a claim never raises a score.
+    </p>
   </div>
 
 </div>
