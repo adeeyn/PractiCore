@@ -1,7 +1,11 @@
 {# One source of truth for a student's photo: the uploaded file when one exists,
    otherwise the bundled default. Included by the topbar chip and the profile page. #}
-{# Only paths under uploads/ are real uploads; legacy sentinels like 'default.png' fall back. #}
-{% if current_student and current_student.avatar_path and current_student.avatar_path.startswith('uploads/') %}
+{# 'db' = bytes in student_photos (streamed by media.avatar); uploads/ = old
+   file-based storage; anything else (legacy 'default.png', NULL) = default. #}
+{% if current_student and current_student.avatar_path == 'db' %}
+    <img src="{{ url_for('media.avatar', student_id=current_student.id) }}"
+         alt="{{ current_student.name if current_student.name else 'Student' }}">
+{% elif current_student and current_student.avatar_path and current_student.avatar_path.startswith('uploads/') %}
     <img src="{{ url_for('static', filename=current_student.avatar_path) }}"
          alt="{{ current_student.name if current_student.name else 'Student' }}">
 {% else %}

@@ -93,12 +93,39 @@ class StudentRepository:
                 WHERE username = %s
             """, (score, total_questions, competency_level, username))
 
-    def update_avatar(self, student_id, avatar_path):
-        """Points the student at their new photo (path is relative to static/)."""
+    def find_by_id(self, student_id):
+        with Database.cursor() as cursor:
+            cursor.execute("SELECT * FROM students WHERE id = %s", (student_id,))
+            return cursor.fetchone()
+
+    def save_avatar(self, student_id, data, mime):
+        """Stores the photo's bytes in student_photos and flags avatar_path.
+
+        The flag becomes 'db' (templates use it to pick the media route); the
+        bytes live in their own table so students' SELECT * stays light.
+        Passing data=None clears the photo and the templates fall back to the
+        bundled default image.
+        """
         with Database.cursor(commit=True) as cursor:
+            if data is None:
+                cursor.execute(
+                    "DELETE FROM student_photos WHERE student_id = %s", (student_id,))
+            else:
+                cursor.execute(
+                    upsert_sql("student_photos", ["student_id", "mime", "data"],
+                               ["student_id"], ["mime", "data"]),
+                    (student_id, mime, data))
             cursor.execute(
-                "UPDATE students SET avatar_path = %s WHERE id = %s", (avatar_path, student_id)
-            )
+                "UPDATE students SET avatar_path = %s WHERE id = %s",
+                ("db" if data is not None else None, student_id))
+
+    def get_photo(self, student_id):
+        """The stored photo as {mime, data}, or None."""
+        with Database.cursor() as cursor:
+            cursor.execute(
+                "SELECT mime, data FROM student_photos WHERE student_id = %s",
+                (student_id,))
+            return cursor.fetchone()
 
     def update_profile(self, student_id, user_id, name, email, phone, year_level, course):
         """Saves the profile fields and keeps the login account's email in step."""

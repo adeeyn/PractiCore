@@ -41,15 +41,17 @@ falls back to the weighted content-based scorer without it.
 - Demo employers: see `flask --app app seed-employers` output
   (all use `PractiCore123`).
 
-## Known limitation: avatar & company-logo uploads
+## Image uploads (avatars & company logos)
 
-Those two features write files under `practicore/static/uploads/`, but a Vercel
-function's filesystem is **read-only** (uploads will fail in production until
-migrated to Supabase Storage — tracked as a follow-up). Everything else works:
+Avatars and company logos are stored **as bytes in Postgres**
+(`student_photos` / `employer_logos`) and streamed by
+`/media/avatar/<id>` (owner-only) and `/media/logo/<id>` (public branding).
+Nothing is ever written to disk, so uploads behave the same locally and on
+Vercel's read-only filesystem. Resumes were already stored this way
+(`student_resumes.file_data`).
 
-- **Resumes are stored as bytes in Postgres** (`student_resumes.file_data`),
-  so resume upload/view is unaffected.
-- Static assets (CSS/JS/images) ship with the deployment and are served fine.
+Static assets (CSS/JS/bundled images) ship with the deployment and are served
+by Flask as usual.
 
 ## Local development
 

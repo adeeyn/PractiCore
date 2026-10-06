@@ -1,5 +1,4 @@
 import os
-import uuid
 
 from flask import current_app, jsonify, redirect, render_template, request, session, url_for
 from flask.views import MethodView
@@ -125,24 +124,16 @@ class StudentAvatarView(MethodView):
         if not student:
             return jsonify({"error": "Student profile not found"}), 404
 
-        # The stored name is generated here, so no user-supplied name reaches the disk
-        filename = f"{student['id']}_{uuid.uuid4().hex[:8]}.{extension}"
-
-        try:
-            os.makedirs(current_app.config["AVATAR_UPLOAD_DIR"], exist_ok=True)
-            with open(os.path.join(current_app.config["AVATAR_UPLOAD_DIR"], filename), "wb") as photo:
-                photo.write(data)
-        except OSError as e:
-            return jsonify({"error": str(e)}), 500
-
-        avatar_path = f"uploads/avatars/{filename}"
-        self.students.update_avatar(student["id"], avatar_path)
+        # The bytes go to the database: the upload filesystem is read-only on
+        # Vercel, and student_photos keeps them out of the students SELECT *.
+        self.students.save_avatar(student["id"], data, mime_types[extension])
+        # Clean up a photo from the old file-based storage, if there is one.
         self.remove_previous(student.get("avatar_path"))
 
         return jsonify({
             "status": "success",
-            "avatar_path": avatar_path,
-            "avatar_url": url_for("static", filename=avatar_path),
+            "avatar_path": "db",
+            "avatar_url": url_for("media.avatar", student_id=student["id"]),
         }), 200
 
 

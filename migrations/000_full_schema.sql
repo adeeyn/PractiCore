@@ -399,6 +399,24 @@ ALTER TABLE student_competency_scores ADD CONSTRAINT fk_scs_student FOREIGN KEY 
 ALTER TABLE student_resumes ADD CONSTRAINT fk_student_resumes_student FOREIGN KEY (student_id) REFERENCES students (id) ON DELETE CASCADE;
 ALTER TABLE students ADD CONSTRAINT fk_students_user FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE;
 
+-- Profile photo / company logo, stored as bytes so the app works on Vercel's
+-- read-only filesystem (no static/uploads/ writes). Added after conversion:
+-- these tables exist only in Postgres, not in the MariaDB dump.
+-- Kept OUT of students/employers on purpose: those tables are read with
+-- SELECT * on every request, and the image bytes must never ride along.
+-- avatar_path / logo_path stay the "has image" flag: 'db' means row exists here.
+CREATE TABLE student_photos (
+    student_id integer NOT NULL PRIMARY KEY REFERENCES students (id) ON DELETE CASCADE,
+    mime       varchar(60) NOT NULL,
+    data       bytea NOT NULL
+);
+
+CREATE TABLE employer_logos (
+    employer_id integer NOT NULL PRIMARY KEY REFERENCES employers (id) ON DELETE CASCADE,
+    mime        varchar(60) NOT NULL,
+    data        bytea NOT NULL
+);
+
 CREATE OR REPLACE FUNCTION set_updated_at() RETURNS trigger LANGUAGE plpgsql AS $$
 BEGIN NEW.updated_at := CURRENT_TIMESTAMP; RETURN NEW; END $$;
 CREATE TRIGGER trg_assessment_domain_scores_updated_at BEFORE UPDATE ON assessment_domain_scores FOR EACH ROW EXECUTE FUNCTION set_updated_at();

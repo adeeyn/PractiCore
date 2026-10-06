@@ -1,5 +1,4 @@
 import os
-import uuid
 
 from flask import (
     current_app,
@@ -51,6 +50,8 @@ class CompanyProfileView(MethodView):
             # Derived from the name rather than read back from the column, so a
             # company renamed outside this form still shows matching initials.
             "logo_text": initials_for(name),
+            # Needed by company_profile.html to build the media.logo URL.
+            "id": employer.get("id"),
             "logo_path": employer.get("logo_path") or "",
             "industry": employer.get("industry") or "",
             "email": session.get("email", ""),
@@ -182,33 +183,23 @@ class CompanyLogoView(MethodView):
         if not employer:
             return jsonify({"error": "Company profile not found"}), 404
 
-        # The stored name is generated here, so no user-supplied name reaches the disk
-        filename = f"{employer['id']}_{uuid.uuid4().hex[:8]}.{extension}"
-
+        # The bytes go to the database: the upload filesystem is read-only on
+        # Vercel, and employer_logos keeps them out of the employers SELECT *.
+        # Saved before the old file is removed, so a failure here leaves the
+        # company with the logo it already had.
         try:
-            os.makedirs(current_app.config["LOGO_UPLOAD_DIR"], exist_ok=True)
-            with open(os.path.join(current_app.config["LOGO_UPLOAD_DIR"], filename), "wb") as logo:
-                logo.write(data)
-        except OSError as e:
-            return jsonify({"error": str(e)}), 500
-
-        logo_path = LOGO_UPLOAD_PREFIX + filename
-        try:
-            self.employers.update_logo(employer["id"], logo_path)
+            self.employers.save_logo(employer["id"], data, mime_types[extension])
         except DatabaseError:
-            # Migration 013 has not been applied, so the file is written but
-            # unreachable. Drop it rather than leave an orphan behind.
-            self.remove_file(logo_path)
-            return jsonify({"error": "Logo storage is not set up yet."}), 500
+            current_app.logger.exception("company logo store failed")
+            return jsonify({"error": "The logo could not be saved. Please try again."}), 500
 
-        # Only cleared once the new path is safely stored, so a failure above
-        # leaves the company with the logo it already had.
+        # Clean up a logo from the old file-based storage, if there is one.
         self.remove_file(employer.get("logo_path"))
 
         return jsonify({
             "status": "success",
-            "logo_path": logo_path,
-            "logo_url": url_for("static", filename=logo_path),
+            "logo_path": "db",
+            "logo_url": url_for("media.logo", employer_id=employer["id"]),
         }), 200
 
     def delete(self):
@@ -217,9 +208,10 @@ class CompanyLogoView(MethodView):
             return jsonify({"error": "Company profile not found"}), 404
 
         try:
-            self.employers.update_logo(employer["id"], None)
+            self.employers.save_logo(employer["id"], None, None)
         except DatabaseError:
-            return jsonify({"error": "Logo storage is not set up yet."}), 500
+            current_app.logger.exception("company logo clear failed")
+            return jsonify({"error": "The logo could not be removed. Please try again."}), 500
 
         self.remove_file(employer.get("logo_path"))
 

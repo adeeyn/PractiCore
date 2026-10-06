@@ -32,16 +32,34 @@ class EmployerRepository:
             cursor.execute("SELECT * FROM employers WHERE company_name = %s", (company_name,))
             return cursor.fetchone()
 
-    def update_logo(self, employer_id, logo_path):
-        """Points the company at its logo (path is relative to static/).
+    def save_logo(self, employer_id, data, mime):
+        """Stores the logo's bytes in employer_logos and flags logo_path.
 
-        Passing None clears the logo, which sends the templates back to the
-        company_logo_text initials.
+        The flag becomes 'db' (templates use it to pick the media route); the
+        bytes live in their own table so employers' SELECT * stays light.
+        Passing data=None clears the logo, which sends the templates back to
+        the company_logo_text initials.
         """
         with Database.cursor(commit=True) as cursor:
+            if data is None:
+                cursor.execute(
+                    "DELETE FROM employer_logos WHERE employer_id = %s", (employer_id,))
+            else:
+                cursor.execute(
+                    upsert_sql("employer_logos", ["employer_id", "mime", "data"],
+                               ["employer_id"], ["mime", "data"]),
+                    (employer_id, mime, data))
             cursor.execute(
-                "UPDATE employers SET logo_path = %s WHERE id = %s", (logo_path, employer_id)
-            )
+                "UPDATE employers SET logo_path = %s WHERE id = %s",
+                ("db" if data is not None else None, employer_id))
+
+    def get_logo(self, employer_id):
+        """The stored logo as {mime, data}, or None."""
+        with Database.cursor() as cursor:
+            cursor.execute(
+                "SELECT mime, data FROM employer_logos WHERE employer_id = %s",
+                (employer_id,))
+            return cursor.fetchone()
 
     def update_profile(self, employer_id, user_id, company_name, company_email,
                        industry, location, about, required_skills, contact_name,

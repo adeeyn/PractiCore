@@ -5,10 +5,12 @@ The employer Company Profile page had a "Change Logo" button wired to a
 cover the endpoint that replaced it: /employer/profile/logo (POST to save,
 DELETE to remove).
 
-EmployerRepository.update_logo is stubbed so no row and no file is really
-written; the file-system side points at a temp directory. What runs for real is
-the routing, the role guard, the extension/size validation, and the fact that a
-rejected upload never reaches the repository.
+EmployerRepository.save_logo is stubbed so no row is really written; the
+legacy file-system side (clean-up of pre-migration files) points at a temp
+directory. What runs for real is the routing, the role guard, the
+extension/size validation, and the fact that a rejected upload never reaches
+the repository. New uploads are stored as bytes in employer_logos, so nothing
+is ever written to disk.
 """
 import io
 import os
@@ -77,7 +79,7 @@ def _stubbed(row=None, **config):
 
     employer_patch = mock.patch.object(profile_mod, "current_employer",
                                       return_value=dict(row or EMPLOYER))
-    repo_patch = mock.patch.object(profile_mod.EmployerRepository, "update_logo")
+    repo_patch = mock.patch.object(profile_mod.EmployerRepository, "save_logo")
     return employer_patch, repo_patch
 
 
@@ -109,39 +111,37 @@ class TestLogoAuthorisation:
 class TestLogoValidation:
     """A rejected upload must never reach the repository."""
 
-    def test_a_png_is_accepted_and_the_path_is_returned(self):
+    def test_a_png_is_accepted_and_the_media_url_is_returned(self):
         tmp = tempfile.mkdtemp()
         try:
             client = _client(tmp)
             employer_patch, repo_patch = _stubbed()
-            with employer_patch, repo_patch as update:
+            with employer_patch, repo_patch as save:
                 response = _upload(client)
 
             assert response.status_code == 200
             data = response.get_json()
             assert data["status"] == "success"
-            assert data["logo_path"].startswith("uploads/logos/")
-            assert data["logo_path"].endswith(".png")
-            assert data["logo_url"].endswith(data["logo_path"])
-            assert os.listdir(tmp), "the file was never written to disk"
-            update.assert_called_once()
+            assert data["logo_path"] == "db", "the flag points templates at media.logo"
+            assert data["logo_url"] == "/media/logo/3"
+            assert not os.listdir(tmp), "bytes go to the database, never to disk"
+            save.assert_called_once_with(EMPLOYER["id"], PNG_BYTES, "image/png")
         finally:
             shutil.rmtree(tmp, ignore_errors=True)
 
-    def test_the_uploaded_name_is_generated_not_taken_from_the_form(self):
-        """A hostile filename must not reach the disk."""
+    def test_a_hostile_filename_never_reaches_storage(self):
+        """The form name only picks the extension; the bytes are stored
+        nameless in the database, so nothing can be written under it."""
         tmp = tempfile.mkdtemp()
         try:
             client = _client(tmp)
             employer_patch, repo_patch = _stubbed()
-            with employer_patch, repo_patch:
+            with employer_patch, repo_patch as save:
                 response = _upload(client, filename="../../../evil.png")
 
             assert response.status_code == 200
-            written = os.listdir(tmp)
-            assert len(written) == 1
-            assert ".." not in written[0]
-            assert written[0].startswith("3_"), written[0]
+            assert os.listdir(tmp) == [], "nothing may be written to disk"
+            save.assert_called_once_with(EMPLOYER["id"], PNG_BYTES, "image/png")
         finally:
             shutil.rmtree(tmp, ignore_errors=True)
 
@@ -182,13 +182,14 @@ class TestLogoValidation:
 
 
 class TestLogoRemoval:
-    """DELETE clears the column so the templates fall back to the initials."""
+    """DELETE clears the stored bytes and the column, so the templates fall
+    back to the initials."""
 
     def test_removing_a_logo_clears_it_and_hands_back_the_initials(self):
         row = dict(EMPLOYER, logo_path="uploads/logos/3_deadbeef.png")
         client = _client()
         employer_patch, repo_patch = _stubbed(row)
-        with employer_patch, repo_patch as update:
+        with employer_patch, repo_patch as save:
             response = client.delete("/employer/profile/logo")
 
         assert response.status_code == 200
@@ -196,7 +197,7 @@ class TestLogoRemoval:
         assert data["status"] == "success"
         assert data["logo_path"] is None
         assert data["logo_text"] == "IS"
-        update.assert_called_once_with(EMPLOYER["id"], None)
+        save.assert_called_once_with(EMPLOYER["id"], None, None)
 
     def test_replacing_a_logo_deletes_the_file_it_supersedes(self):
         static_root = tempfile.mkdtemp()
@@ -215,8 +216,8 @@ class TestLogoRemoval:
                 response = _upload(client)
 
             assert response.status_code == 200
-            assert not os.path.exists(old), "the replaced logo should be deleted"
-            assert len(os.listdir(logo_dir)) == 1, "the new logo should be the only one left"
+            assert not os.path.exists(old), "the replaced legacy logo should be deleted"
+            assert os.listdir(logo_dir) == [], "the new logo lives in the database, not on disk"
         finally:
             shutil.rmtree(static_root, ignore_errors=True)
 
@@ -278,4 +279,9 @@ class TestCompanyProfilePage:
     def test_the_uploaded_image_and_remove_button_are_shown(self):
         body = self._page(dict(EMPLOYER, logo_path="uploads/logos/3_deadbeef.png"))
         assert "/static/uploads/logos/3_deadbeef.png" in body
+        assert 'id="logo-remove"' in body
+
+    def test_a_database_stored_logo_is_streamed_from_the_media_route(self):
+        body = self._page(dict(EMPLOYER, logo_path="db"))
+        assert "/media/logo/3" in body
         assert 'id="logo-remove"' in body
