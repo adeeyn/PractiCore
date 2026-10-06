@@ -58,11 +58,45 @@ def _connect_kwargs():
     }
 
 
+class _CursorWrapper:
+    """Real psycopg2 cursor plus a *writable* ``lastrowid``.
+
+    psycopg2's cursor exposes ``lastrowid`` as a read-only descriptor that
+    always reports 0, so assigning the RETURNING id onto it fails silently
+    inside a bare except - every ``INSERT ... RETURNING id`` then hands back 0
+    and the foreign key that consumes it fails (employers.user_id = 0).
+
+    The wrapper keeps the id on an attribute it owns and delegates everything
+    else (rowcount, fetchone, close, ...) to the underlying cursor.
+    """
+
+    def __init__(self, cursor):
+        self._cursor = cursor
+        self._orig_execute = cursor.execute
+        self.lastrowid = None
+
+    def execute(self, sql, params=None):
+        result = (self._orig_execute(sql, params) if params is not None
+                  else self._orig_execute(sql))
+        try:
+            if isinstance(sql, str) and re.search(
+                    r"RETURNING\s+id\b", sql, re.IGNORECASE):
+                row = self._cursor.fetchone()
+                self.lastrowid = row["id"] if isinstance(row, dict) else row[0]
+        except Exception:
+            pass
+        return result
+
+    def __getattr__(self, name):
+        return getattr(self._cursor, name)
+
+
 class Database:
     """Opens Supabase Postgres connections and guarantees they close.
 
     Same `with Database.cursor(commit=True) as cursor:` API as before.
-    `%s` placeholders still work, rows are dicts.
+    `%s` placeholders still work, rows are dicts, and cursor.lastrowid carries
+    the id of the last `INSERT ... RETURNING id`.
     """
 
     @staticmethod
@@ -81,28 +115,7 @@ class Database:
         conn = cls.connect()
         try:
             cursor_factory = psycopg2.extras.RealDictCursor if dictionary else None
-            cursor = conn.cursor(cursor_factory=cursor_factory)
-            # Compat: backfill .lastrowid from RETURNING when present.
-            _orig_execute = cursor.execute
-
-            def execute(sql, params=None):
-                result = _orig_execute(sql, params) if params is not None else _orig_execute(sql)
-                try:
-                    wants_id = isinstance(sql, str) and re.search(
-                        r"RETURNING\s+id\b", sql, re.IGNORECASE
-                    )
-                    if wants_id:
-                        row = cursor.fetchone()
-                        cursor.lastrowid = row["id"] if isinstance(row, dict) else row[0]
-                    elif not hasattr(cursor, "lastrowid"):
-                        cursor.lastrowid = None
-                except Exception:
-                    pass
-                return result
-
-            cursor.execute = execute
-            if not hasattr(cursor, "lastrowid"):
-                cursor.lastrowid = None
+            cursor = _CursorWrapper(conn.cursor(cursor_factory=cursor_factory))
             try:
                 yield cursor
                 if commit:

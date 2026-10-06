@@ -1,5 +1,6 @@
 from datetime import date, datetime
 
+from dotenv import load_dotenv
 from flask import Flask, request
 
 from .cli import register_commands
@@ -10,6 +11,10 @@ from .services import MatchingService, ResumeParser
 
 def create_app(config_class=Config):
     """Application factory: builds and wires up the Flask app."""
+    # Reads .env (DATABASE_URL, ...) before anything touches the database.
+    # Real environment variables always win over the file.
+    load_dotenv()
+
     app = Flask(
         __name__,
         template_folder=config_class.TEMPLATE_FOLDER,

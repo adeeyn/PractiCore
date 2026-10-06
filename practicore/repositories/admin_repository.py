@@ -268,7 +268,8 @@ class AdminRepository:
         with Database.cursor() as cursor:
             cursor.execute(
                 "SELECT COUNT(*) AS n FROM employers "
-                "WHERE created_at >= DATE_SUB(NOW(), INTERVAL %s DAY)", (days,))
+                "WHERE created_at >= CURRENT_TIMESTAMP - INTERVAL '1 day' * %s",
+                (days,))
             return (cursor.fetchone() or {}).get("n", 0)
 
     # ---------- Administrator own account ----------

@@ -5,6 +5,7 @@
 # install (and the Vercel build) can parse resumes with no extra step.
 
 Flask>=3.0
+python-dotenv>=1.0          # loads .env (DATABASE_URL) locally; Vercel uses its own env settings
 psycopg2-binary>=2.9        # Supabase/Postgres driver (practicore/database.py)
 spacy>=3.8,<4.0
 pdfplumber>=0.10

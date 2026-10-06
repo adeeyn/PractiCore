@@ -524,7 +524,24 @@ class TestSettings:
     """CP2 Figure 12: the user updates their own password."""
 
     def _post(self, current, new, confirm):
-        return _client("admin").post("/admin/settings", data={
+        """Posts as the REAL admin, not _client()'s placeholder id 1.
+
+        The seeded database's first user is a demo employer, so the session id
+        must be the admin's own row - same idiom as
+        test_the_page_shows_the_signed_in_admin above. The fixture admin's
+        password is `admin123` (set by the seed step in the setup docs).
+        """
+        from practicore import create_app
+        from practicore.repositories import AdminRepository
+
+        app = create_app()
+        with app.app_context():
+            admin_id = AdminRepository("", "admin").all_users()[0]["id"]
+
+        client = _client("admin")
+        with client.session_transaction() as sess:
+            sess["user_id"] = admin_id
+        return client.post("/admin/settings", data={
             "current_password": current, "new_password": new,
             "confirm_password": confirm}).get_data(as_text=True)
 
