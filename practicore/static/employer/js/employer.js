@@ -143,7 +143,13 @@ function initLogoUpload() {
     });
 
   const showLogo = (url) => {
-    preview.classList.add('has-image');
+    // First upload starts from the initials box
+    // (<div class="avatar avatar-xl avatar-brand">), which has no sizing /
+    // overflow rules for an <img>. Without the logo-preview class the image
+    // renders at its natural size and covers the form. Swap to the same
+    // markup the server renders when a logo exists.
+    preview.classList.remove('avatar', 'avatar-xl', 'avatar-brand');
+    preview.classList.add('logo-preview', 'has-image');
     preview.innerHTML = '';
     const img = document.createElement('img');
     img.src = url;
@@ -152,7 +158,9 @@ function initLogoUpload() {
   };
 
   const showInitials = (text) => {
-    preview.classList.remove('has-image');
+    // Swap back to the initials box the server renders when there is no logo.
+    preview.classList.remove('logo-preview', 'has-image');
+    preview.classList.add('avatar', 'avatar-xl', 'avatar-brand');
     preview.textContent = text || '?';
   };
 
