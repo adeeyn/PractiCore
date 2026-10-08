@@ -136,9 +136,16 @@ class RecommendationService:
         student_profile = {"skills": student_skills, "domain_scores": domain_scores or {}}
         recommendations = []
         resume_match_scores = []
-
         for posting in self.postings.all_with_skills():
             posting_skills = posting["skills"]
+            matched = SkillTaxonomy.match_required_skills(posting_skills, student_skills)
+
+            # DASHBOARD FILTER (same rule as the recommendation page): only
+            # postings matching >= 1 resume skill are shown. A new account has
+            # no skills, so it matches nothing and correctly shows zero
+            # recommendations instead of phantom 0%-match postings.
+            if not matched:
+                continue
 
             # Same shared scorer the employer ranks applicants on, asked for the
             # combined number and the two separated percentages in one pass.
@@ -155,6 +162,9 @@ class RecommendationService:
                 "location": posting["location"],
                 "logo": self._logo_for(posting),
                 "is_remote": posting["is_remote"],
+                # The posting's own required skills, so the dashboard cards can
+                # show them instead of a hardcoded placeholder pill list.
+                "skills": posting.get("skills") or [],
                 "match_score": match_score,
                 "match_color_class": "green" if match_score >= 85 else "amber",
                 # Shown beside the combined badge so the student can see which

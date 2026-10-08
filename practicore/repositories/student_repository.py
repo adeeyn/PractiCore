@@ -43,9 +43,19 @@ class StudentRepository:
             """, (user_id, name, email, username, student_no, phone, year_level, course))
 
     def get_dashboard_profile(self, username):
+        """Everything the student dashboard renders from, in one row.
+
+        `has_resume` is 1/0 (both MySQL and Postgres read CASE WHEN EXISTS the
+        same way) so the profile-completion meter can count the upload step
+        without a second query.
+        """
         with Database.cursor() as cursor:
             cursor.execute("""
-                SELECT id, name, skills, assessment_score, total_questions, competency_level
+                SELECT id, name, email, phone, course, skills,
+                       assessment_score, total_questions, competency_level,
+                       CASE WHEN EXISTS (
+                           SELECT 1 FROM student_resumes r WHERE r.student_id = students.id
+                       ) THEN 1 ELSE 0 END AS has_resume
                 FROM students
                 WHERE username = %s
             """, (username,))

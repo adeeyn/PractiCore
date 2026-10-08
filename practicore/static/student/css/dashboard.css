@@ -332,6 +332,41 @@
   gap: 16px;
 }
 
+/* Empty state when the database has no postings to show. The grid child must
+   span every track, otherwise the message sits alone in the first column. */
+.internships-empty {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 40px 20px;
+  background: #ffffff;
+  border: 1px dashed #d1d5db;
+  border-radius: 14px;
+  text-align: center;
+  color: #6b7280;
+}
+
+.internships-empty svg {
+  width: 28px;
+  height: 28px;
+  color: #9ca3af;
+}
+
+.internships-empty-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: #111827;
+  margin: 4px 0 0;
+}
+
+.internships-empty-sub {
+  font-size: 12px;
+  color: #6b7280;
+  margin: 0;
+}
+
 .internship-card {
   background: #ffffff;
   border: 1px solid #e5e7eb;

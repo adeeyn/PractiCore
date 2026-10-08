@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>PractiCore - Sign In</title>
+  <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='student/style.css') }}">
   <script src="https://cdn.jsdelivr.net/npm/lucide@0.469.0/dist/umd/lucide.min.js"></script>
 </head>
@@ -13,10 +14,7 @@
   <section class="auth-panel">
     <div class="auth-panel-inner">
       <div class="brand">
-        <svg class="brand-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M22 10v6M2 10l10-5 10 5-10 5z"></path>
-          <path d="M6 12v5c3 3 9 3 12 0v-5"></path>
-        </svg>
+        <img class="brand-icon" src="{{ url_for('static', filename='img/logo-icon.png') }}" alt="">
         <span>PractiCore</span>
       </div>
 
@@ -95,11 +93,7 @@
   <section class="auth-visual">
     <div class="visual-header">
       <div class="brand-white">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M22 10v6M2 10l10-5 10 5-10 5z"></path>
-          <path d="M6 12v5c3 3 9 3 12 0v-5"></path>
-        </svg>
-        <span>PractiCore</span>
+        <img class="brand-hero" src="{{ url_for('static', filename='img/practicore-logo.png') }}" alt="PractiCore">
       </div>
     </div>
 

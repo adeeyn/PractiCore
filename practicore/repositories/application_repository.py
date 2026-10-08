@@ -41,6 +41,44 @@ class ApplicationRepository:
             # Fallback if applications table hasn't been created yet
             return 0
 
+    def count_for_student_since(self, student_id, since):
+        """Applications filed at or after `since` (the dashboard's "N new this week")."""
+        if not student_id:
+            return 0
+        try:
+            with Database.cursor() as cursor:
+                cursor.execute(
+                    "SELECT COUNT(*) AS total FROM applications "
+                    "WHERE student_id = %s AND applied_on >= %s",
+                    (student_id, since),
+                )
+                result = cursor.fetchone()
+                return result["total"] if result else 0
+        except DatabaseError:
+            return 0
+
+    def recent_for_student(self, student_id, limit=3):
+        """Latest applications as raw rows for the dashboard activity feed.
+
+        Unlike `for_student` this keeps `applied_on` as a datetime, because the
+        dashboard renders relative labels ("2 days ago") from it.
+        """
+        if not student_id:
+            return []
+        try:
+            with Database.cursor() as cursor:
+                cursor.execute("""
+                    SELECT p.title AS position, a.applied_on
+                    FROM applications a
+                    JOIN internship_postings p ON a.posting_id = p.id
+                    WHERE a.student_id = %s
+                    ORDER BY a.applied_on DESC
+                    LIMIT %s
+                """, (student_id, limit))
+                return cursor.fetchall()
+        except DatabaseError:
+            return []
+
     def for_student(self, student_id):
         if not student_id:
             return []

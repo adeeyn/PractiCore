@@ -28,7 +28,15 @@
   letter-spacing: -0.02em;
   color: #fff;
 }
-.adm-brand .brand-cap-icon { width: 24px; height: 24px; }
+.adm-brand .brand-cap-icon {
+  width: 30px;
+  height: 30px;
+  box-sizing: border-box;
+  object-fit: contain;
+  background: #ffffff;
+  border-radius: 8px;
+  padding: 3px;
+}
 
 /* ---------- Navigation ---------- */
 

@@ -64,6 +64,9 @@ html, body {
   width: 26px;
   height: 26px;
   color: var(--primary);
+  object-fit: contain;
+  background: #ffffff;
+  border-radius: 6px;
 }
 
 .auth-header {
@@ -402,6 +405,14 @@ html, body {
 .visual-header .brand-white svg {
   width: 24px;
   height: 24px;
+}
+
+.visual-header .brand-white .brand-hero {
+  width: 150px;
+  height: auto;
+  display: block;
+  border-radius: 14px;
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.22);
 }
 
 .visual-headline {

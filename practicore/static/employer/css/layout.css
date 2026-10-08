@@ -37,9 +37,13 @@
 }
 
 .brand-cap-icon {
-  width: 24px;
-  height: 24px;
-  color: #ffffff;
+  width: 30px;
+  height: 30px;
+  box-sizing: border-box;
+  object-fit: contain;
+  background: #ffffff;
+  border-radius: 8px;
+  padding: 3px;
 }
 
 .emp-nav {

@@ -92,3 +92,38 @@ class AssessmentRepository:
                 return row["overall_percentage"] if row else None
         except DatabaseError:
             return None
+
+    @staticmethod
+    def count_for_student(student_id):
+        """Completed attempts for the dashboard's Completed Assessments card."""
+        if not student_id:
+            return 0
+        try:
+            with Database.cursor() as cursor:
+                cursor.execute(
+                    "SELECT COUNT(*) AS total FROM assessment_attempts WHERE student_id = %s",
+                    (student_id,),
+                )
+                row = cursor.fetchone()
+                return row["total"] if row else 0
+        except DatabaseError:
+            # Migration 006 not applied yet: the students row still carries the score.
+            return 0
+
+    @staticmethod
+    def recent_for_student(student_id, limit=3):
+        """Latest attempts as raw rows for the dashboard activity feed."""
+        if not student_id:
+            return []
+        try:
+            with Database.cursor() as cursor:
+                cursor.execute("""
+                    SELECT overall_percentage, competency_level, taken_at
+                    FROM assessment_attempts
+                    WHERE student_id = %s
+                    ORDER BY taken_at DESC, id DESC
+                    LIMIT %s
+                """, (student_id, limit))
+                return cursor.fetchall()
+        except DatabaseError:
+            return []
