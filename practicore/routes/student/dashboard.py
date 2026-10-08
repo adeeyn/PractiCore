@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
 
-from flask import render_template, session
+from flask import redirect, render_template, session, url_for
 from flask.views import MethodView
 
 from . import student_bp
@@ -17,16 +17,33 @@ class StudentDashboardView(MethodView):
         self.recommender = RecommendationService()
 
     def get(self):
-        student = self.students.get_dashboard_profile(session.get("username"))
-        student_skills = SkillTaxonomy.parse_skill_string(student.get("skills") if student else "")
+        # ONE source of truth for "who is this", taken from session["user_id"].
+        # The dashboard used to look the row up by session["username"] while
+        # base.html resolved current_student() by session["user_id"]. When a
+        # stale session made those two disagree, the page rendered one
+        # account's greeting over a DIFFERENT account's applications,
+        # assessments and activity - which is how a brand-new signup appeared
+        # to already have data. Resolve once, and refuse to render a session
+        # whose two keys point at different students.
+        student = self.students.find_by_user_id(session.get("user_id"))
+        if not student or student.get("username") != session.get("username"):
+            session.clear()
+            return redirect(url_for("auth.login"))
+
+        # Identity is confirmed, so re-read through the dashboard projection:
+        # it carries the computed has_resume flag the profile meter needs,
+        # which a plain SELECT * does not have.
+        student = self.students.get_dashboard_profile(student["username"])
+
+        student_id = student["id"]
+        student_skills = SkillTaxonomy.parse_skill_string(student.get("skills") or "")
 
         assessment_percentage = AssessmentService.score_percentage(student)
-        student_id = student["id"] if student else None
         applications_count = self.applications.count_for_student(student_id)
         applications_this_week = self.applications.count_for_student_since(
             student_id, datetime.now() - timedelta(days=7)
         )
-        domain_scores = self.assessments.for_student(student_id) if student else {}
+        domain_scores = self.assessments.for_student(student_id)
 
         completed_assessments = self.assessments.count_for_student(student_id)
         if not completed_assessments and student and student.get("total_questions"):

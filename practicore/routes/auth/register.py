@@ -1,5 +1,5 @@
 import mysql.connector
-from flask import current_app, redirect, render_template, request, url_for
+from flask import current_app, redirect, render_template, request, session, url_for
 from flask.views import MethodView
 
 from . import auth_bp
@@ -70,6 +70,10 @@ class StudentRegisterView(MethodView):
         except mysql.connector.Error as err:
             return self._error(f"Database error: {err}")
 
+        # Drop anything left over from a previous session. Registering must
+        # never leave an older account's user_id/username in the cookie, or the
+        # next dashboard load would resolve the wrong student.
+        session.clear()
         return redirect(url_for("auth.login"))
 
 
