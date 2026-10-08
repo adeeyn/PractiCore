@@ -1,4 +1,4 @@
-from ..database import Database, DatabaseError, upsert_sql
+from ..database import Database
 
 
 class QuestionRepository:

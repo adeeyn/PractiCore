@@ -4,11 +4,11 @@
 table so the administrator can see the whole population at once, with search and
 filtering. No credential is ever selected or displayed.
 """
+import mysql.connector
 from flask import current_app, flash, redirect, render_template, request, url_for
 from flask.views import MethodView
 
 from . import admin_bp
-from ...database import DatabaseError
 from ...repositories import AdminRepository
 
 
@@ -43,7 +43,7 @@ class UserStatusView(MethodView):
 
         try:
             changed = AdminRepository().set_user_active(user_id, want_active)
-        except DatabaseError:
+        except mysql.connector.Error:
             current_app.logger.exception("user status change failed")
             flash("The account could not be updated. Please try again.", "error")
             return redirect(request.referrer or url_for("admin.users"))

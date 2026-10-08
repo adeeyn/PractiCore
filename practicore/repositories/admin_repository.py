@@ -5,11 +5,14 @@ Read-only for everything the employer owns. The administrator observes
 postings, competencies and scores; this module never writes to the matching,
 assessment or ranking data.
 """
-from ..database import Database, DatabaseError, upsert_sql
+import mysql.connector
+
+from ..database import Database
 from ..initials import initials_for
 from .user_repository import UserRepository
 
-# Re-exported so callers can catch it without importing psycopg2 directly.
+# Re-exported so callers can catch it without importing mysql directly.
+DatabaseError = mysql.connector.Error
 
 
 class AdminRepository:
@@ -268,8 +271,7 @@ class AdminRepository:
         with Database.cursor() as cursor:
             cursor.execute(
                 "SELECT COUNT(*) AS n FROM employers "
-                "WHERE created_at >= CURRENT_TIMESTAMP - INTERVAL '1 day' * %s",
-                (days,))
+                "WHERE created_at >= DATE_SUB(NOW(), INTERVAL %s DAY)", (days,))
             return (cursor.fetchone() or {}).get("n", 0)
 
     # ---------- Administrator own account ----------
@@ -366,10 +368,12 @@ class AdminRepository:
                    p.is_remote, p.positions_available, p.posted_date,
                    e.id AS employer_id, e.company_name, e.company_logo_text,
                    e.location,
-                   (SELECT string_agg(s.skill_name, ', ' ORDER BY s.skill_name)
+                   (SELECT GROUP_CONCAT(s.skill_name ORDER BY s.skill_name SEPARATOR ', ')
                       FROM posting_skills s WHERE s.posting_id = p.id) AS skills,
-                   (SELECT string_agg(r.competency_code || ' (' || r.importance || ')',
-                                      ', ' ORDER BY r.importance, r.competency_code)
+                   (SELECT GROUP_CONCAT(CONCAT(r.competency_code,
+                                               ' (', r.importance, ')')
+                                          ORDER BY r.importance, r.competency_code
+                                          SEPARATOR ', ')
                       FROM internship_competency_requirements r
                      WHERE r.posting_id = p.id) AS competencies,
                    (SELECT COUNT(*) FROM applications a

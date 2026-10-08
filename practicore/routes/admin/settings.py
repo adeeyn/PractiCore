@@ -7,11 +7,11 @@ own settings: it shows their account and lets them change their own password.
 It is scoped to the signed-in administrator only. There is no route that reads
 or writes another user's account from this page.
 """
+import mysql.connector
 from flask import current_app, flash, redirect, render_template, request, session, url_for
 from flask.views import MethodView
 
 from . import admin_bp
-from ...database import DatabaseError
 from ...repositories import AdminRepository, UserRepository
 from ...services import AuthService
 
@@ -51,7 +51,7 @@ class AdminSettingsView(MethodView):
 
         try:
             UserRepository().set_password(user["id"], AuthService.hash_password(new))
-        except DatabaseError:
+        except mysql.connector.Error:
             current_app.logger.exception("admin password change failed")
             return self._render("The password could not be changed. Please try again.")
 

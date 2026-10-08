@@ -333,7 +333,7 @@ class TestPartnerCompanyCreation:
         assert "valid email" in response.get_data(as_text=True)
 
     def test_a_database_error_shows_a_readable_message(self):
-        from practicore.database import DatabaseError
+        import mysql.connector
         from practicore.repositories import admin_repository
 
         client = _client("admin")
@@ -341,8 +341,8 @@ class TestPartnerCompanyCreation:
                                "company_name_taken", return_value=False), \
              mock.patch.object(admin_repository.AdminRepository,
                                "create_partner_company",
-                               side_effect=DatabaseError(
-                                   'relation "practicore.employers" does not exist')):
+                               side_effect=mysql.connector.Error(
+                                   "Table 'practicore.employers' doesn't exist")):
             response = client.post("/admin/companies/new", data=self.form())
         body = response.get_data(as_text=True)
         assert "could not be created" in body
@@ -524,24 +524,7 @@ class TestSettings:
     """CP2 Figure 12: the user updates their own password."""
 
     def _post(self, current, new, confirm):
-        """Posts as the REAL admin, not _client()'s placeholder id 1.
-
-        The seeded database's first user is a demo employer, so the session id
-        must be the admin's own row - same idiom as
-        test_the_page_shows_the_signed_in_admin above. The fixture admin's
-        password is `admin123` (set by the seed step in the setup docs).
-        """
-        from practicore import create_app
-        from practicore.repositories import AdminRepository
-
-        app = create_app()
-        with app.app_context():
-            admin_id = AdminRepository("", "admin").all_users()[0]["id"]
-
-        client = _client("admin")
-        with client.session_transaction() as sess:
-            sess["user_id"] = admin_id
-        return client.post("/admin/settings", data={
+        return _client("admin").post("/admin/settings", data={
             "current_password": current, "new_password": new,
             "confirm_password": confirm}).get_data(as_text=True)
 
@@ -579,7 +562,7 @@ class TestSettings:
     def test_no_stack_trace_or_sql_escapes_to_the_page(self):
         body = self._post("' OR 1=1 --", "x", "x")
         assert "Traceback" not in body
-        assert "psycopg2" not in body
+        assert "mysql.connector" not in body
 
     def test_it_is_protected_from_students(self):
         assert _denied(_client("student"), "/admin/settings")

@@ -1,4 +1,6 @@
-from ..database import Database, DatabaseError, upsert_sql
+import mysql.connector
+
+from ..database import Database
 from ..initials import initials_for
 
 # Read model for the employer pages. The column aliases match the keys the
@@ -37,7 +39,7 @@ class ApplicationRepository:
                 )
                 result = cursor.fetchone()
                 return result["total"] if result else 0
-        except DatabaseError:
+        except mysql.connector.Error:
             # Fallback if applications table hasn't been created yet
             return 0
 
@@ -200,10 +202,10 @@ class ApplicationRepository:
         with Database.cursor() as cursor:
             cursor.execute("""
                 SELECT
-                    COUNT(*)                                              AS total,
-                    COALESCE(SUM(CASE WHEN a.status = 'Shortlisted' THEN 1 ELSE 0 END), 0) AS shortlisted,
-                    COALESCE(SUM(CASE WHEN a.status = 'Hired' THEN 1 ELSE 0 END), 0)      AS hired,
-                    COALESCE(SUM(CASE WHEN a.status = 'Pending' THEN 1 ELSE 0 END), 0)     AS pending,
+                    COUNT(*)                                   AS total,
+                    COALESCE(SUM(a.status = 'Shortlisted'), 0) AS shortlisted,
+                    COALESCE(SUM(a.status = 'Hired'), 0)      AS hired,
+                    COALESCE(SUM(a.status = 'Pending'), 0)     AS pending,
                     COALESCE(ROUND(AVG(a.match_score)), 0)     AS avg_match
                 FROM applications a
                 JOIN internship_postings p ON a.posting_id = p.id
@@ -228,18 +230,17 @@ class ApplicationRepository:
         demo data never keeps a split that disagrees with the combined number.
         """
         with Database.cursor(commit=True) as cursor:
-            cursor.execute(
-                upsert_sql(
-                    "applications",
-                    ["student_id", "posting_id", "status", "match_score",
-                     "employer_notes", "resume_match_score", "assessment_match_score"],
-                    ["student_id", "posting_id"],
-                    ["status", "match_score", "employer_notes",
-                     "resume_match_score", "assessment_match_score"],
-                ),
-                (student_id, posting_id, status, match_score, notes,
-                 resume_match_score, assessment_match_score),
-            )
+            cursor.execute("""
+                INSERT INTO applications
+                    (student_id, posting_id, status, match_score, employer_notes,
+                     resume_match_score, assessment_match_score)
+                VALUES (%s, %s, %s, %s, %s, %s, %s)
+                ON DUPLICATE KEY UPDATE
+                    match_score = VALUES(match_score),
+                    resume_match_score = VALUES(resume_match_score),
+                    assessment_match_score = VALUES(assessment_match_score)
+            """, (student_id, posting_id, status, match_score, notes,
+                  resume_match_score, assessment_match_score))
 
     def set_match_components(self, application_id, resume_match_score, assessment_match_score):
         """Backfills the two component percentages on one existing application.
@@ -290,7 +291,7 @@ class ApplicationRepository:
                     ]
 
                 return applications
-        except DatabaseError:
+        except mysql.connector.Error:
             return []
 
     # ---------- Helpers ----------

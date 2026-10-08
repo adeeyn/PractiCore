@@ -1,4 +1,6 @@
-from ..database import Database, DatabaseError, upsert_sql
+import mysql.connector
+
+from ..database import Database
 
 
 class AssessmentRepository:
@@ -36,13 +38,16 @@ class AssessmentRepository:
                 )
                 for domain, stats in (breakdown or {}).items():
                     cursor.execute(
-                        upsert_sql(
-                            "assessment_domain_scores",
-                            ["student_id", "domain", "correct", "total",
-                             "score_percent", "track_code"],
-                            ["student_id", "domain"],
-                            ["correct", "total", "score_percent", "track_code"],
-                        ),
+                        """
+                        INSERT INTO assessment_domain_scores
+                            (student_id, domain, correct, total, score_percent, track_code)
+                        VALUES (%s, %s, %s, %s, %s, %s)
+                        ON DUPLICATE KEY UPDATE
+                            correct = VALUES(correct),
+                            total = VALUES(total),
+                            score_percent = VALUES(score_percent),
+                            track_code = VALUES(track_code)
+                        """,
                         (
                             student_id,
                             domain,
@@ -53,7 +58,7 @@ class AssessmentRepository:
                         ),
                     )
             return True
-        except DatabaseError:
+        except mysql.connector.Error:
             # Migration 006 not applied yet: the attempt is still readable
             # through students.assessment_score, so never break submission.
             return False
@@ -70,7 +75,7 @@ class AssessmentRepository:
                     (student_id,),
                 )
                 return {row["domain"]: row["score_percent"] for row in cursor.fetchall()}
-        except DatabaseError:
+        except mysql.connector.Error:
             return {}
 
     @staticmethod
@@ -90,7 +95,7 @@ class AssessmentRepository:
                 )
                 row = cursor.fetchone()
                 return row["overall_percentage"] if row else None
-        except DatabaseError:
+        except mysql.connector.Error:
             return None
 
     @staticmethod

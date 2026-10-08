@@ -1,11 +1,12 @@
 import os
+import uuid
 
+import mysql.connector
 from flask import current_app, jsonify, redirect, render_template, request, session, url_for
 from flask.views import MethodView
 
 from . import student_bp
 from .context import current_student
-from ...database import DatabaseError
 from ...repositories import StudentRepository
 
 # Query-string codes for the profile redirects (same idiom as auth.login's ?failed=1)
@@ -69,11 +70,10 @@ class StudentProfileView(MethodView):
                 year_level=form["year"],
                 course=form["course"],
             )
-        except DatabaseError as err:
-            # students.email and users.email both carry a UNIQUE index, so a
-            # clash (Postgres 23505) means "taken"; anything else is "failed".
-            if getattr(err, "pgcode", "") == "23505":
-                return redirect(url_for("student.profile", error="taken"))
+        except mysql.connector.IntegrityError:
+            # students.email and users.email both carry a UNIQUE index
+            return redirect(url_for("student.profile", error="taken"))
+        except mysql.connector.Error:
             return redirect(url_for("student.profile", error="failed"))
 
         # The login email changed with the profile, so keep the session truthful
@@ -124,16 +124,24 @@ class StudentAvatarView(MethodView):
         if not student:
             return jsonify({"error": "Student profile not found"}), 404
 
-        # The bytes go to the database: the upload filesystem is read-only on
-        # Vercel, and student_photos keeps them out of the students SELECT *.
-        self.students.save_avatar(student["id"], data, mime_types[extension])
-        # Clean up a photo from the old file-based storage, if there is one.
+        # The stored name is generated here, so no user-supplied name reaches the disk
+        filename = f"{student['id']}_{uuid.uuid4().hex[:8]}.{extension}"
+
+        try:
+            os.makedirs(current_app.config["AVATAR_UPLOAD_DIR"], exist_ok=True)
+            with open(os.path.join(current_app.config["AVATAR_UPLOAD_DIR"], filename), "wb") as photo:
+                photo.write(data)
+        except OSError as e:
+            return jsonify({"error": str(e)}), 500
+
+        avatar_path = f"uploads/avatars/{filename}"
+        self.students.update_avatar(student["id"], avatar_path)
         self.remove_previous(student.get("avatar_path"))
 
         return jsonify({
             "status": "success",
-            "avatar_path": "db",
-            "avatar_url": url_for("media.avatar", student_id=student["id"]),
+            "avatar_path": avatar_path,
+            "avatar_url": url_for("static", filename=avatar_path),
         }), 200
 
 

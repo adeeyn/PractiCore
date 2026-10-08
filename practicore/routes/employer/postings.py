@@ -1,9 +1,9 @@
+import mysql.connector
 from flask import redirect, render_template, request, url_for
 from flask.views import MethodView
 
 from . import employer_bp
 from .context import current_employer, split_skills
-from ...database import DatabaseError
 from ...repositories import PostingRepository
 from ...services import SkillTaxonomy
 
@@ -78,7 +78,7 @@ class InternshipPostingView(MethodView):
                 positions_available=form["positions_available"],
                 skills=skills,
             )
-        except DatabaseError:
+        except mysql.connector.Error:
             return redirect(url_for("employer.postings", error="failed"))
 
         return redirect(url_for("employer.postings", created=1))

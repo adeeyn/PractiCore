@@ -1,6 +1,6 @@
 """ResumeRepository.get_sections tests, including the migration-007-not-applied case.
 
-Fakes Database.cursor so no live database is needed.
+Fakes Database.cursor so no MySQL is needed.
 """
 import sys
 from pathlib import Path
@@ -78,12 +78,12 @@ class TestGetSections:
 
     def test_missing_columns_do_not_raise(self):
         """Migration 007 not applied: the SELECT raises, and we return empties."""
-        from practicore.database import DatabaseError
+        import mysql.connector
 
         # A real driver error, not a bare Exception: get_sections catches
-        # DatabaseError (psycopg2) specifically.
+        # mysql.connector.Error specifically.
         original = _install(
-            monkey_error=DatabaseError("column \"education\" does not exist")
+            monkey_error=mysql.connector.Error(msg="Unknown column 'education' in 'field list'")
         )
         try:
             result = ResumeRepository().get_sections(7)

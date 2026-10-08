@@ -18,12 +18,7 @@
 
 <form class="card card-pad" method="POST">
     <div class="logo-row">
-        {% if company.logo_path == 'db' %}
-        <div class="logo-preview" id="company-logo">
-            <img src="{{ url_for('media.logo', employer_id=company.id) }}" alt="{{ company.name }} logo">
-        </div>
-        {% elif company.logo_path %}
-        {# Old file-based storage; kept so a pre-migration path still renders. #}
+        {% if company.logo_path %}
         <div class="logo-preview" id="company-logo">
             <img src="{{ url_for('static', filename=company.logo_path) }}" alt="{{ company.name }} logo">
         </div>

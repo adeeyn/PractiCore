@@ -1,162 +1,26 @@
-"""Supabase Postgres connection + small MySQL->Postgres shims.
-
-Supabase is Postgres. The two MySQL-isms used across PractiCore are:
-
-  1. `cursor.lastrowid` after INSERT  -> Postgres uses `RETURNING id`.
-     `Database.cursor` backfills `.lastrowid` from RETURNING when the
-     statement asked for it, so migrated code keeps working.
-  2. `ON DUPLICATE KEY UPDATE ... VALUES(col)` -> Postgres
-     `ON CONFLICT (...) DO UPDATE SET col = EXCLUDED.col`.
-     Use `upsert_sql(...)` below to build it.
-
-`DatabaseError` is re-exported here so repositories can
-`except DatabaseError:` without importing psycopg2 directly.
-"""
 from contextlib import contextmanager
-import os
-import re
 
+import mysql.connector
 from flask import current_app
-
-try:
-    import psycopg2
-    import psycopg2.extras
-
-    DatabaseError = psycopg2.Error
-except ImportError:  # pragma: no cover - local test env without driver
-    psycopg2 = None
-
-    class DatabaseError(Exception):
-        pass
-
-
-def _connect_kwargs():
-    """Connection args from env (Supabase) with local fallback.
-
-    Priority:
-      1. DATABASE_URL / SUPABASE_DB_URL (pooled Supabase URL - best for Vercel)
-      2. Discrete DB_HOST/DB_USER/DB_PASSWORD/DB_NAME/DB_PORT vars
-      3. Legacy Flask DB_CONFIG (local config, kept for tests)
-    """
-    url = os.environ.get("DATABASE_URL") or os.environ.get("SUPABASE_DB_URL")
-    if url:
-        return {"_use_url": True, "url": url}
-
-    cfg = {}
-    try:
-        cfg = dict(current_app.config.get("DB_CONFIG", {}) or {})
-    except RuntimeError:
-        cfg = {}
-    return {
-        "_use_url": False,
-        "host": os.environ.get("DB_HOST", cfg.get("host", "127.0.0.1")),
-        "user": os.environ.get("DB_USER", cfg.get("user", "postgres")),
-        "password": os.environ.get("DB_PASSWORD", cfg.get("password", "")),
-        "dbname": os.environ.get("DB_NAME", cfg.get("database", cfg.get("dbname", "postgres"))),
-        "port": int(os.environ.get("DB_PORT", cfg.get("port", 5432))),
-        "sslmode": os.environ.get("DB_SSLMODE", "require"),
-    }
-
-
-class _CursorWrapper:
-    """Real psycopg2 cursor plus a *writable* ``lastrowid``.
-
-    psycopg2's cursor exposes ``lastrowid`` as a read-only descriptor that
-    always reports 0, so assigning the RETURNING id onto it fails silently
-    inside a bare except - every ``INSERT ... RETURNING id`` then hands back 0
-    and the foreign key that consumes it fails (employers.user_id = 0).
-
-    The wrapper keeps the id on an attribute it owns and delegates everything
-    else (rowcount, fetchone, close, ...) to the underlying cursor.
-    """
-
-    def __init__(self, cursor):
-        self._cursor = cursor
-        self._orig_execute = cursor.execute
-        self.lastrowid = None
-
-    def execute(self, sql, params=None):
-        result = (self._orig_execute(sql, params) if params is not None
-                  else self._orig_execute(sql))
-        try:
-            if isinstance(sql, str) and re.search(
-                    r"RETURNING\s+id\b", sql, re.IGNORECASE):
-                row = self._cursor.fetchone()
-                self.lastrowid = row["id"] if isinstance(row, dict) else row[0]
-        except Exception:
-            pass
-        return result
-
-    def __getattr__(self, name):
-        return getattr(self._cursor, name)
 
 
 class Database:
-    """Opens Supabase Postgres connections and guarantees they close.
-
-    Same `with Database.cursor(commit=True) as cursor:` API as before.
-    `%s` placeholders still work, rows are dicts, and cursor.lastrowid carries
-    the id of the last `INSERT ... RETURNING id`.
-    """
+    """Opens MySQL connections and guarantees they are closed."""
 
     @staticmethod
     def connect():
-        if psycopg2 is None:
-            raise RuntimeError("psycopg2 is not installed. Run: pip install psycopg2-binary")
-        kwargs = _connect_kwargs()
-        if kwargs.pop("_use_url"):
-            return psycopg2.connect(kwargs["url"], sslmode="require")
-        return psycopg2.connect(**kwargs)
+        return mysql.connector.connect(**current_app.config["DB_CONFIG"])
 
     @classmethod
     @contextmanager
     def cursor(cls, dictionary=True, commit=False):
         """Usage: `with Database.cursor() as cursor: ...`"""
         conn = cls.connect()
+        cursor = conn.cursor(dictionary=dictionary)
         try:
-            cursor_factory = psycopg2.extras.RealDictCursor if dictionary else None
-            cursor = _CursorWrapper(conn.cursor(cursor_factory=cursor_factory))
-            try:
-                yield cursor
-                if commit:
-                    conn.commit()
-            except Exception:
-                conn.rollback()
-                raise
-            finally:
-                try:
-                    cursor.close()
-                except Exception:
-                    pass
+            yield cursor
+            if commit:
+                conn.commit()
         finally:
-            try:
-                conn.close()
-            except Exception:
-                pass
-
-
-def upsert_sql(table, columns, conflict, update_columns=None):
-    """Builds `INSERT ... ON CONFLICT DO UPDATE` for Postgres.
-
-    Example:
-        sql = upsert_sql("applications",
-                         ["student_id", "posting_id", "status"],
-                         ["student_id", "posting_id"],
-                         ["status"])
-        # INSERT INTO applications (student_id, posting_id, status)
-        # VALUES (%s, %s, %s)
-        # ON CONFLICT (student_id, posting_id) DO UPDATE SET status = EXCLUDED.status
-    """
-    cols = ", ".join(columns)
-    placeholders = ", ".join(["%s"] * len(columns))
-    sql = f"INSERT INTO {table} ({cols}) VALUES ({placeholders})"
-    if not conflict:
-        return sql
-    update_columns = update_columns or [c for c in columns if c not in conflict]
-    if not update_columns:
-        return sql + f" ON CONFLICT ({', '.join(conflict)}) DO NOTHING"
-    assignments = ", ".join(f"{c} = EXCLUDED.{c}" for c in update_columns)
-    return sql + f" ON CONFLICT ({', '.join(conflict)}) DO UPDATE SET {assignments}"
-
-
-
+            cursor.close()
+            conn.close()

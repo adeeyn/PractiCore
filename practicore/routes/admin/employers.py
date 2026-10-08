@@ -5,11 +5,11 @@ and its employer login together, then manages those accounts. No separate
 "Partner Company" table is used: CP2's Partner Company IS the `employers` row,
 joined to `users` for the login.
 """
+import mysql.connector
 from flask import current_app, flash, redirect, render_template, request, url_for
 from flask.views import MethodView
 
 from . import admin_bp
-from ...database import DatabaseError
 from ...repositories import AdminRepository
 from ...services import AuthService
 from ...services import admin_validation as validation
@@ -66,7 +66,7 @@ class PartnerCompanyCreateView(MethodView):
             self.admin.create_partner_company(cleaned, password_hash)
         except ValueError as err:
             return self._render(str(err), data)
-        except DatabaseError:
+        except mysql.connector.Error:
             # The driver message can name tables and columns, so it is logged
             # for the administrator and never shown on the page.
             current_app.logger.exception("partner company creation failed")
@@ -112,7 +112,7 @@ class EmployerStatusView(MethodView):
 
         try:
             changed = AdminRepository().set_account_active(employer_id, want_active)
-        except DatabaseError:
+        except mysql.connector.Error:
             current_app.logger.exception("employer status change failed")
             flash("The account could not be updated. Please try again.", "error")
             return redirect(request.referrer or url_for("admin.companies"))

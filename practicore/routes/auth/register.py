@@ -1,8 +1,8 @@
+import mysql.connector
 from flask import current_app, redirect, render_template, request, url_for
 from flask.views import MethodView
 
 from . import auth_bp
-from ...database import DatabaseError
 from ...repositories import StudentRepository, UserRepository
 from ...services import AuthService
 
@@ -67,7 +67,7 @@ class StudentRegisterView(MethodView):
                 course=data["course"],
                 password_hash=AuthService.hash_password(data["password"]),
             )
-        except DatabaseError as err:
+        except mysql.connector.Error as err:
             return self._error(f"Database error: {err}")
 
         return redirect(url_for("auth.login"))

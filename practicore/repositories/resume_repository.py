@@ -1,4 +1,6 @@
-from ..database import Database, DatabaseError, upsert_sql
+import mysql.connector
+
+from ..database import Database
 
 
 class ResumeRepository:
@@ -19,15 +21,15 @@ class ResumeRepository:
         """
         sections = sections or {}
         with Database.cursor(commit=True) as cursor:
-            cursor.execute(
-                upsert_sql(
-                    "student_resumes",
-                    ["student_id", "filename", "mime_type", "file_size", "file_data"],
-                    ["student_id"],
-                    ["filename", "mime_type", "file_size", "file_data"],
-                ),
-                (student_id, filename, mime_type, len(data), data),
-            )
+            cursor.execute("""
+                INSERT INTO student_resumes (student_id, filename, mime_type, file_size, file_data)
+                VALUES (%s, %s, %s, %s, %s)
+                ON DUPLICATE KEY UPDATE
+                    filename = VALUES(filename),
+                    mime_type = VALUES(mime_type),
+                    file_size = VALUES(file_size),
+                    file_data = VALUES(file_data)
+            """, (student_id, filename, mime_type, len(data), data))
             cursor.execute("UPDATE students SET skills = %s WHERE id = %s", (skills_str, student_id))
 
         # Written after the upsert so a re-upload also refreshes the sections.
@@ -40,7 +42,7 @@ class ResumeRepository:
                         f"UPDATE student_resumes SET {column} = %s WHERE student_id = %s",
                         (self._as_text(sections.get(column)), student_id),
                     )
-        except DatabaseError:
+        except mysql.connector.Error:
             # Migration 007 not applied: skills are saved, sections are not.
             pass
 
@@ -69,7 +71,7 @@ class ResumeRepository:
                     (student_id,),
                 )
                 row = cursor.fetchone() or {}
-        except DatabaseError:
+        except mysql.connector.Error:
             # Migration 007 not applied yet.
             return empty
         return {

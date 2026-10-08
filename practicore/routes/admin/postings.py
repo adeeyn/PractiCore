@@ -6,11 +6,11 @@ skills, competency requirements and any compatibility or ranking data belong to
 the employer and the matching engine, and are never modified here. The only
 write is the posting's open/closed status.
 """
+import mysql.connector
 from flask import current_app, flash, redirect, render_template, request, url_for
 from flask.views import MethodView
 
 from . import admin_bp
-from ...database import DatabaseError
 from ...repositories import AdminRepository
 
 
@@ -53,7 +53,7 @@ class PostingStatusView(MethodView):
         except ValueError:
             flash("Unsupported posting status.", "error")
             return redirect(request.referrer or url_for("admin.postings"))
-        except DatabaseError:
+        except mysql.connector.Error:
             current_app.logger.exception("posting status change failed")
             flash("The posting could not be updated. Please try again.", "error")
             return redirect(request.referrer or url_for("admin.postings"))

@@ -1,4 +1,4 @@
-from ..database import Database, DatabaseError, upsert_sql
+from ..database import Database
 
 
 class PostingRepository:
@@ -102,7 +102,6 @@ class PostingRepository:
                 INSERT INTO internship_postings
                     (employer_id, title, department, description, is_remote, positions_available)
                 VALUES (%s, %s, %s, %s, %s, %s)
-                RETURNING id
             """, (employer_id, title, department, description, is_remote, positions_available))
             posting_id = cursor.lastrowid
             self._insert_skills(cursor, posting_id, skills)

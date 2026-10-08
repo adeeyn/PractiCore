@@ -38,12 +38,3 @@ practicore/models/*.meta.json
 
 # Logs
 *.log
-
-# Local size-audit / scratch venvs and reports
-_vsize/
-_vercel/
-.vercel/
-_size*.txt
-_breakdown.txt
-_piplog.txt
-_filelist.txt

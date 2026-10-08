@@ -6,7 +6,7 @@ Run it with:  flask --app app seed-competencies
 Safe to re-run: every write is an upsert keyed on a natural key (competency
 code, competency+set code, question code), so re-seeding refreshes in place.
 """
-from .database import Database, upsert_sql
+from .database import Database
 from .repositories.competency_repository import CompetencyRepository
 from .services.competency_taxonomy import (
     COMPETENCIES,
@@ -109,16 +109,14 @@ def seed_competencies(seed_posting_requirements=True):
                 if not items:
                     continue
 
-                cursor.execute(
-                    upsert_sql(
-                        "question_sets",
-                        ["competency_code", "set_code", "label", "question_count"],
-                        ["competency_code", "set_code"],
-                        ["label", "question_count"],
-                    ),
-                    (competency, set_code,
-                     "Form %s for %s" % (set_code, competency), len(items)),
-                )
+                cursor.execute("""
+                    INSERT INTO question_sets (competency_code, set_code, label, question_count)
+                    VALUES (%s, %s, %s, %s)
+                    ON DUPLICATE KEY UPDATE
+                        label = VALUES(label),
+                        question_count = VALUES(question_count)
+                """, (competency, set_code,
+                      "Form %s for %s" % (set_code, competency), len(items)))
 
                 # Always look the id up. lastrowid is unreliable here: on an
                 # ON DUPLICATE KEY UPDATE that took the UPDATE branch, it returns
@@ -134,23 +132,23 @@ def seed_competencies(seed_posting_requirements=True):
                     # (e.g. Q22 into the Troubleshooting form) already exists, so
                     # the upsert refreshes that row and returns its real id --
                     # which is what lets one question serve two forms.
-                    cursor.execute(
-                        upsert_sql(
-                            "assessment_questions",
-                            ["question_code", "course_track", "category", "competency", "set_id",
-                             "target_role", "question_type", "difficulty", "standard_ref",
-                             "question_text", "option_a", "option_b", "option_c", "option_d",
-                             "correct_option"],
-                            ["question_code"],
-                            ["question_text", "option_a", "option_b", "option_c",
-                             "option_d", "correct_option"],
-                        ),
-                        (item["question_code"], item["course_track"], item["category"],
-                         item.get("competency") or competency, set_id, item["target_role"],
-                         item["question_type"], item["difficulty"], item["standard_ref"],
-                         item["question_text"], item["option_a"], item["option_b"],
-                         item["option_c"], item["option_d"], item["correct_option"]),
-                    )
+                    cursor.execute("""
+                        INSERT INTO assessment_questions
+                            (question_code, course_track, category, competency, set_id,
+                             target_role, question_type, difficulty, standard_ref,
+                             question_text, option_a, option_b, option_c, option_d,
+                             correct_option)
+                        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                        ON DUPLICATE KEY UPDATE
+                            question_text = VALUES(question_text),
+                            option_a = VALUES(option_a), option_b = VALUES(option_b),
+                            option_c = VALUES(option_c), option_d = VALUES(option_d),
+                            correct_option = VALUES(correct_option)
+                    """, (item["question_code"], item["course_track"], item["category"],
+                          item.get("competency") or competency, set_id, item["target_role"],
+                          item["question_type"], item["difficulty"], item["standard_ref"],
+                          item["question_text"], item["option_a"], item["option_b"],
+                          item["option_c"], item["option_d"], item["correct_option"]))
 
                     cursor.execute(
                         "SELECT id FROM assessment_questions WHERE question_code = %s",
@@ -158,13 +156,11 @@ def seed_competencies(seed_posting_requirements=True):
                     question_id = cursor.fetchone()["id"]
 
                     # Membership is the authoritative many-to-many link.
-                    # Postgres: ON CONFLICT on the composite key, do nothing.
-                    cursor.execute(
-                        "INSERT INTO question_set_members (set_id, question_id) "
-                        "VALUES (%s, %s) "
-                        "ON CONFLICT (set_id, question_id) DO NOTHING",
-                        (set_id, question_id),
-                    )
+                    cursor.execute("""
+                        INSERT INTO question_set_members (set_id, question_id)
+                        VALUES (%s, %s)
+                        ON DUPLICATE KEY UPDATE set_id = set_id
+                    """, (set_id, question_id))
                     inserted += 1
 
     forms = repo.competencies_with_forms()

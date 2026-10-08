@@ -23,7 +23,7 @@ Nothing here inserts a competency. The six codes already exist in the taxonomy
 (seeded by competency_seed), so this module never forks the framework.
 """
 
-from .database import Database, upsert_sql
+from .database import Database
 from .services.competency_coverage_bank import (
     COVERED_COMPETENCIES,
     SOURCE_TYPE,
@@ -46,12 +46,8 @@ CORE_COLUMNS = (
 
 
 def _table_columns(cursor):
-    # Postgres: introspect via the information schema (no SHOW COLUMNS).
-    cursor.execute(
-        "SELECT column_name FROM information_schema.columns "
-        "WHERE table_name = 'assessment_questions'"
-    )
-    return {row["column_name"] for row in cursor.fetchall()}
+    cursor.execute("SHOW COLUMNS FROM assessment_questions")
+    return {row["Field"] for row in cursor.fetchall()}
 
 
 def _existing_counts(cursor):
@@ -80,28 +76,22 @@ def seed_coverage_bank():
             )
         before = _existing_counts(cursor)
 
-        sql = upsert_sql(
-            "assessment_questions",
-            ["question_code"] + list(columns),
-            ["question_code"],
-            list(columns),
+        assignments = ", ".join("%s = VALUES(%s)" % (c, c) for c in columns)
+        sql = (
+            "INSERT INTO assessment_questions (question_code, %s) VALUES (%%s, %s) "
+            "ON DUPLICATE KEY UPDATE %s"
+            % (", ".join(columns), ", ".join(["%s"] * len(columns)), assignments)
         )
 
-        cursor.execute("SELECT question_code FROM assessment_questions")
-        counts = {
-            row["question_code"]
-            for row in cursor.fetchall()
-            if row["question_code"]
-        }
         for row in rows:
             cursor.execute(sql, (row["question_code"],) + tuple(row[c] for c in columns))
-            # Postgres reports rowcount 1 for both insert and update, so the
-            # before-run counts decide: a row already at its final code is an update.
-            if row["question_code"] in counts:
+            # MySQL reports 1 for an insert, 2 for an updated duplicate key.
+            if cursor.rowcount == 1:
+                inserted += 1
+            elif cursor.rowcount == 2:
                 updated += 1
             else:
-                inserted += 1
-                counts.add(row["question_code"])
+                skipped += 1
 
         after = _existing_counts(cursor)
 
