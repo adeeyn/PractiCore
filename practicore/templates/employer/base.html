@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Employer{% endblock %} | PractiCore</title>
     <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='employer/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='employer/style.css') }}?v=2">
     <script src="https://cdn.jsdelivr.net/npm/lucide@0.469.0/dist/umd/lucide.min.js"></script>
     {% block head %}{% endblock %}
 </head>
@@ -84,7 +84,7 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/lucide@0.469.0/dist/umd/lucide.min.js"></script>
-    <script src="{{ url_for('static', filename='employer/js/employer.js') }}"></script>
+    <script src="{{ url_for('static', filename='employer/js/employer.js') }}?v=2"></script>
     <script>
         if (window.lucide) {
             lucide.createIcons();

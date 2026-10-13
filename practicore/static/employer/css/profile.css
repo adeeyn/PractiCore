@@ -35,7 +35,30 @@
 .logo-preview img {
   max-width: 100%;
   max-height: 100%;
+  width: 100%;
+  height: 100%;
   object-fit: contain;
+  display: block;
+}
+
+/* Safety net: the first upload starts from the initials box
+   (.avatar.avatar-xl). If an <img> ever lands in there — old cached JS,
+   slow CSS, interrupted swap — it must still stay inside the 56px box
+   instead of bursting over the form at its natural size. */
+#company-logo {
+  flex-shrink: 0;
+  width: 56px;
+  height: 56px;
+  overflow: hidden;
+}
+
+#company-logo img {
+  max-width: 100%;
+  max-height: 100%;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
 }
 
 /* A company with no logo starts as the .avatar-brand initials box, which has a
