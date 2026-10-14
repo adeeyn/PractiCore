@@ -1,0 +1,38 @@
+# PractiCore on Hostinger VPS (Ubuntu) — nginx reverse proxy.
+#
+# Install:
+#   sudo cp deploy/practicore.nginx /etc/nginx/sites-available/practicore
+#   sudo nano /etc/nginx/sites-available/practicore   # set YOUR_DOMAIN below
+#   sudo ln -s /etc/nginx/sites-available/practicore /etc/nginx/sites-enabled/
+#   sudo nginx -t && sudo systemctl reload nginx
+#
+# HTTPS (after your domain points at the VPS):
+#   sudo certbot --nginx -d YOUR_DOMAIN
+
+upstream practicore_app {
+    server 127.0.0.1:8000;
+}
+
+server {
+    listen 80;
+    # TEMPORARY: your VPS IP works for testing, e.g.  http://147.93.XX.XX
+    # Once DNS is pointed, replace with your domain:  server_name practicore.yourdomain.com;
+    server_name YOUR_DOMAIN;
+
+    client_max_body_size 16m;  # matches Config.MAX_CONTENT_LENGTH
+
+    location /static/ {
+        alias /var/www/practicore/practicore/static/;
+        expires 30d;
+        add_header Cache-Control "public, immutable";
+    }
+
+    location / {
+        proxy_pass http://practicore_app;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_read_timeout 120s;
+    }
+}

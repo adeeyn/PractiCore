@@ -6,10 +6,34 @@ PACKAGE_DIR = os.path.abspath(os.path.dirname(__file__))
 BASE_DIR = os.path.abspath(os.path.join(PACKAGE_DIR, os.pardir))
 
 
+def _env_bool(name, default=False):
+    """Reads a 1/true/yes/on env var, falling back when missing."""
+    value = os.environ.get(name)
+    if value is None:
+        return default
+    return value.strip().lower() in ("1", "true", "yes", "on")
+
+
+def _env_int(name, default):
+    """Reads an int env var, falling back when missing or malformed."""
+    try:
+        return int(os.environ.get(name, default))
+    except (TypeError, ValueError):
+        return default
+
+
 class Config:
     """Central application settings."""
 
     SECRET_KEY = os.environ.get("SECRET_KEY", "nyek")
+
+    # Production (nginx + HTTPS): set SESSION_COOKIE_SECURE=1 in .env once
+    # certbot is done. Keep it off while on plain HTTP, or logins break.
+    SESSION_COOKIE_SECURE = _env_bool("SESSION_COOKIE_SECURE", False)
+    SESSION_COOKIE_HTTPONLY = True
+    SESSION_COOKIE_SAMESITE = "Lax"
+    # Trust nginx's X-Forwarded-Proto so url_for/session work behind the proxy.
+    PREFERRED_URL_SCHEME = os.environ.get("PREFERRED_URL_SCHEME", "http")
 
     # Only emails on this domain can self-register as students
     STUDENT_EMAIL_DOMAIN = "student.tsu.edu.ph"
@@ -52,12 +76,16 @@ class Config:
     LOGO_MAX_BYTES = 3 * 1024 * 1024  # 3 MB
     LOGO_UPLOAD_DIR = os.path.join(STATIC_FOLDER, "uploads", "logos")
 
-    # MySQL Configuration
+    # MySQL Configuration.
+    # Local dev keeps working with zero setup (defaults = your 127.0.0.1/root
+    # install); on the VPS these come from the .env file (DB_HOST, DB_USER,
+    # DB_PASSWORD, DB_NAME). Never commit real credentials.
     DB_CONFIG = {
-        "host": "127.0.0.1",
-        "user": "root",
-        "password": "",
-        "database": "practicore",
+        "host": os.environ.get("DB_HOST", "127.0.0.1"),
+        "user": os.environ.get("DB_USER", "root"),
+        "password": os.environ.get("DB_PASSWORD", ""),
+        "database": os.environ.get("DB_NAME", "practicore"),
+        "port": _env_int("DB_PORT", 3306),
     }
 
     # Assessment settings

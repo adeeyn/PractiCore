@@ -2,7 +2,11 @@
 # Install with: pip install -r requirements.txt
 # then download the NLP model once: python -m spacy download en_core_web_sm
 
+# gunicorn: production WSGI server (Flask's dev server must not face the internet)
+gunicorn>=21.0
+
 Flask>=3.0
+python-dotenv>=1.0  # loads .env on the VPS (SECRET_KEY, DB_*)
 mysql-connector-python>=8.0
 spacy>=3.7
 pdfplumber>=0.10

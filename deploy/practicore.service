@@ -1,0 +1,28 @@
+# PractiCore on Hostinger VPS (Ubuntu) — systemd unit.
+#
+# Install:
+#   sudo cp deploy/practicore.service /etc/systemd/system/practicore.service
+#   sudo nano /etc/systemd/system/practicore.service   # fix User + paths
+#   sudo systemctl daemon-reload
+#   sudo systemctl enable --now practicore
+#
+# Logs:  sudo journalctl -u practicore -f
+
+[Unit]
+Description=PractiCore Flask app (gunicorn)
+After=network.target mysql.service
+Wants=mysql.service
+
+[Service]
+User=practicore
+Group=www-data
+# Folder where the project lives on the VPS:
+WorkingDirectory=/var/www/practicore
+# .env file with SECRET_KEY + DB_* (see .env.example):
+EnvironmentFile=/var/www/practicore/.env
+ExecStart=/var/www/practicore/venv/bin/gunicorn --config gunicorn.conf.py wsgi:app
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
