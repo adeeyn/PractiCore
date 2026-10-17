@@ -96,3 +96,73 @@
 .adm-wrap { word-break: break-word; }
 .adm-body-text { padding: 0 18px 18px; color: var(--text-body); line-height: 1.65; white-space: pre-line; }
 .adm-status-form { padding: 4px 18px 18px; }
+
+/* ==========================================
+   RESPONSIVE
+   ========================================== */
+
+@media (max-width: 900px) {
+  .adm-filters-inline { justify-content: flex-start; width: 100%; }
+  .adm-filters-inline .adm-search { flex: 1 1 240px; }
+}
+
+@media (max-width: 640px) {
+  /* Filter bar: search on its own row, controls share the next one. */
+  .adm-filters { gap: 8px; margin-bottom: 14px; }
+  .adm-filters .adm-search,
+  .adm-filters-inline .adm-search { flex: 1 1 100%; }
+  .adm-filters .adm-select { flex: 1 1 0; min-width: 0; }
+  .adm-search input,
+  .adm-select { font-size: 16px; }              /* stops iOS zooming on focus */
+
+  /* Data tables become stacked cards. Every <td> carries a data-label, which
+     is printed as the row's caption, so no column is ever cut off or hidden
+     behind a sideways scroll. */
+  .adm-table,
+  .adm-table tbody,
+  .adm-table tr,
+  .adm-table td { display: block; width: 100%; box-sizing: border-box; }
+  .adm-table thead { display: none; }
+  .adm-table tbody tr { padding: 12px 16px; border-top: 1px solid var(--border-soft); }
+  .adm-table tbody tr:first-child { border-top: 0; }
+  .adm-table tbody tr:hover { background: transparent; }
+  .adm-table td {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    padding: 6px 0;
+    border: 0;
+    text-align: right;
+    min-width: 0;
+  }
+  .adm-table td::before {
+    content: attr(data-label);
+    flex: 0 0 auto;
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-muted);
+    text-align: left;
+  }
+  .adm-table td:not([data-label])::before { display: none; }
+
+  /* First cell is the row's heading: full width, left aligned, no caption. */
+  .adm-table td.adm-cell-main { display: block; text-align: left; padding-top: 0; }
+  .adm-table td.adm-cell-main::before { display: none; }
+
+  /* Empty-state row */
+  .adm-table td.adm-empty { display: block; text-align: center; }
+
+  .adm-table td.adm-cell-actions { justify-content: flex-start; padding-bottom: 0; }
+  .adm-truncate { max-width: 60vw; }
+
+  /* Detail lists stack label over value */
+  .adm-detail { grid-template-columns: 1fr; }
+  .adm-detail dt { padding: 11px 14px 0; border-top: 1px solid var(--border-soft); }
+  .adm-detail dd { padding: 3px 14px 11px; border-top: 0; }
+  .adm-detail dt:first-child { border-top: 0; }
+  .adm-body-text { padding: 0 14px 16px; }
+  .adm-status-form { padding: 4px 14px 16px; }
+}

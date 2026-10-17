@@ -9,13 +9,17 @@
     <script src="https://cdn.jsdelivr.net/npm/lucide@0.469.0/dist/umd/lucide.min.js"></script>
     {% block head %}{% endblock %}
 </head>
-<body>
+<body class="{% block body_class %}{% endblock %}">
     <div class="app-shell">
-        <!-- SHARED CRIMSON SIDEBAR -->
-        <aside class="sidebar">
+        <!-- MAROON SIDEBAR (off-canvas drawer, opened via the burger button) -->
+        <aside class="sidebar" id="app-sidebar">
             <div class="sidebar-brand">
                 <img class="brand-cap-icon" src="{{ url_for('static', filename='img/logo-icon.png') }}" alt="">
                 <span>PractiCore</span>
+                <button type="button" class="sidebar-close" id="sidebar-close"
+                        aria-label="Close navigation" aria-controls="app-sidebar">
+                    <i data-lucide="x"></i>
+                </button>
             </div>
 
             <nav class="nav">
@@ -27,7 +31,7 @@
                     <i data-lucide="user"></i>
                     <span>Profile</span>
                 </a>
-                <a href="{{ url_for('student.resume') }}" class="nav-item {% if active_page | default('dashboard') == 'upload_resume' %}active{% endif %}">
+                <a href="{{ url_for('student.resume') }}" class="nav-item {% if active_page | default('dashboard') in ['resume', 'upload_resume'] %}active{% endif %}">
                     <i data-lucide="file-text"></i>
                     <span>Resume</span>
                 </a>
@@ -59,37 +63,12 @@
             </div>
         </aside>
 
+        <!-- Dimmed backdrop shown while the sidebar drawer is open -->
+        <div class="sidebar-overlay" id="sidebar-overlay" hidden></div>
+
         <!-- DYNAMIC MAIN CONTENT AREA -->
         <main class="main">
-            <!-- Topbar with greeting and student profile chip -->
-            <header class="topbar">
-                <div class="topbar-left">
-                    {% block topbar_left %}
-                    <div class="welcome">
-                        <span class="welcome-greeting">Good morning,</span>
-                        <h1>{{ username or (current_student.name if current_student else 'John') }} 👋</h1>
-                        <p class="subtitle">Here's what's happening with your internship journey.</p>
-                    </div>
-                    {% endblock %}
-                </div>
-
-                <div class="topbar-right">
-                    <button class="notification-btn" type="button" aria-label="Notifications" title="Notifications">
-                        <i data-lucide="bell"></i>
-                        <span class="notification-dot"></span>
-                    </button>
-
-                    <a class="user-chip" href="{{ url_for('student.profile') }}" title="View profile" aria-label="View your profile">
-                        <div class="user-avatar">
-                            {% include "student/_avatar.html" %}
-                        </div>
-                        <div class="user-meta">
-                            <strong class="user-name">{{ current_student.name if current_student and current_student.name else (username or 'John Dela Cruz') }}</strong>
-                            <span class="user-role">Student</span>
-                        </div>
-                    </a>
-                </div>
-            </header>
+            {% include "student/_header.html" %}
 
             <div class="content-body">
                 {% block content %}{% endblock %}
@@ -102,6 +81,52 @@
         if (window.lucide) {
             lucide.createIcons();
         }
+
+        // Burger menu: slide the maroon sidebar drawer in over a dimmed
+        // backdrop. Closed via the dimmed area, the x button, or Escape.
+        (function () {
+            var toggleBtn = document.getElementById('sidebar-toggle');
+            var closeBtn = document.getElementById('sidebar-close');
+            var sidebar = document.getElementById('app-sidebar');
+            var overlay = document.getElementById('sidebar-overlay');
+
+            function setOpen(open) {
+                if (!sidebar) {
+                    return;
+                }
+                sidebar.classList.toggle('open', open);
+                if (overlay) {
+                    overlay.hidden = !open;
+                }
+                if (toggleBtn) {
+                    toggleBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
+                }
+                if (open && closeBtn) {
+                    closeBtn.focus();
+                }
+            }
+
+            if (toggleBtn && sidebar) {
+                toggleBtn.addEventListener('click', function () {
+                    setOpen(!sidebar.classList.contains('open'));
+                });
+            }
+            if (closeBtn) {
+                closeBtn.addEventListener('click', function () {
+                    setOpen(false);
+                });
+            }
+            if (overlay) {
+                overlay.addEventListener('click', function () {
+                    setOpen(false);
+                });
+            }
+            document.addEventListener('keydown', function (event) {
+                if (event.key === 'Escape') {
+                    setOpen(false);
+                }
+            });
+        })();
 
         // A logged-out page can still be restored from the browser cache on Back,
         // so re-check the session and send the user to login if it has gone.

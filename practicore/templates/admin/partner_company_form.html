@@ -19,7 +19,7 @@
 
 {# Client-side checks mirror the server rules. The server still validates
    everything: this only saves the administrator a round trip. #}
-<form method="post" action="{{ url_for('admin.create_company') }}" class="adm-form" novalidate>
+<form method="post" action="{{ url_for('admin.create_company') }}" class="adm-form adm-form-company" novalidate>
   {% set v = form.get %}
   <section class="adm-panel">
     <header class="adm-panel-head"><h2>Company Information</h2></header>
@@ -115,26 +115,5 @@
 {% endblock %}
 
 {% block scripts %}
-<script>
-  // Password visibility toggle.
-  document.querySelectorAll('input[type="password"]').forEach(function (input) {
-    var wrap = document.createElement('div');
-    wrap.className = 'adm-pw';
-    input.parentNode.insertBefore(wrap, input);
-    wrap.appendChild(input);
-    var btn = document.createElement('button');
-    btn.type = 'button';
-    btn.className = 'adm-pw-toggle';
-    btn.setAttribute('aria-label', 'Show password');
-    btn.innerHTML = '<i data-lucide="eye"></i>';
-    btn.addEventListener('click', function () {
-      var show = input.type === 'password';
-      input.type = show ? 'text' : 'password';
-      btn.setAttribute('aria-label', show ? 'Hide password' : 'Show password');
-      btn.innerHTML = '<i data-lucide="' + (show ? 'eye-off' : 'eye') + '"></i>';
-      if (window.lucide) { window.lucide.createIcons(); }
-    });
-    wrap.appendChild(btn);
-  });
-</script>
+<script src="{{ url_for('static', filename='admin/js/password-toggle.js') }}?v=4"></script>
 {% endblock %}

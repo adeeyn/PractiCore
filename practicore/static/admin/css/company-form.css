@@ -1,0 +1,10 @@
+/* ==========================================
+   PARTNER COMPANY FORM (templates/admin/partner_company_form.html)
+   The form fields themselves live in forms.css.
+   ========================================== */
+
+.adm-form-company .adm-panel { overflow: visible; }
+
+@media (max-width: 640px) {
+  .adm-form-company .adm-span-2 { grid-column: auto; }
+}

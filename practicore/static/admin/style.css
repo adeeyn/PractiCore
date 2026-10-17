@@ -1,16 +1,34 @@
 /* Administrator module entry stylesheet (linked from admin/base.html).
  *
- * Imports the module's own theme first, then the layout, component, table and
- * dashboard layers -- the same structure the employer and student modules use.
+ * Same structure as the employer and student modules: shared layers first
+ * (theme, shell, header, components, forms, tables, stat cards, feed), then
+ * one small stylesheet per page.
  *
  * Note: every @import must sit above all other rules or the browser ignores
  * them, which leaves the page unstyled. */
 
+/* shared layers */
 @import url('./css/variables.css');
 @import url('./css/layout.css');
+@import url('./css/header.css');
 @import url('./css/components.css');
+@import url('./css/forms.css');
 @import url('./css/tables.css');
+@import url('./css/stats.css');
+@import url('./css/activity.css');
+
+/* one stylesheet per page */
 @import url('./css/dashboard.css');
+@import url('./css/companies.css');
+@import url('./css/company-detail.css');
+@import url('./css/company-form.css');
+@import url('./css/postings.css');
+@import url('./css/posting-detail.css');
+@import url('./css/users.css');
+@import url('./css/assessment.css');
+@import url('./css/reports.css');
+@import url('./css/settings.css');
+@import url('./css/profile.css');
 
 /* ---------- Base ---------- */
 
@@ -22,3 +40,6 @@ body {
   font-size: 14px;
   line-height: 1.5;
 }
+
+*, *::before, *::after { box-sizing: border-box; }
+img { max-width: 100%; }

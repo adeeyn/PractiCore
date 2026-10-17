@@ -1,9 +1,54 @@
 /* ==========================================
-   SHARED COMPONENTS: cards, avatars, badges, buttons, forms
+   SHARED COMPONENTS: page heading, cards, avatars, badges, buttons, forms
    ========================================== */
+
+/* ---------- Page heading (title + subtitle at the top of every page) ---------- */
+.page-head {
+  margin-bottom: 24px;
+}
+
+.page-head h1 {
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1.15;
+  color: var(--text-dark);
+}
+
+.page-head p {
+  margin-top: 6px;
+  font-size: 14px;
+  color: var(--text-muted);
+}
+
+/* Heading with something on the right (e.g. the ranking legend) */
+.page-head--row {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+/* Small pill above a page title */
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 8px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: var(--amber-soft);
+  color: var(--primary-ink);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
 
 /* ---------- Cards ---------- */
 .card {
+  overflow: hidden;
   background: var(--card);
   border: 1px solid var(--border);
   border-radius: var(--radius);
@@ -42,11 +87,21 @@
   display: grid;
   place-items: center;
   flex-shrink: 0;
-  width: 34px;
-  height: 34px;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
-  font-size: 11px;
+  font-size: 12.5px;
   font-weight: 700;
+  overflow: hidden;
+}
+
+/* The student's uploaded photo fills the circle (object-fit: cover, so any
+   aspect ratio lands square); the initials still render when there is none. */
+.avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
 }
 
 .avatar-lg {
@@ -56,10 +111,10 @@
 }
 
 .avatar-xl {
-  width: 56px;
-  height: 56px;
-  border-radius: 12px;
-  font-size: 17px;
+  width: 72px;
+  height: 72px;
+  border-radius: 16px;
+  font-size: 22px;
 }
 
 .avatar-c0 { background: var(--purple-soft); color: var(--purple); }
@@ -83,29 +138,41 @@
 
 .person-name {
   display: block;
-  font-size: 13px;
-  font-weight: 600;
+  font-size: 14px;
+  font-weight: 650;
   color: var(--text-dark);
 }
 
 .person-sub {
   display: block;
-  font-size: 11px;
-  color: var(--text-faint);
+  margin-top: 1px;
+  font-size: 12px;
+  color: var(--text-muted);
 }
 
 /* The match badge and the two separated meters live in css/match-split.css,
    shared by the ranking page, the applicant list and the detail panel. */
 
-/* ---------- Status badges ---------- */
+/* ---------- Status badges: pill with a leading dot ---------- */
 .status {
-  display: inline-block;
-  padding: 3px 10px;
-  border-radius: 6px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 11px 4px 9px;
   border: 1px solid transparent;
-  font-size: 11px;
+  border-radius: 999px;
+  font-size: 11.5px;
   font-weight: 600;
+  letter-spacing: 0.01em;
   white-space: nowrap;
+}
+
+.status::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
 }
 
 .status-shortlisted { background: var(--blue-soft);   color: var(--blue);   border-color: #bfdbfe; }
@@ -129,7 +196,7 @@
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
-  transition: background 0.15s, border-color 0.15s;
+  transition: background 0.15s, border-color 0.15s, box-shadow 0.15s, transform 0.15s;
 }
 
 .btn svg {
@@ -138,12 +205,14 @@
 }
 
 .btn-primary {
-  background: var(--primary);
+  background: linear-gradient(180deg, #eab02a, #d99a0f);
   color: #fff;
+  box-shadow: 0 1px 2px rgba(146, 64, 14, 0.25), 0 4px 12px rgba(230, 168, 23, 0.28);
 }
 
 .btn-primary:hover {
-  background: var(--primary-hover);
+  background: linear-gradient(180deg, #e5a921, #cc900c);
+  transform: translateY(-1px);
 }
 
 .btn-purple {
@@ -168,7 +237,8 @@
 }
 
 .btn-outline:hover {
-  background: var(--bg);
+  background: var(--primary-tint);
+  border-color: var(--primary-border);
 }
 
 .btn-sm {
@@ -196,8 +266,8 @@
 
 .form-control {
   width: 100%;
-  padding: 10px 12px;
-  border: 1px solid var(--border);
+  padding: 11px 14px;
+  border: 1px solid #e7e2d9;
   border-radius: var(--radius-sm);
   background: var(--card);
   font-family: inherit;
@@ -206,10 +276,14 @@
   transition: border-color 0.15s, box-shadow 0.15s;
 }
 
+.form-control:hover {
+  border-color: #d6cfc2;
+}
+
 .form-control:focus {
   outline: none;
   border-color: var(--primary);
-  box-shadow: 0 0 0 3px var(--primary-soft);
+  box-shadow: 0 0 0 4px var(--primary-ring);
 }
 
 textarea.form-control {
@@ -235,6 +309,12 @@ select.form-control {
 @media (max-width: 640px) {
   .form-row {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 960px) {
+  .page-head h1 {
+    font-size: 24px;
   }
 }
 

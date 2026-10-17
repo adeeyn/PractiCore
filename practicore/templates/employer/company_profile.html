@@ -5,6 +5,7 @@
 
 {% block content %}
 <div class="page-head">
+    <span class="eyebrow"><i data-lucide="building-2" style="width:12px;height:12px"></i> Company</span>
     <h1>Company Profile</h1>
     <p>Manage your company information</p>
 </div>
@@ -16,7 +17,10 @@
 </div>
 {% endif %}
 
-<form class="card card-pad" method="POST">
+<form class="profile-layout" method="POST">
+    <section class="card form-section">
+        <div class="form-section__head"><span class="form-section__icon"><i data-lucide="building-2"></i></span>
+            <div><h2>Brand &amp; identity</h2><p>How students see your company.</p></div></div>
     <div class="logo-row">
         {% if company.logo_path %}
         <div class="logo-preview" id="company-logo">
@@ -67,6 +71,11 @@
         </div>
     </div>
 
+    </section>
+
+    <section class="card form-section">
+        <div class="form-section__head"><span class="form-section__icon"><i data-lucide="map-pin"></i></span>
+            <div><h2>Contact &amp; location</h2><p>Where students can find and reach you.</p></div></div>
     <div class="form-group">
         <label class="form-label" for="email">Company Email</label>
         <input class="form-control" type="email" id="email" name="email" value="{{ company.email }}" required>
@@ -83,6 +92,11 @@
                placeholder="https://">
     </div>
 
+    </section>
+
+    <section class="card form-section">
+        <div class="form-section__head"><span class="form-section__icon"><i data-lucide="target"></i></span>
+            <div><h2>Hiring preferences</h2><p>Skills are matched against student resumes.</p></div></div>
     <div class="form-group">
         <label class="form-label">Skills We Are Looking For</label>
         <div class="tag-input" data-tag-input data-target="required_skills">
@@ -98,6 +112,11 @@
         <p class="form-hint">Press Enter or comma to add a skill. These are matched against student resumes.</p>
     </div>
 
+    </section>
+
+    <section class="card form-section">
+        <div class="form-section__head"><span class="form-section__icon"><i data-lucide="user-round"></i></span>
+            <div><h2>Primary contact &amp; about</h2><p>The person and story behind the posting.</p></div></div>
     <div class="form-row">
         <div class="form-group">
             <label class="form-label" for="contact_name">Contact Person</label>
@@ -117,11 +136,14 @@
         <textarea class="form-control" id="about" name="about" rows="4" placeholder="Tell students about your company">{{ company.about }}</textarea>
     </div>
 
-    <label class="check-row">
-        <input type="checkbox" name="is_hiring" value="1" {% if company.is_hiring %}checked{% endif %}>
-        <span>We are currently accepting internship applications</span>
-    </label>
+    </section>
 
-    <button type="submit" class="btn btn-primary">Save Changes</button>
+    <div class="save-bar">
+        <label class="check-row">
+            <input type="checkbox" name="is_hiring" value="1" {% if company.is_hiring %}checked{% endif %}>
+            <span>We are currently accepting internship applications</span>
+        </label>
+        <button type="submit" class="btn btn-primary"><i data-lucide="check"></i> Save Changes</button>
+    </div>
 </form>
 {% endblock %}

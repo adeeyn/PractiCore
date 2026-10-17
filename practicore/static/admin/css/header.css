@@ -1,0 +1,170 @@
+/* ==========================================================
+   ADMIN HEADER (templates/admin/_header.html)
+   The violet bar at the top of every admin page.
+   Everything is prefixed .adm-header so it cannot clash with
+   any other page's styles.
+   ========================================================== */
+
+.adm-header {
+  position: sticky;
+  top: 0;
+  z-index: 40;                 /* above page content, below the sidebar drawer (50/60) */
+  height: 64px;
+  padding: 0 28px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  background: linear-gradient(90deg, #6a57ea, #4938c7);
+  color: #ffffff;
+  box-shadow: 0 4px 20px rgba(73, 56, 199, 0.30);
+}
+
+/* ----- left: burger + logo + greeting ----- */
+.adm-header__left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-width: 0;
+}
+
+.adm-header__burger {
+  width: 44px;
+  height: 44px;
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  border: 0;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.16);
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+.adm-header__burger:hover { background: rgba(255, 255, 255, 0.28); }
+.adm-header__burger:focus-visible { outline: 2px solid #ffffff; outline-offset: 2px; }
+.adm-header__burger span {
+  width: 20px;
+  height: 2.5px;
+  border-radius: 2px;
+  background: #ffffff;
+}
+
+.adm-header__brand {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  font-size: 20px;
+  font-weight: 700;
+  color: #ffffff;
+  white-space: nowrap;
+}
+.adm-header__brand img {
+  width: 36px;
+  height: 36px;
+  padding: 4px;
+  border-radius: 10px;
+  background: #ffffff;
+  object-fit: contain;
+}
+
+.adm-header__greet {
+  margin-left: 12px;
+  padding-left: 28px;
+  border-left: 1px solid rgba(255, 255, 255, 0.30);
+  font-size: 14px;
+  line-height: 1.35;
+  color: #ddd7fb;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.adm-header__greet b {
+  display: block;
+  font-size: 16px;
+  color: #ffffff;
+}
+
+/* ----- right: bell + profile ----- */
+.adm-header__right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.adm-header__bell {
+  position: relative;
+  width: 42px;
+  height: 42px;
+  flex: none;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.16);
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+.adm-header__bell:hover { background: rgba(255, 255, 255, 0.28); }
+.adm-header__bell:focus-visible { outline: 2px solid #ffffff; outline-offset: 2px; }
+.adm-header__dot {
+  position: absolute;
+  top: 9px;
+  right: 10px;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #ff5a5a;
+  border: 2px solid #5544d6;
+}
+
+.adm-header__user {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 4px 8px 4px 4px;
+  border-radius: 99px;
+  color: #ffffff;
+  transition: background 0.15s ease;
+}
+.adm-header__user:hover { background: rgba(255, 255, 255, 0.14); }
+.adm-header__user:focus-visible { outline: 2px solid #ffffff; outline-offset: 2px; }
+
+.adm-header__avatar {
+  width: 42px;
+  height: 42px;
+  flex: none;
+  border-radius: 50%;
+  background: #ffffff;
+  color: var(--primary-hover, #1d4ed8);
+  display: grid;
+  place-items: center;
+  font-weight: 800;
+  font-size: 15px;
+  border: 2px solid rgba(255, 255, 255, 0.55);
+}
+
+.adm-header__who {
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.25;
+}
+.adm-header__who small {
+  display: block;
+  font-size: 12px;
+  font-weight: 400;
+  color: #ddd7fb;
+}
+
+/* ----- small screens ----- */
+@media (max-width: 900px) {
+  .adm-header__greet { display: none; }
+}
+@media (max-width: 640px) {
+  .adm-header { padding: 0 16px; }
+  .adm-header__brand span { display: none; }
+  .adm-header__who { display: none; }
+  .adm-header__right { gap: 10px; }
+}

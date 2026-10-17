@@ -3,6 +3,7 @@
 {% block title %}Reports{% endblock %}
 
 {% block content %}
+<div class="adm-reports">
 <div class="adm-page-head">
   <div>
     <h1>Reports</h1>
@@ -55,16 +56,16 @@
       <tbody>
       {% for row in top_postings %}
         <tr>
-          <td>
+          <td class="adm-cell-main">
             <a href="{{ url_for('admin.posting_detail', posting_id=row.id) }}">{{ row.title }}</a>
           </td>
-          <td class="adm-muted">{{ row.company_name }}</td>
-          <td>
+          <td class="adm-muted" data-label="Company">{{ row.company_name }}</td>
+          <td data-label="Status">
             <span class="adm-badge {{ 'adm-badge-ok' if row.status == 'active' else 'adm-badge-off' }}">
               {{ row.status|capitalize }}
             </span>
           </td>
-          <td>{{ row.application_count }}</td>
+          <td data-label="Applicants">{{ row.application_count }}</td>
         </tr>
       {% else %}
         <tr><td colspan="4" class="adm-empty">No postings yet.</td></tr>
@@ -98,4 +99,5 @@
   are deliberately not exposed here — those belong to the student and employer
   modules respectively.
 </p>
+</div>
 {% endblock %}

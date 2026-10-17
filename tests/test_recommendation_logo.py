@@ -1,8 +1,9 @@
 """Tests for the company badge on the recommendation card.
 
 Regression: /student/recommendation raised KeyError: 'company_logo_text'.
-PostingRepository.all_with_skills() joins employers only for company_name and
-location, so that column is not in the row. The card read it anyway.
+That column was dropped by migration 014; the card derives its initials from
+company_name instead, and additionally renders employers.logo_path (the
+uploaded logo) when the posting row carries a real uploads/ path.
 
 The badge rule itself is pure logic and is tested without Flask. The two
 page-level tests do build real cards, so they push their own application
@@ -72,6 +73,29 @@ class TestLogoFor:
         assert RecommendationService._logo_for(posting) == "TS"
 
 
+class TestLogoImage:
+    """The uploaded logo half of the badge: image when there is one, else None
+    so the card falls back to the initials from _logo_for."""
+
+    def test_an_uploaded_logo_is_returned_verbatim(self):
+        path = "uploads/logos/3_ab12cd34.png"
+        assert RecommendationService._logo_image({"logo_path": path}) == path
+
+    def test_no_logo_means_the_card_falls_back_to_initials(self):
+        for row in ({}, {"logo_path": None}, {"logo_path": ""}):
+            assert RecommendationService._logo_image(row) is None
+
+    def test_a_legacy_sentinel_is_not_rendered_as_a_path(self):
+        """Only paths under uploads/ are real uploads (the _avatar.html rule)."""
+        assert RecommendationService._logo_image({"logo_path": "default.png"}) is None
+
+    def test_rows_without_the_column_still_work(self):
+        """A query that does not select logo_path must not raise KeyError."""
+        posting = _posting("DevPro Lab")
+        assert "logo_path" not in posting
+        assert RecommendationService._logo_image(posting) is None
+
+
 class TestRecommendationPageBadge:
     """The card row must carry a renderable logo for every recommendation."""
 
@@ -102,6 +126,16 @@ class TestRecommendationPageBadge:
         assert recs, "no cards built, so this test proved nothing"
         for rec in recs:
             assert isinstance(rec["logo"], str) and rec["logo"], rec["company"]
+
+    def test_every_recommendation_row_carries_logo_image(self):
+        """logo_image drives the <img> branch; it is a real upload path or None."""
+        rows = [_posting("DevPro Lab", logo_path="uploads/logos/dl.png"),
+                _posting("AgileDev Studios")]
+        recs = self._recs(rows)
+        assert recs, "no cards built, so this test proved nothing"
+        by_company = {r["company"]: r for r in recs}
+        assert by_company["DevPro Lab"]["logo_image"] == "uploads/logos/dl.png"
+        assert by_company["AgileDev Studios"]["logo_image"] is None
 
     def test_two_companies_never_share_a_badge(self):
         recs = self._recs([_posting("DevPro Lab"), _posting("AgileDev Studios")])

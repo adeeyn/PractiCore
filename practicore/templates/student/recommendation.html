@@ -3,104 +3,101 @@
 
 {% block title %}PractiCore - Recommendations{% endblock %}
 
-{% block content %}
-<header class="topbar">
-  <div class="welcome">
-    <h1>Recommended Internships</h1>
-    <p class="subtitle">Opportunities filtered by your resume skills and evaluated by assessment results</p>
-  </div>
-</header>
+{% block body_class %}page-recommendation{% endblock %}
 
-<div class="recommendations-container">
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='student/css/recommendation.css') }}?v=3">
+{% endblock %}
+
+{% block content %}
+<div class="rc-wrap">
+
+  <div class="rc-head">
+    <h1>Recommended Internships</h1>
+    <p>Opportunities filtered by your resume skills and evaluated by assessment results</p>
+  </div>
+
   <!-- Filter & Search Bar -->
-  <div class="filter-bar">
-    <div class="filter-tabs">
-      <button class="tab-btn active" onclick="filterList('all', this)">All Resume Matches ({{ recommendations|length }})</button>
-      <button class="tab-btn" onclick="filterList('passed', this)">⭐ Passed Assessment Matches</button>
-      <button class="tab-btn" onclick="filterList('high', this)">High Match (>80%)</button>
-      <button class="tab-btn" onclick="filterList('remote', this)">Remote Only</button>
+  <div class="rc-bar">
+    <div class="rc-tabs">
+      <button class="rc-tab is-on" onclick="filterList('all', this)">All Resume Matches ({{ recommendations|length }})</button>
+      <button class="rc-tab" onclick="filterList('passed', this)">⭐ Passed Assessment Matches</button>
+      <button class="rc-tab" onclick="filterList('high', this)">High Match (&gt;80%)</button>
+      <button class="rc-tab" onclick="filterList('remote', this)">Remote Only</button>
     </div>
-    <div class="search-box">
-      <input type="text" id="searchInput" onkeyup="searchJobs()" placeholder="Search by role or skill..." class="search-input">
-    </div>
+    <label class="rc-search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#a0aec0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input type="text" id="searchInput" onkeyup="searchJobs()" placeholder="Search by role or skill...">
+    </label>
   </div>
 
   <!-- Job Recommendations List (Dynamic DB Render) -->
-  <div class="recommendations-list">
+  <div class="rc-list">
     {% for rec in recommendations %}
-    <article class="rec-card" 
-             data-score="{{ rec.match_score }}" 
+    {% set matched_lc = (rec.matched_resume_skills or [])|map('lower')|list %}
+    <article class="rc-card"
+             data-score="{{ rec.match_score }}"
              data-assessment="{{ assessment_percentage }}"
              data-remote="{{ 1 if rec.is_remote else 0 }}"
              data-category="{{ rec.recommended_category }}">
-      
-      <div class="rec-header">
-        <div class="company-logo">{{ rec.logo }}</div>
-        <div class="rec-info">
-          <h2 class="rec-title">{{ rec.title }}</h2>
-          <p class="rec-company">{{ rec.company }} &bull; <span>{{ rec.location }}</span></p>
+
+      <div class="rc-top">
+        <div class="rc-who">
+          {# The uploaded company logo when the employer has one, otherwise the
+             initials badge the service derived from the company name. #}
+          <div class="rc-logo">
+            {%- if rec.logo_image -%}
+            <img src="{{ url_for('static', filename=rec.logo_image) }}" alt="{{ rec.company }} logo">
+            {%- else -%}
+            {{ rec.logo }}
+            {%- endif -%}
+          </div>
+          <div>
+            <h2 class="rc-title">{{ rec.title }}</h2>
+            <p class="rc-meta">{{ rec.company }}<i></i>{{ rec.location }}</p>
+          </div>
         </div>
-        {# Two labelled meters, not one blended number: a student seeing only "68%"
+
+        {# Two labelled rings, not one blended number: a student seeing only "68%"
            cannot tell whether they need more resume keywords or more demonstrated
-           competency, and those two call for opposite responses. Styled by
-           css/match-split.css, shared with the dashboard and My Applications. #}
-        <div class="match-badge {{ rec.match_badge_class }}">
-          <div class="match-split">
-            <div class="match-split-row"
-                 title="Required skills this posting lists that your resume proves. Self-reported, so it only corroborates the assessment.">
-              <span class="match-split-name">Resume</span>
-              <span class="match-split-track"><span class="match-split-fill resume" style="width: {{ rec.match_breakdown.resume_match_percent }}%"></span></span>
-              <span class="match-split-value">{{ rec.match_breakdown.resume_match_percent }}%</span>
-            </div>
-            <div class="match-split-row"
-                 title="Your score on the objective assessment items for this posting's track. The primary evidence of capability.">
-              <span class="match-split-name">Assessment</span>
-              <span class="match-split-track"><span class="match-split-fill assessment" style="width: {{ rec.match_breakdown.assessment_match_percent }}%"></span></span>
-              <span class="match-split-value">{{ rec.match_breakdown.assessment_match_percent }}%</span>
-            </div>
+           competency, and those two call for opposite responses. #}
+        <div class="rc-scores">
+          <div class="rc-sc" title="Required skills this posting lists that your resume proves. Self-reported, so it only corroborates the assessment.">
+            <div class="rc-ring resume" style="--p: {{ rec.match_breakdown.resume_match_percent }}"><b>{{ rec.match_breakdown.resume_match_percent }}%</b></div>
+            <span><b>Resume</b>match</span>
+          </div>
+          <div class="rc-sc" title="Your overall assessment result, the primary evidence of capability.">
+            <div class="rc-ring assessment" style="--p: {{ rec.match_breakdown.assessment_overall }}"><b>{{ rec.match_breakdown.assessment_overall }}%</b></div>
+            <span><b>Assessment</b>score</span>
           </div>
         </div>
       </div>
 
-      <p class="rec-description">
-        {{ rec.description }}
-      </p>
+      <p class="rc-desc">{{ rec.description }}</p>
 
-      <!-- All Required Posting Skills -->
-      <div class="skill-tags">
-        <strong style="font-size: 0.85rem; color: #555; display: block; margin-bottom: 4px; width: 100%;">Required Skills:</strong>
+      <!-- Required skills: matched ones are green, the rest are dashed -->
+      <div class="rc-label">Required skills</div>
+      <div class="rc-skills">
         {% for skill in rec.skills %}
-          <span class="tag">{{ skill }}</span>
+          <span class="rc-skill{% if skill|lower in matched_lc %} is-match{% endif %}">{{ skill }}</span>
         {% endfor %}
       </div>
+      <div class="rc-legend">Green = matched from your resume · Dashed = not on your resume yet</div>
 
-      <!-- Matched Resume Skills Callout -->
-      {% if rec.matched_resume_skills %}
-      <div style="margin-top: 10px; padding: 8px 12px; background: #e8f5e9; border-radius: 6px; border-left: 4px solid #2e7d32;">
-        <small style="color: #2e7d32; font-weight: bold; display: block; margin-bottom: 4px;">
-          ✓ Skills Matched from Your Resume:
-        </small>
-        {% for m_skill in rec.matched_resume_skills %}
-          <span style="background: #ffffff; color: #2e7d32; border: 1px solid #c8e6c9; padding: 2px 8px; border-radius: 4px; font-size: 0.8rem; font-weight: 600; margin-right: 4px; display: inline-block;">
-            {{ m_skill }}
-          </span>
-        {% endfor %}
-      </div>
-      {% endif %}
-
-      <!-- Skill Assessment Callout Banner mapped to 6 Job Domains -->
-      <div class="assessment-recommendation-box" style="margin-top: 12px;">
-        <div class="assessment-info">
-          <span class="assessment-label">Domain Assessment Track</span>
-          <p class="assessment-name">📋 {{ rec.recommended_category }} Track</p>
+      <!-- Skill Assessment track mapped to the 6 Job Domains -->
+      <div class="rc-track">
+        <div class="rc-track-l">
+          <div class="rc-track-ico"><i data-lucide="clipboard-list"></i></div>
+          <div>
+            <small>Domain assessment track</small>
+            <strong>{{ rec.recommended_category }} Track</strong>
+          </div>
         </div>
         {# Gated on the real assessment score, not the combined match score #}
         {% if assessment_percentage >= 65 %}
-          <span style="color: #2e7d32; font-weight: bold; font-size: 0.9rem; padding: 6px 12px; background: #e8f5e9; border-radius: 20px;">
-            ✓ Assessment Passed ({{ assessment_percentage }}%)
-          </span>
+          <span class="rc-pass">✓ Assessment Passed ({{ assessment_percentage }}%)</span>
         {% else %}
-          <a href="{{ url_for('student.start_assessment') }}" class="btn-assessment">
+          <a href="{{ url_for('student.start_assessment') }}" class="rc-take">
             {% if assessment_percentage %}Assessment {{ assessment_percentage }}% — Retake{% else %}Take Assessment{% endif %}
           </a>
         {% endif %}
@@ -108,52 +105,41 @@
 
       <!-- Where the two percentages come from, so neither is a black box -->
       {% if rec.match_breakdown %}
-      <details class="match-explain" style="margin-top: 10px;">
-        <summary style="cursor: pointer; font-size: 0.85rem; color: #555;">
-          How these two percentages are calculated
-        </summary>
-        {% set b = rec.match_breakdown %}
-        <div style="margin-top: 8px; padding: 10px 12px; background: #f8f9fa; border: 1px solid #e9ecef; border-radius: 6px; font-size: 0.85rem; color: #444; line-height: 1.7;">
+      {% set b = rec.match_breakdown %}
+      <details class="rc-how">
+        <summary>How these two percentages are calculated</summary>
+        <div class="rc-how-body">
           <div>
-            <strong>Assessment match ({{ b.assessment_match_percent }}%)</strong>
-            {%- if b.assessment_match_percent != b.assessment_overall %}
-              <span style="color: #6c757d;">(your score in {{ rec.recommended_category }}; your overall was {{ b.assessment_overall }}%)</span>
-            {%- endif %}
-            <br>
-            <span style="color: #6c757d;">Objective items &mdash; the primary evidence of capability. Counted at {{ (b.assessment_weight * 100)|int }}% when ranking candidates.</span>
+            <b>Assessment match ({{ b.assessment_overall }}%)</b> — your overall assessment result.
+            Objective items, the primary evidence of capability. Counted at {{ (b.assessment_weight * 100)|int }}% when ranking candidates.
           </div>
-          <div style="margin-top: 4px;">
-            <strong>Resume match ({{ b.resume_match_percent }}%)</strong>
-            <span style="color: #6c757d;">({{ b.matched_count }} of {{ b.required_count }} required skills listed)</span>
-            <br>
-            <span style="color: #6c757d;">Self-reported, so it only corroborates the assessment. Counted at {{ (b.resume_weight * 100)|int }}% when ranking candidates.</span>
+          <div>
+            <b>Resume match ({{ b.resume_match_percent }}%)</b> — {{ b.matched_count }} of {{ b.required_count }} required skills listed.
+            Self-reported, so it only corroborates the assessment. Counted at {{ (b.resume_weight * 100)|int }}% when ranking candidates.
           </div>
           {% if b.missing_skills %}
-          <div style="margin-top: 6px; color: #6c757d;">
-            Not listed on your resume: {{ b.missing_skills|join(', ') }}.
-            Your assessment still measures these.
-          </div>
+          <div>Not listed on your resume: {{ b.missing_skills|join(', ') }}. Your assessment still measures these.</div>
           {% endif %}
         </div>
       </details>
       {% endif %}
 
-      <div class="rec-footer">
-        <span class="posting-date">Posted {{ rec.posted }}</span>
-        <div class="rec-actions">
-          <a href="{{ url_for('student.application') }}" class="btn-outline">My Applications</a>
+      <div class="rc-foot">
+        <small>Posted {{ rec.posted }}</small>
+        <div class="rc-btns">
+          <a href="{{ url_for('student.application') }}" class="rc-btn">My Applications</a>
           {% if rec.id in applied_posting_ids %}
-            <a href="{{ url_for('student.application') }}" class="btn-applied">&#10003; Applied</a>
+            <a href="{{ url_for('student.application') }}" class="rc-btn is-applied">&#10003; Applied</a>
           {% else %}
             <form method="POST" action="{{ url_for('student.apply', posting_id=rec.id) }}">
-              <button type="submit" class="btn-primary">Apply Now</button>
+              <button type="submit" class="rc-btn is-primary">Apply Now</button>
             </form>
           {% endif %}
         </div>
       </div>
     </article>
     {% else %}
-    <p class="no-data">No internship recommendations matching your resume skills were found.</p>
+    <p class="rc-empty">No internship recommendations matching your resume skills were found.</p>
     {% endfor %}
   </div>
 </div>
@@ -161,13 +147,10 @@
 <!-- JavaScript Filtering Logic -->
 <script>
 function filterList(filterType, btnElement) {
-  // Update Active Tab UI
-  document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-  btnElement.classList.add('active');
+  document.querySelectorAll('.rc-tab').forEach(btn => btn.classList.remove('is-on'));
+  btnElement.classList.add('is-on');
 
-  const cards = document.querySelectorAll('.rec-card');
-
-  cards.forEach(card => {
+  document.querySelectorAll('.rc-card').forEach(card => {
     const score = parseInt(card.getAttribute('data-score')) || 0;
     const assessment = parseInt(card.getAttribute('data-assessment')) || 0;
     const isRemote = card.getAttribute('data-remote') === '1';
@@ -176,13 +159,10 @@ function filterList(filterType, btnElement) {
       // Gates on the student's real assessment score, not the combined match
       card.style.display = (assessment >= 65) ? 'block' : 'none';
     } else if (filterType === 'high') {
-      // Show only high match scores (>80%)
       card.style.display = (score >= 80) ? 'block' : 'none';
     } else if (filterType === 'remote') {
-      // Show remote only
       card.style.display = isRemote ? 'block' : 'none';
     } else {
-      // Show all resume-matched internships
       card.style.display = 'block';
     }
   });
@@ -190,11 +170,8 @@ function filterList(filterType, btnElement) {
 
 function searchJobs() {
   const query = document.getElementById('searchInput').value.toLowerCase();
-  const cards = document.querySelectorAll('.rec-card');
-
-  cards.forEach(card => {
-    const text = card.innerText.toLowerCase();
-    card.style.display = text.includes(query) ? 'block' : 'none';
+  document.querySelectorAll('.rc-card').forEach(card => {
+    card.style.display = card.innerText.toLowerCase().includes(query) ? 'block' : 'none';
   });
 }
 </script>

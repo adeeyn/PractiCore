@@ -15,6 +15,7 @@ class PostingRepository:
                     p.is_remote,
                     p.posted_date,
                     e.company_name,
+                    e.logo_path,
                     e.location
                 FROM internship_postings p
                 JOIN employers e ON p.employer_id = e.id

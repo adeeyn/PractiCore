@@ -1,0 +1,10 @@
+/* ==========================================
+   PARTNER COMPANIES LIST (templates/admin/partner_companies.html)
+   ========================================== */
+
+.adm-table-companies td:nth-child(3) { word-break: break-word; }
+
+@media (max-width: 640px) {
+  .adm-table-companies td:nth-child(3) { text-align: right; }
+  .adm-table-companies .adm-sub-cell { line-height: 1.5; }
+}

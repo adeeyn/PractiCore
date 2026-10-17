@@ -6,8 +6,19 @@
 
 {% block content %}
 <div class="page-head">
+    <span class="eyebrow"><i data-lucide="users" style="width:12px;height:12px"></i> Applicants</span>
     <h1>Applicants for {{ posting_title }}</h1>
-    <p>Total Applicants: {{ total_applicants }}</p>
+    <p>{{ total_applicants }} candidate{{ '' if total_applicants == 1 else 's' }} &middot; click a row to review the full application.</p>
+</div>
+
+<div class="summary-strip">
+    <div class="summary-tile"><span class="summary-tile__dot dot-all"></span>
+        <div><div class="summary-tile__num">{{ total_applicants }}</div><div class="summary-tile__label">All applicants</div></div></div>
+    {% for label, key in [('Pending','pending'), ('Reviewed','reviewed'), ('Shortlisted','shortlisted'), ('Rejected','rejected')] %}
+    <div class="summary-tile"><span class="summary-tile__dot dot-{{ key }}"></span>
+        <div><div class="summary-tile__num">{{ applicants | selectattr('status', 'equalto', label) | list | length }}</div>
+        <div class="summary-tile__label">{{ label }}</div></div></div>
+    {% endfor %}
 </div>
 
 <div class="card">
@@ -32,6 +43,10 @@
         </select>
     </div>
 
+    <div class="list-head" aria-hidden="true">
+        <span>#</span><span>Candidate</span><span>Match breakdown</span><span>Status</span><span></span>
+    </div>
+
     {% for applicant in applicants %}
     <a class="applicant-list-row" data-applicant-row data-name="{{ applicant.name }}" data-status="{{ applicant.status }}"
        href="{{ url_for('employer.applicant_management_detail', application_id=applicant.id) }}">
@@ -40,6 +55,7 @@
         <div class="applicant-row-right">
             {{ ui.match_components(applicant) }}
             {{ ui.status_badge(applicant.status) }}
+            <i data-lucide="chevron-right" class="row-chevron"></i>
         </div>
     </a>
     {% endfor %}

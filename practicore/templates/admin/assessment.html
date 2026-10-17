@@ -43,22 +43,21 @@
 </div>
 
 <div class="adm-panel">
-  <table class="adm-table">
+  <table class="adm-table adm-table-assessment">
     <thead>
-      <tr><th>Code</th><th>Competency</th><th>Type</th><th>Questions</th><th>Forms</th><th>Coverage</th></tr>
+      <tr><th>Competency</th><th>Type</th><th>Questions</th><th>Forms</th><th>Coverage</th></tr>
     </thead>
     <tbody>
     {% for row in competencies %}
       <tr>
-        <td><code>{{ row.code }}</code></td>
-        <td>{{ row.name }}</td>
-        <td>
+        <td class="adm-cell-main"><strong>{{ row.name }}</strong> <code>{{ row.code }}</code></td>
+        <td data-label="Type">
           {% if row.is_core %}<span class="adm-badge adm-badge-ok">Core</span>
           {% else %}<span class="adm-badge adm-badge-off">Targeted</span>{% endif %}
         </td>
-        <td>{{ row.question_count }}</td>
-        <td>{{ row.form_count }} of 3</td>
-        <td>
+        <td data-label="Questions">{{ row.question_count }}</td>
+        <td data-label="Forms">{{ row.form_count }} of 3</td>
+        <td data-label="Coverage">
           <div class="adm-cover">
             {% for i in range(3) %}
               <span class="adm-cover-pip {{ 'on' if row.form_count > i else '' }}"></span>

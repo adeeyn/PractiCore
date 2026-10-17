@@ -18,13 +18,13 @@
 .match-split {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 7px;
   width: 100%;
 }
 
 .match-split-row {
   display: grid;
-  grid-template-columns: 76px 1fr 40px;
+  grid-template-columns: 78px 1fr 40px;
   align-items: center;
   gap: 8px;
   cursor: help;
@@ -38,9 +38,9 @@
 }
 
 .match-split-track {
-  height: 6px;
+  height: 7px;
   border-radius: 999px;
-  background: var(--border-soft);
+  background: #f1ece2;
   overflow: hidden;
 }
 
@@ -50,8 +50,8 @@
   border-radius: 999px;
 }
 
-.match-split-fill.resume     { background: var(--text-faint); }
-.match-split-fill.assessment { background: var(--green); }
+.match-split-fill.resume     { background: linear-gradient(90deg, #b8b0a3, #8f877a); }
+.match-split-fill.assessment { background: linear-gradient(90deg, #34d399, #10b981); }
 
 .match-split-value {
   font-size: 12px;

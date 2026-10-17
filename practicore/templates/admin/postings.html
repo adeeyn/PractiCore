@@ -30,7 +30,7 @@
 </div>
 
 <div class="adm-panel">
-  <table class="adm-table">
+  <table class="adm-table adm-table-postings">
     <thead>
       <tr>
         <th>Title</th><th>Company</th><th>Posted Date</th>
@@ -40,7 +40,7 @@
     <tbody>
     {% for row in postings %}
       <tr>
-        <td>
+        <td class="adm-cell-main">
           <a href="{{ url_for('admin.posting_detail', posting_id=row.id) }}">{{ row.title }}</a>
           {# Department, remote flag and slot count ride along under the
              title; skills stay on the detail page. #}
@@ -49,15 +49,15 @@
             · {{ row.positions_available }} slot{{ '' if row.positions_available == 1 else 's' }}
           </div>
         </td>
-        <td class="adm-muted">{{ row.company_name }}</td>
-        <td class="adm-muted">{{ row.posted_date.strftime('%b %d, %Y') }}</td>
-        <td>
+        <td class="adm-muted" data-label="Company">{{ row.company_name }}</td>
+        <td class="adm-muted" data-label="Posted">{{ row.posted_date.strftime('%b %d, %Y') }}</td>
+        <td data-label="Status">
           <span class="adm-badge {{ 'adm-badge-ok' if row.status == 'active' else 'adm-badge-danger' }}">
             {{ row.status|capitalize }}
           </span>
         </td>
-        <td>{{ row.application_count }}</td>
-        <td>
+        <td data-label="Applicants">{{ row.application_count }}</td>
+        <td class="adm-cell-actions">
           <div class="adm-actions">
             <a href="{{ url_for('admin.posting_detail', posting_id=row.id) }}"
                class="adm-btn-icon" title="View posting"
@@ -87,13 +87,3 @@
 </div>
 {% endblock %}
 
-{% block scripts %}
-<script>
-  // Confirm before any status change, as on the partner companies page.
-  document.addEventListener('submit', function (event) {
-    var form = event.target;
-    if (!form.dataset || !form.dataset.confirm) { return; }
-    if (!window.confirm(form.dataset.confirm)) { event.preventDefault(); }
-  });
-</script>
-{% endblock %}

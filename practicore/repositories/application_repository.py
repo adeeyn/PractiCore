@@ -12,6 +12,7 @@ APPLICANT_COLUMNS = """
     s.name             AS name,
     s.email            AS email,
     s.skills           AS skills,
+    s.avatar_path      AS avatar_path,
     s.assessment_score AS assessment_score,
     p.title            AS position,
     a.status           AS status,
@@ -87,9 +88,12 @@ class ApplicationRepository:
 
         with Database.cursor() as cursor:
             # company_name is enough: the initials are derived from it, so the
-            # stored company_logo_text column is not needed here.
+            # stored company_logo_text column is not needed here. logo_path is
+            # the uploaded company logo, so the card can show the real image
+            # the employer just saved instead of always showing initials.
             cursor.execute(f"""
-                SELECT {APPLICANT_COLUMNS}, e.company_name
+                SELECT {APPLICANT_COLUMNS}, e.company_name,
+                       e.logo_path AS company_logo_path
                 FROM applications a
                 JOIN students s ON a.student_id = s.id
                 JOIN internship_postings p ON a.posting_id = p.id
@@ -303,6 +307,19 @@ class ApplicationRepository:
         # The company badge on the student's My Applications card, derived the
         # same way as every other initials badge (migration 014).
         row["logo_text"] = initials_for(row.get("company_name"))
+
+        # Uploaded images, in the same form the templates render: a real path
+        # under uploads/ or None. Legacy sentinels like 'default.png' and
+        # rows from queries that do not select the column (employer pages have
+        # no company logo to draw; the profile form is not a row here) fall
+        # back to the initials badge instead of rendering a broken image.
+        avatar = row.get("avatar_path")
+        row["avatar_path"] = avatar if avatar and avatar.startswith("uploads/") else None
+        company_logo = row.get("company_logo_path")
+        row["company_logo_path"] = (
+            company_logo if company_logo and company_logo.startswith("uploads/") else None
+        )
+
         applied_on = row.get("applied_on")
         row["applied_on"] = applied_on.strftime("%b %d, %Y") if applied_on else "-"
 

@@ -1,27 +1,47 @@
 /* ==========================================
-   EMPLOYER APP SHELL: GOLDEN YELLOW SIDEBAR + TOPBAR
+   EMPLOYER APP SHELL: GOLDEN YELLOW DRAWER SIDEBAR + GOLDEN HEADER
    Matches Figma design precisely:
-   - Golden Yellow Sidebar (#e6a817)
+   - Golden Yellow Sidebar (#e6a817), an off-canvas drawer opened by the
+     hamburger button in the header (same pattern as the student module)
    - Active nav item in crisp white pill with gold text
-   - Topbar search input + HR Manager profile
+   - Header markup: templates/employer/_header.html (styles: css/header.css)
    ========================================== */
 
 .emp-shell {
   display: flex;
   min-height: 100vh;
-  background: #f8fafc;
+  background: var(--bg);
 }
 
-/* ---------- Golden Yellow Sidebar ---------- */
+/* ---------- Golden Yellow Sidebar (off-canvas drawer, opened via the burger button) ---------- */
 .emp-sidebar {
   position: fixed;
   inset: 0 auto 0 0;
   width: var(--sidebar-width);
+  max-width: 84vw;
   background: var(--sidebar-bg);
   display: flex;
   flex-direction: column;
-  z-index: 40;
+  z-index: 60;
   box-shadow: 2px 0 12px rgba(230, 168, 23, 0.15);
+  transform: translateX(-102%);
+  transition: transform 0.25s ease;
+}
+
+.emp-sidebar.open {
+  transform: translateX(0);
+}
+
+/* Dimmed backdrop behind the open drawer; tapping it closes the sidebar */
+.emp-sidebar-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(17, 24, 39, 0.45);
+  z-index: 50;
+}
+
+.emp-sidebar-overlay[hidden] {
+  display: none;
 }
 
 .emp-brand {
@@ -34,6 +54,31 @@
   font-weight: 800;
   color: #ffffff;
   letter-spacing: -0.3px;
+}
+
+/* x button inside the drawer header */
+.emp-sidebar-close {
+  margin-left: auto;
+  background: none;
+  border: 0;
+  padding: 6px;
+  color: rgba(255, 255, 255, 0.9);
+  cursor: pointer;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.emp-sidebar-close:hover {
+  background: rgba(255, 255, 255, 0.18);
+  color: #ffffff;
+}
+
+.emp-sidebar-close svg {
+  width: 20px;
+  height: 20px;
 }
 
 .brand-cap-icon {
@@ -127,113 +172,19 @@
   height: 16px;
 }
 
-/* ---------- Main area ---------- */
+/* ---------- Main area (full width: the sidebar is now a drawer) ---------- */
 .emp-main {
   flex: 1;
-  margin-left: var(--sidebar-width);
+  margin-left: 0;
   min-width: 0;
   display: flex;
   flex-direction: column;
-  background: #f8fafc;
+  background: var(--bg);
 }
 
-/* ---------- Topbar with Search & Profile ---------- */
-.emp-topbar {
-  position: sticky;
-  top: 0;
-  z-index: 30;
-  height: var(--topbar-height);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 36px;
-  background: #ffffff;
-  border-bottom: 1px solid var(--border);
-}
-
-.emp-search-wrap {
-  position: relative;
-  width: 320px;
-  max-width: 100%;
-}
-
-.emp-search-wrap .search-icon {
-  position: absolute;
-  left: 12px;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 16px;
-  height: 16px;
-  color: #9ca3af;
-  pointer-events: none;
-}
-
-.emp-search-input {
-  width: 100%;
-  padding: 9px 12px 9px 36px;
-  border-radius: 8px;
-  border: 1px solid #e5e7eb;
-  background: #f9fafb;
-  font-size: 13px;
-  color: var(--text-dark);
-  outline: none;
-  transition: border-color 0.15s ease, background 0.15s ease;
-  box-sizing: border-box;
-}
-
-.emp-search-input:focus {
-  border-color: var(--primary);
-  background: #ffffff;
-  box-shadow: 0 0 0 3px rgba(230, 168, 23, 0.15);
-}
-
-.emp-topbar-right {
-  display: flex;
-  align-items: center;
-  gap: 18px;
-}
-
-.emp-bell {
-  position: relative;
-  display: grid;
-  place-items: center;
-  width: 36px;
-  height: 36px;
-  border: 1px solid var(--border);
-  border-radius: 50%;
-  background: #ffffff;
-  color: var(--text-muted);
-  cursor: pointer;
-  transition: all 0.15s ease;
-}
-
-.emp-bell:hover {
-  background: #f8fafc;
-  color: var(--text-dark);
-}
-
-.emp-bell svg {
-  width: 16px;
-  height: 16px;
-}
-
-.emp-bell-dot {
-  position: absolute;
-  top: 7px;
-  right: 8px;
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: #ef4444;
-}
-
-.emp-user-chip {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  cursor: pointer;
-  padding: 4px;
-}
+/* (The old white topbar is gone: the golden header lives in
+   templates/employer/_header.html + css/header.css, and the search input
+   moved into it.) */
 
 .emp-avatar {
   width: 36px;
@@ -251,58 +202,17 @@
   object-fit: cover;
 }
 
-.emp-user-meta {
-  display: flex;
-  flex-direction: column;
-}
-
-.emp-user-name {
-  font-size: 13px;
-  font-weight: 700;
-  color: var(--text-dark);
-  line-height: 1.2;
-}
-
-.emp-user-role {
-  font-size: 11px;
-  color: var(--text-muted);
-  line-height: 1.2;
-}
-
-.emp-dropdown-icon {
-  width: 14px;
-  height: 14px;
-  color: #9ca3af;
-}
-
 .emp-content {
-  padding: 32px 36px;
+  padding: 36px 40px 56px;
   width: 100%;
+  max-width: 1440px;
+  margin: 0 auto;
   box-sizing: border-box;
 }
 
 /* ---------- Responsive ---------- */
 @media (max-width: 960px) {
-  .emp-sidebar {
-    position: static;
-    width: 100%;
-    height: auto;
-  }
-  .emp-shell {
-    flex-direction: column;
-  }
-  .emp-main {
-    margin-left: 0;
-  }
-  .emp-nav {
-    flex-direction: row;
-    overflow-x: auto;
-    padding: 8px;
-  }
-  .emp-topbar {
-    padding: 0 16px;
-  }
   .emp-content {
-    padding: 20px 16px;
+    padding: 22px 16px 40px;
   }
 }

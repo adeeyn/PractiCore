@@ -1,0 +1,10 @@
+/* ==========================================
+   ASSESSMENT COVERAGE (templates/admin/assessment.html)
+   ========================================== */
+
+.adm-table-assessment code {
+  font-size: 0.8rem;
+  background: var(--border-soft);
+  padding: 2px 6px;
+  border-radius: 5px;
+}

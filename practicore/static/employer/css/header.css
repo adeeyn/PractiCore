@@ -1,0 +1,198 @@
+/* ==========================================================
+   EMPLOYER HEADER (templates/employer/_header.html)
+   The golden bar at the top of every employer page.
+   Everything is prefixed .emp-header so it cannot clash with
+   any other page's styles.
+   ========================================================== */
+
+.emp-header {
+  position: sticky;
+  top: 0;
+  z-index: 40;                 /* above page content, below the sidebar drawer (50/60) */
+  height: var(--topbar-height, 64px);
+  padding: 0 36px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  background: linear-gradient(100deg, #f2b632 0%, #e6a817 45%, #cf8f0c 100%);
+  color: #ffffff;
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.25) inset, 0 6px 24px rgba(180, 120, 10, 0.22);
+}
+
+/* ----- left: burger + logo + greeting ----- */
+.emp-header__left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-width: 0;
+}
+
+.emp-header__burger {
+  width: 44px;
+  height: 44px;
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  border: 0;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.18);
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+.emp-header__burger:hover { background: rgba(255, 255, 255, 0.30); }
+.emp-header__burger:focus-visible { outline: 2px solid #ffffff; outline-offset: 2px; }
+.emp-header__burger span {
+  width: 20px;
+  height: 2.5px;
+  border-radius: 2px;
+  background: #ffffff;
+}
+
+.emp-header__brand {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  font-size: 20px;
+  font-weight: 700;
+  color: #ffffff;
+  white-space: nowrap;
+}
+.emp-header__brand img {
+  width: 36px;
+  height: 36px;
+  padding: 4px;
+  border-radius: 10px;
+  background: #ffffff;
+  object-fit: contain;
+}
+
+.emp-header__greet {
+  margin-left: 12px;
+  padding-left: 28px;
+  border-left: 1px solid rgba(255, 255, 255, 0.35);
+  font-size: 14px;
+  line-height: 1.35;
+  color: #fdf0cf;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.emp-header__greet b {
+  display: block;
+  font-size: 16px;
+  color: #ffffff;
+}
+
+/* ----- right: search + bell + profile ----- */
+.emp-header__right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.emp-header__search {
+  position: relative;
+  width: 260px;
+}
+.emp-header__search svg {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 16px;
+  height: 16px;
+  color: #9ca3af;
+  pointer-events: none;
+}
+.emp-header__search-input {
+  width: 100%;
+  padding: 9px 12px 9px 36px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  background: rgba(255, 255, 255, 0.92);
+  font-size: 13px;
+  color: #111827;
+  outline: none;
+  box-sizing: border-box;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+}
+.emp-header__search-input:focus {
+  border-color: #ffffff;
+  background: #ffffff;
+  box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.35);
+}
+
+.emp-header__bell {
+  position: relative;
+  width: 42px;
+  height: 42px;
+  flex: none;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.18);
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+.emp-header__bell:hover { background: rgba(255, 255, 255, 0.30); }
+.emp-header__bell:focus-visible { outline: 2px solid #ffffff; outline-offset: 2px; }
+.emp-header__dot {
+  position: absolute;
+  top: 9px;
+  right: 10px;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #ff5a5a;
+  border: 2px solid #d1940e;
+}
+
+.emp-header__user {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 4px 8px 4px 4px;
+  border-radius: 99px;
+  color: #ffffff;
+  transition: background 0.15s ease;
+}
+.emp-header__user:hover { background: rgba(255, 255, 255, 0.16); }
+.emp-header__user:focus-visible { outline: 2px solid #ffffff; outline-offset: 2px; }
+
+.emp-header .emp-avatar {
+  width: 42px;
+  height: 42px;
+  border: 2px solid rgba(255, 255, 255, 0.55);
+  background: #ffffff;
+}
+
+.emp-header__who {
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.25;
+}
+.emp-header__who small {
+  display: block;
+  font-size: 12px;
+  font-weight: 400;
+  color: #fdf0cf;
+}
+
+/* ----- small screens ----- */
+@media (max-width: 1100px) {
+  .emp-header__search { display: none; }
+}
+@media (max-width: 900px) {
+  .emp-header__greet { display: none; }
+}
+@media (max-width: 640px) {
+  .emp-header { padding: 0 16px; }
+  .emp-header__brand span { display: none; }
+  .emp-header__who { display: none; }
+  .emp-header__right { gap: 10px; }
+}

@@ -31,16 +31,16 @@
 
 /* ---------- Greeting ---------- */
 .emp-greeting-head h1 {
-  font-size: 26px;
+  font-size: 30px;
   font-weight: 800;
-  color: #111827;
-  letter-spacing: -0.5px;
+  color: var(--text-dark);
+  letter-spacing: -0.03em;
   margin: 0 0 4px;
 }
 
 .emp-greeting-head p {
-  font-size: 13px;
-  color: #6b7280;
+  font-size: 14px;
+  color: var(--text-muted);
   margin: 0;
 }
 
@@ -48,17 +48,37 @@
 .emp-stat-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 16px;
+  gap: 18px;
 }
 
 .emp-stat-card {
-  background: #ffffff;
-  border: 1px solid #e5e7eb;
-  border-radius: 14px;
-  padding: 18px 20px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+  position: relative;
+  overflow: hidden;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 20px 22px;
+  box-shadow: var(--shadow);
   display: flex;
   flex-direction: column;
+  transition: transform 0.18s, box-shadow 0.18s;
+}
+
+/* soft amber glow in the corner */
+.emp-stat-card::after {
+  content: "";
+  position: absolute;
+  right: -28px;
+  top: -28px;
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(230, 168, 23, 0.16), rgba(230, 168, 23, 0) 70%);
+}
+
+.emp-stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-hover);
 }
 
 .emp-stat-head {
@@ -69,17 +89,19 @@
 }
 
 .emp-stat-label {
-  font-size: 12px;
+  font-size: 12.5px;
   font-weight: 600;
-  color: #4b5563;
+  color: var(--text-muted);
 }
 
 .emp-stat-icon-wrap {
-  width: 28px;
-  height: 28px;
-  border-radius: 6px;
-  background: #fef9c3;
-  color: #d97706;
+  position: relative;
+  z-index: 1;
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  background: var(--amber-soft);
+  color: #b45309;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -87,76 +109,96 @@
 }
 
 .emp-stat-icon-wrap svg {
-  width: 15px;
-  height: 15px;
+  width: 17px;
+  height: 17px;
 }
 
 .emp-stat-val {
-  font-size: 28px;
+  font-size: 34px;
   font-weight: 800;
-  color: #111827;
-  letter-spacing: -0.5px;
+  color: var(--text-dark);
+  letter-spacing: -0.04em;
   line-height: 1.1;
   margin-bottom: 4px;
 }
 
 .emp-stat-sub {
-  font-size: 11px;
-  color: #6b7280;
+  font-size: 12px;
+  color: var(--text-muted);
   margin-top: 4px;
 }
 
 /* ---------- QUICK ACTION BANNER ---------- */
 .quick-action-banner {
-  background: #fefce8;
-  border: 1px solid #fef08a;
-  border-radius: 16px;
-  padding: 24px 28px;
+  position: relative;
+  overflow: hidden;
+  padding: 28px 32px;
+  border-radius: 20px;
+  background: linear-gradient(120deg, #3b2a0a 0%, #6b4708 55%, #b9810b 100%);
+  box-shadow: 0 12px 32px rgba(107, 71, 8, 0.28);
+}
+
+/* decorative circles */
+.quick-action-banner::before,
+.quick-action-banner::after {
+  content: "";
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(252, 211, 77, 0.13);
+}
+
+.quick-action-banner::before { width: 260px; height: 260px; right: -60px; top: -110px; }
+.quick-action-banner::after  { width: 160px; height: 160px; right: 120px; bottom: -90px; }
+
+.qa-content {
+  position: relative;
+  z-index: 1;
 }
 
 .qa-badge {
   display: inline-block;
   font-size: 10px;
   font-weight: 800;
-  color: #b45309;
-  letter-spacing: 0.8px;
-  background: #fef3c7;
-  padding: 3px 8px;
-  border-radius: 4px;
+  color: #fde68a;
+  letter-spacing: 0.1em;
+  background: rgba(252, 211, 77, 0.18);
+  padding: 4px 11px;
+  border-radius: 999px;
   margin-bottom: 10px;
 }
 
 .qa-title {
-  font-size: 19px;
+  font-size: 22px;
   font-weight: 800;
-  color: #111827;
+  color: #ffffff;
   margin: 0 0 6px;
-  letter-spacing: -0.3px;
+  letter-spacing: -0.02em;
 }
 
 .qa-desc {
-  font-size: 13px;
-  color: #4b5563;
-  margin: 0 0 16px;
+  max-width: 520px;
+  font-size: 14px;
+  color: #f5e6c3;
+  margin: 0 0 18px;
 }
 
 .qa-btn {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  background: #e6a817;
-  color: #ffffff;
+  background: #ffffff;
+  color: #7c2d12;
   padding: 10px 18px;
-  border-radius: 8px;
+  border-radius: 10px;
   font-size: 13px;
   font-weight: 600;
   text-decoration: none;
-  box-shadow: 0 2px 8px rgba(230, 168, 23, 0.25);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.22);
   transition: all 0.15s ease;
 }
 
 .qa-btn:hover {
-  background: #d1940e;
+  background: #fff7dc;
   transform: translateY(-1px);
 }
 
@@ -167,11 +209,11 @@
 
 /* ---------- RECENT APPLICATIONS TABLE CARD ---------- */
 .emp-card {
-  background: #ffffff;
-  border: 1px solid #e5e7eb;
-  border-radius: 14px;
-  padding: 22px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 24px 24px 12px;
+  box-shadow: var(--shadow);
 }
 
 .card-header-row {
@@ -181,17 +223,18 @@
   margin-bottom: 20px;
 }
 
-.card-title {
-  font-size: 17px;
+/* scoped: postings.css also defines a generic .card-title with a larger bottom margin */
+.card-header-row .card-title {
+  font-size: 18px;
   font-weight: 800;
-  color: #111827;
-  margin: 0 0 2px;
-  letter-spacing: -0.3px;
+  color: var(--text-dark);
+  margin: 0 0 3px;
+  letter-spacing: -0.02em;
 }
 
 .card-subtitle {
   font-size: 12px;
-  color: #6b7280;
+  color: var(--text-muted);
   margin: 0;
 }
 
@@ -227,16 +270,27 @@
 .emp-table th {
   font-size: 11px;
   font-weight: 700;
-  color: #9ca3af;
+  color: var(--text-faint);
   text-transform: uppercase;
-  letter-spacing: 0.5px;
-  padding: 10px 12px;
-  border-bottom: 1px solid #f1f5f9;
+  letter-spacing: 0.07em;
+  padding: 11px 12px;
+  background: var(--surface-alt);
+}
+
+.emp-table th:first-child { border-radius: 8px 0 0 8px; }
+.emp-table th:last-child  { border-radius: 0 8px 8px 0; }
+
+.emp-table tbody tr {
+  transition: background 0.12s;
+}
+
+.emp-table tbody tr:hover {
+  background: var(--primary-tint);
 }
 
 .emp-table td {
   padding: 14px 12px;
-  border-bottom: 1px solid #f1f5f9;
+  border-bottom: 1px solid var(--border-soft);
   vertical-align: middle;
   font-size: 13px;
 }
@@ -252,12 +306,16 @@
 }
 
 .cand-avatar {
-  width: 32px;
-  height: 32px;
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
   overflow: hidden;
-  background: #e2e8f0;
   flex-shrink: 0;
+}
+
+.cand-avatar .avatar {
+  width: 36px;
+  height: 36px;
 }
 
 .cand-avatar img {
@@ -310,17 +368,22 @@
 }
 
 .action-dots-btn {
+  display: inline-grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
   background: transparent;
   border: none;
-  color: #9ca3af;
+  color: var(--text-faint);
   cursor: pointer;
   padding: 4px;
-  border-radius: 4px;
-  transition: color 0.15s;
+  border-radius: 8px;
+  transition: color 0.15s, background 0.15s;
 }
 
 .action-dots-btn:hover {
-  color: #111827;
+  color: var(--text-dark);
+  background: #f5f1e8;
 }
 
 .action-dots-btn svg {
@@ -330,19 +393,23 @@
 
 /* ---------- RIGHT SIDEBAR WIDGETS ---------- */
 .emp-side-card {
-  background: #ffffff;
-  border: 1px solid #e5e7eb;
-  border-radius: 14px;
-  padding: 20px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 22px;
+  box-shadow: var(--shadow);
+}
+
+.overview-card {
+  background: linear-gradient(180deg, #fffdf6, #ffffff);
 }
 
 .side-card-top-icon {
   width: 32px;
   height: 32px;
-  border-radius: 8px;
-  background: #fef9c3;
-  color: #d97706;
+  border-radius: 10px;
+  background: var(--amber-soft);
+  color: #b45309;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -369,16 +436,17 @@
 }
 
 .overview-metric-box {
-  background: #fdfcf7;
-  border: 1px solid #fef08a;
-  border-radius: 10px;
-  padding: 14px;
+  background: #ffffff;
+  border: 1px solid #fde68a;
+  border-radius: 14px;
+  padding: 16px;
 }
 
 .overview-big-num {
-  font-size: 32px;
+  font-size: 38px;
   font-weight: 800;
-  color: #111827;
+  color: var(--text-dark);
+  letter-spacing: -0.04em;
   line-height: 1;
   margin-bottom: 2px;
 }
@@ -425,9 +493,9 @@
 .side-tiny-icon {
   width: 24px;
   height: 24px;
-  border-radius: 6px;
-  background: #fef9c3;
-  color: #d97706;
+  border-radius: 8px;
+  background: var(--amber-soft);
+  color: #b45309;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -452,21 +520,37 @@
 .emp-activity-list {
   display: flex;
   flex-direction: column;
-  gap: 14px;
 }
 
 .emp-act-item {
+  position: relative;
   display: flex;
   gap: 12px;
   align-items: flex-start;
+  padding-bottom: 16px;
+}
+
+.emp-act-item:last-child {
+  padding-bottom: 0;
+}
+
+/* vertical connector between activity items */
+.emp-act-item:not(:last-child)::before {
+  content: "";
+  position: absolute;
+  left: 13px;
+  top: 32px;
+  bottom: 2px;
+  width: 2px;
+  background: var(--border-soft);
 }
 
 .emp-act-icon {
   width: 28px;
   height: 28px;
-  border-radius: 6px;
-  background: #fef9c3;
-  color: #d97706;
+  border-radius: 8px;
+  background: var(--amber-soft);
+  color: #b45309;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -487,7 +571,7 @@
 
 .emp-act-time {
   font-size: 11px;
-  color: #9ca3af;
+  color: var(--text-faint);
   margin-top: 2px;
 }
 
@@ -501,18 +585,18 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 10px 8px;
-  border-radius: 8px;
+  padding: 11px 10px;
+  border-radius: 10px;
   text-decoration: none;
-  color: #374151;
+  color: var(--text-body);
   font-size: 13px;
   font-weight: 500;
   transition: background 0.15s ease, color 0.15s ease;
 }
 
 .emp-ql-item:hover {
-  background: #fefce8;
-  color: #d97706;
+  background: var(--primary-tint);
+  color: var(--primary-ink);
 }
 
 .emp-ql-left {
@@ -557,5 +641,24 @@
   }
   .emp-side-col {
     grid-template-columns: 1fr;
+  }
+}
+
+/* ---------- Entrance motion (respects reduced-motion) ---------- */
+@media (prefers-reduced-motion: no-preference) {
+  .emp-stat-card,
+  .quick-action-banner,
+  .emp-card,
+  .emp-side-card {
+    animation: emp-rise 0.35s ease backwards;
+  }
+
+  .emp-stat-card:nth-child(2) { animation-delay: 0.04s; }
+  .emp-stat-card:nth-child(3) { animation-delay: 0.08s; }
+  .emp-stat-card:nth-child(4) { animation-delay: 0.12s; }
+
+  @keyframes emp-rise {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: none; }
   }
 }

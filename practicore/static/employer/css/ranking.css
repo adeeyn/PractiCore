@@ -2,32 +2,94 @@
    CANDIDATE RANKING
    ========================================== */
 
+/* Legend in the page heading: what the two meters mean */
+.legend {
+  display: inline-flex;
+  align-items: center;
+  gap: 18px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.legend i {
+  display: inline-block;
+  width: 18px;
+  height: 6px;
+  border-radius: 999px;
+}
+
+.legend .l-resume { background: linear-gradient(90deg, #b8b0a3, #8f877a); }
+.legend .l-assess { background: linear-gradient(90deg, #34d399, #10b981); }
+
+/* ---------- Rows ---------- */
 .ranking-row {
   display: grid;
-  grid-template-columns: 28px minmax(180px, 240px) 1fr;
+  grid-template-columns: 44px minmax(190px, 260px) 1fr;
   align-items: center;
-  gap: 16px;
-  padding: 16px 24px;
+  gap: 20px;
+  padding: 18px 28px;
   border-bottom: 1px solid var(--border-soft);
+  transition: background 0.15s;
 }
 
 .ranking-row:last-of-type {
   border-bottom: none;
 }
 
+.ranking-row:hover {
+  background: var(--primary-tint);
+}
+
 .rank-position {
   display: grid;
   place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #f5f1e8;
   color: var(--text-muted);
-  font-size: 13px;
-  font-weight: 600;
+  font-size: 14px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
 }
 
 .rank-position svg {
   width: 18px;
   height: 18px;
-  color: #f59e0b;
-  fill: #fbbf24;
+  color: #fff;
+  fill: #fff;
+}
+
+/* #1: gold highlight. #2 / #3: silver and bronze badges. */
+.ranking-row.is-top {
+  background: linear-gradient(90deg, #fff7dc 0%, #fffdf6 55%, #fff 100%);
+  box-shadow: inset 3px 0 0 var(--primary);
+}
+
+.ranking-row.is-top .rank-position {
+  background: linear-gradient(145deg, #fcd34d, #e6a817);
+  box-shadow: 0 2px 8px rgba(230, 168, 23, 0.45);
+}
+
+.ranking-row.is-top .person-name {
+  font-size: 15px;
+}
+
+.ranking-row.is-podium-2 .rank-position {
+  background: #e7e5e4;
+  color: #57534e;
+}
+
+.ranking-row.is-podium-3 .rank-position {
+  background: #fde4cf;
+  color: #9a3412;
 }
 
 /* The two separated meters (Resume / Assessment) come from css/match-split.css,
@@ -36,18 +98,26 @@
    the resume claim or the measured assessment - is carrying the candidate. */
 
 .ranking-footnote {
-  padding: 14px 24px 18px;
-  text-align: center;
-  font-size: 11px;
+  margin: 0;
+  padding: 16px 28px;
+  border-top: 1px solid var(--border-soft);
+  background: var(--surface-alt);
+  font-size: 12px;
   color: var(--text-faint);
 }
 
-@media (max-width: 640px) {
+@media (max-width: 960px) {
   .ranking-row {
-    grid-template-columns: 28px 1fr;
+    grid-template-columns: 40px 1fr;
+    padding: 16px;
   }
 
   .ranking-row .match-split {
-    grid-column: 2 / 3;
+    grid-column: 1 / 3;
+  }
+
+  .page-head--row .legend {
+    flex-wrap: wrap;
+    gap: 8px 16px;
   }
 }

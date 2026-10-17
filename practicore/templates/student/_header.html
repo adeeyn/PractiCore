@@ -1,0 +1,44 @@
+{# Sticky maroon header shared by every student page.
+   Styles live in static/student/css/header.css (all classes start with app-header). #}
+{% set display_name = (current_student.name if current_student and current_student.name else (username or 'Student')) %}
+<header class="app-header">
+  <div class="app-header__left">
+    <button type="button" class="app-header__burger" id="sidebar-toggle"
+            aria-label="Open navigation" aria-expanded="false" aria-controls="app-sidebar">
+      <span></span><span></span><span></span>
+    </button>
+
+    <a class="app-header__brand" href="{{ url_for('student.dashboard') }}">
+      <img src="{{ url_for('static', filename='img/logo-icon.png') }}" alt="">
+      <span>PractiCore</span>
+    </a>
+
+    <div class="app-header__greet">
+      <span id="app-header-greeting">Hello,</span>
+      <b>{{ display_name }} 👋</b>
+    </div>
+  </div>
+
+  <div class="app-header__right">
+    <button type="button" class="app-header__bell" aria-label="Notifications" title="Notifications">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 10-12 0c0 7-3 9-3 9h18s-3-2-3-9M13.7 21a2 2 0 01-3.4 0"/></svg>
+      <span class="app-header__dot"></span>
+    </button>
+
+    <a class="app-header__user" href="{{ url_for('student.profile') }}" title="View your profile">
+      {# .user-avatar img is updated by the profile page after a photo upload #}
+      <div class="user-avatar">{% include "student/_avatar.html" %}</div>
+      <div class="app-header__who">{{ display_name }}<small>Student</small></div>
+    </a>
+  </div>
+</header>
+
+<script>
+  // Say good morning / afternoon / evening using the visitor's own clock
+  (function () {
+    var el = document.getElementById('app-header-greeting');
+    if (!el) { return; }
+    var h = new Date().getHours();
+    el.textContent = (h < 12 ? 'Good morning,' : h < 18 ? 'Good afternoon,' : 'Good evening,');
+  })();
+</script>

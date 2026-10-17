@@ -1,0 +1,165 @@
+/* ==========================================================
+   APP HEADER (templates/student/_header.html)
+   The maroon bar at the top of every student page.
+   Everything is prefixed .app-header so it cannot clash with
+   any other page's styles.
+   ========================================================== */
+
+.app-header {
+  position: sticky;
+  top: 0;
+  z-index: 40;                 /* above page content, below the sidebar drawer (50/60) */
+  height: 72px;
+  padding: 0 40px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  background: linear-gradient(90deg, #8a1230, #6b0d25);
+  color: #ffffff;
+  box-shadow: 0 4px 20px rgba(107, 13, 37, 0.25);
+}
+
+/* ----- left: burger + logo + greeting ----- */
+.app-header__left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-width: 0;
+}
+
+.app-header__burger {
+  width: 44px;
+  height: 44px;
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  border: 0;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.14);
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+.app-header__burger:hover { background: rgba(255, 255, 255, 0.24); }
+.app-header__burger span {
+  width: 20px;
+  height: 2.5px;
+  border-radius: 2px;
+  background: #ffffff;
+}
+
+.app-header__brand {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  font-size: 20px;
+  font-weight: 700;
+  color: #ffffff;
+  white-space: nowrap;
+}
+.app-header__brand img {
+  width: 36px;
+  height: 36px;
+  padding: 4px;
+  border-radius: 10px;
+  background: #ffffff;
+  object-fit: contain;
+}
+
+.app-header__greet {
+  margin-left: 12px;
+  padding-left: 28px;
+  border-left: 1px solid rgba(255, 255, 255, 0.25);
+  font-size: 14px;
+  line-height: 1.35;
+  color: #f3d3da;
+  white-space: nowrap;
+}
+.app-header__greet b {
+  display: block;
+  font-size: 16px;
+  color: #ffffff;
+}
+
+/* ----- right: bell + profile ----- */
+.app-header__right {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+.app-header__bell {
+  position: relative;
+  width: 42px;
+  height: 42px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.14);
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+.app-header__bell:hover { background: rgba(255, 255, 255, 0.24); }
+.app-header__dot {
+  position: absolute;
+  top: 9px;
+  right: 10px;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #ff6b81;
+  border: 2px solid #7a0f29;
+}
+
+.app-header__user {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 4px 8px 4px 4px;
+  border-radius: 99px;
+  color: #ffffff;
+  transition: background 0.15s ease;
+}
+.app-header__user:hover { background: rgba(255, 255, 255, 0.12); }
+.app-header__user:focus-visible,
+.app-header__burger:focus-visible,
+.app-header__bell:focus-visible {
+  outline: 2px solid #ffffff;
+  outline-offset: 2px;
+}
+
+/* .user-avatar is also what the profile page's photo uploader looks for,
+   so the photo in the header updates the moment a new one is saved. */
+.app-header .user-avatar {
+  width: 42px;
+  height: 42px;
+  border: 2px solid rgba(255, 255, 255, 0.45);
+  background: #ffffff;
+}
+
+.app-header__who {
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.25;
+}
+.app-header__who small {
+  display: block;
+  font-size: 12px;
+  font-weight: 400;
+  color: #f3d3da;
+}
+
+/* ----- small screens ----- */
+@media (max-width: 900px) {
+  .app-header__greet { display: none; }
+}
+@media (max-width: 640px) {
+  .app-header { padding: 0 16px; }
+  .app-header__brand span { display: none; }
+  .app-header__who { display: none; }
+  .app-header__right { gap: 10px; }
+}

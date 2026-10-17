@@ -39,14 +39,25 @@ class RecommendationService:
         whose company name is somehow blank.
 
         This is derived rather than read from employers.company_logo_text on
-        purpose. The posting query joins employers only for company_name and
-        location, so that column is not in the row at all - indexing it raised
-        KeyError: 'company_logo_text' and took the whole page down. Deriving it
-        also keeps the badge correct for a company renamed outside the profile
-        form, which is the same reason application_repository and
-        employer/context.py derive instead of storing.
+        purpose: that column was dropped by migration 014, and indexing a
+        column the posting query does not select raised KeyError and took the
+        whole page down. Deriving it also keeps the badge correct for a company
+        renamed outside the profile form, which is the same reason
+        application_repository and employer/context.py derive instead of store.
         """
         return initials_for(posting.get("company_name"), fallback="IT")
+
+    @staticmethod
+    def _logo_image(posting):
+        """The uploaded company logo for a recommendation card, or None.
+
+        None sends the card back to the derived initials from _logo_for, so a
+        company that never uploaded a logo (or whose row does not carry the
+        column at all) still renders a badge. Only paths under uploads/ are
+        real uploads - the same rule _avatar.html uses for student photos.
+        """
+        path = posting.get("logo_path")
+        return path if path and path.startswith("uploads/") else None
 
     @staticmethod
     def relevant_assessment_score(posting_skills, domain_scores, overall_percentage):
@@ -161,6 +172,9 @@ class RecommendationService:
                 "company": posting["company_name"],
                 "location": posting["location"],
                 "logo": self._logo_for(posting),
+                # The uploaded logo image when the company has one; the card
+                # falls back to the initials in `logo` when this is None.
+                "logo_image": self._logo_image(posting),
                 "is_remote": posting["is_remote"],
                 # The posting's own required skills, so the dashboard cards can
                 # show them instead of a hardcoded placeholder pill list.
@@ -171,6 +185,7 @@ class RecommendationService:
                 # half of the evidence is producing it.
                 "resume_match_percent": components["resume_match_percent"],
                 "assessment_match_percent": components["assessment_match_percent"],
+                "assessment_overall": components["assessment_overall"],
             })
 
         if resume_match_scores:
@@ -225,6 +240,9 @@ class RecommendationService:
                 "company": posting["company_name"],
                 "location": posting["location"],
                 "logo": self._logo_for(posting),
+                # The uploaded logo image when the company has one; the card
+                # falls back to the initials in `logo` when this is None.
+                "logo_image": self._logo_image(posting),
                 "description": posting["description"],
                 "is_remote": posting["is_remote"],
                 "skills": posting_skills,

@@ -1,6 +1,8 @@
 ﻿/* Container Layout */
 .resume-container {
-  max-width: 900px;
+  max-width: 1200px;
+  width: 100%;
+  margin: 0 auto;
   display: flex;
   flex-direction: column;
   gap: 20px;
@@ -108,12 +110,21 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap; /* buttons drop below the filename on narrow screens */
 }
 
 .file-left {
   display: flex;
   align-items: center;
   gap: 14px;
+  min-width: 0; /* let the filename shrink instead of overflowing the card */
+  flex: 1 1 220px;
+}
+
+/* Long filenames must truncate, not push the action buttons off-screen */
+.file-details {
+  min-width: 0;
 }
 
 .file-icon {
@@ -135,6 +146,9 @@
   font-weight: 700;
   color: #111827;
   margin-bottom: 2px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .file-meta {
@@ -145,6 +159,9 @@
 .file-actions {
   display: flex;
   gap: 10px;
+  flex-wrap: wrap;
+  margin-left: auto;
+  flex-shrink: 0;
 }
 
 .action-btn {

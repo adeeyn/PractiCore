@@ -1,0 +1,5 @@
+/* ==========================================
+   SETTINGS (templates/admin/settings.html)
+   ========================================== */
+
+.adm-settings .adm-panel-narrow { max-width: none; }

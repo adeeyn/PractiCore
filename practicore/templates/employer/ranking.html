@@ -5,14 +5,21 @@
 {% block topbar_title %}Candidate Ranking{% endblock %}
 
 {% block content %}
-<div class="page-head">
-    <h1>Candidate Ranking</h1>
-    <p>{{ "Random Forest model" if uses_model else "Weighted content-based match score" }}</p>
+<div class="page-head page-head--row">
+    <div>
+        <span class="eyebrow"><i data-lucide="trophy" style="width:12px;height:12px"></i> Reports</span>
+        <h1>Candidate Ranking</h1>
+        <p>{{ "Random Forest model" if uses_model else "Weighted content-based match score" }}</p>
+    </div>
+    <div class="legend" aria-label="Meter legend">
+        <span><i class="l-resume"></i>Resume (claimed)</span>
+        <span><i class="l-assess"></i>Assessment (measured)</span>
+    </div>
 </div>
 
 <div class="card">
     {% for applicant in ranked_applicants %}
-    <a class="ranking-row" href="{{ url_for('employer.applicant_management_detail', application_id=applicant.id) }}">
+    <a class="ranking-row{% if loop.first %} is-top{% elif loop.index == 2 %} is-podium-2{% elif loop.index == 3 %} is-podium-3{% endif %}" href="{{ url_for('employer.applicant_management_detail', application_id=applicant.id) }}">
         <span class="rank-position">
             {% if loop.first %}<i data-lucide="star"></i>{% else %}{{ loop.index }}{% endif %}
         </span>

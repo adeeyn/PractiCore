@@ -1,9 +1,18 @@
 {# Reusable pieces for employer pages. Import with:
    {% import 'employer/_macros.html' as ui %} #}
 
-{# Initials circle; color is picked from the applicant id so it stays the same on every page #}
+{# Initials circle; color is picked from the applicant id so it stays the same on every page.
+   When the student has uploaded a profile photo (avatar_path, normalised to a real
+   uploads/ path or None by ApplicationRepository._shape) the photo is drawn instead,
+   so the employer always sees the current picture. #}
 {% macro avatar(applicant, size='') -%}
-  <div class="avatar {{ size }} avatar-c{{ (applicant.id - 1) % 5 }}">{{ applicant.initials }}</div>
+  <div class="avatar {{ size }} avatar-c{{ (applicant.id - 1) % 5 }}">
+    {%- if applicant.avatar_path -%}
+    <img src="{{ url_for('static', filename=applicant.avatar_path) }}" alt="{{ applicant.name }}">
+    {%- else -%}
+    {{ applicant.initials }}
+    {%- endif -%}
+  </div>
 {%- endmacro %}
 
 {# The two halves of a match, each drawn as its own labelled meter. Styled by

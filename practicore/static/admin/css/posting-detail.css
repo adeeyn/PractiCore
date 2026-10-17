@@ -1,0 +1,12 @@
+/* ==========================================
+   POSTING DETAIL (templates/admin/posting_detail.html)
+   ========================================== */
+
+.adm-posting-detail .adm-sub-head { padding: 0 18px; }
+.adm-posting-detail .adm-panel > form { padding: 0 18px 18px; }
+
+@media (max-width: 640px) {
+  .adm-posting-detail .adm-sub-head { padding: 0 14px; }
+  .adm-posting-detail .adm-panel > form { padding: 0 14px 16px; }
+  .adm-posting-detail .adm-panel > form .adm-btn { width: 100%; justify-content: center; }
+}

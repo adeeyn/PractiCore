@@ -1,0 +1,5 @@
+/* ==========================================
+   INTERNSHIP POSTINGS LIST (templates/admin/postings.html)
+   ========================================== */
+
+.adm-table-postings td:nth-child(2) { word-break: break-word; }

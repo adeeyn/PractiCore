@@ -77,7 +77,15 @@
               <td>
                 <div class="candidate-cell">
                   <div class="cand-avatar">
-                    <span class="avatar avatar-c{{ (applicant.id - 1) % 5 }}">{{ applicant.initials }}</span>
+                    {# The student's uploaded photo when they have one; the repository
+                       already reduces avatar_path to a real uploads/ path or None. #}
+                    <span class="avatar avatar-c{{ (applicant.id - 1) % 5 }}">
+                      {%- if applicant.avatar_path -%}
+                      <img src="{{ url_for('static', filename=applicant.avatar_path) }}" alt="{{ applicant.name }}">
+                      {%- else -%}
+                      {{ applicant.initials }}
+                      {%- endif -%}
+                    </span>
                   </div>
                   <span class="cand-name">{{ applicant.name }}</span>
                 </div>

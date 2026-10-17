@@ -1,0 +1,9 @@
+/* ==========================================
+   USERS LIST (templates/admin/users.html)
+   ========================================== */
+
+.adm-table-users td:nth-child(2) { word-break: break-word; }
+
+@media (max-width: 640px) {
+  .adm-table-users .adm-sub-cell { margin-top: 1px; }
+}

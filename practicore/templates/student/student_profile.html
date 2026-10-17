@@ -4,12 +4,6 @@
 {% block title %}PractiCore - Profile{% endblock %}
 
 {% block content %}
-<header class="topbar">
-  <div class="welcome">
-    <h1>Edit Profile</h1>
-    <p class="subtitle">Manage your personal information</p>
-  </div>
-</header>
 
 {% if message %}
 <div class="{{ 'success-message' if message_type == 'success' else 'error-message' }}">{{ message }}</div>

@@ -34,7 +34,7 @@
 </form>
 
 <div class="adm-panel">
-  <table class="adm-table">
+  <table class="adm-table adm-table-companies">
     <thead>
       <tr>
         <th>Company</th><th>Contact Person</th><th>Email</th>
@@ -44,7 +44,7 @@
     <tbody>
     {% for row in companies %}
       <tr>
-        <td>
+        <td class="adm-cell-main">
           <a href="{{ url_for('admin.company_detail', employer_id=row.id) }}">{{ row.company_name }}</a>
           {# Location, industry, posting count and registration date ride along
              under the name so the narrower table loses no information. #}
@@ -54,12 +54,14 @@
             · Joined {{ (row.registered_at or row.created_at).strftime('%b %d, %Y') }}
           </div>
         </td>
-        <td>
-          {{ row.contact_name or '—' }}
-          {% if row.contact_position %}<div class="adm-sub-cell">{{ row.contact_position }}</div>{% endif %}
+        <td data-label="Contact">
+          <div>
+            {{ row.contact_name or '—' }}
+            {% if row.contact_position %}<div class="adm-sub-cell">{{ row.contact_position }}</div>{% endif %}
+          </div>
         </td>
-        <td class="adm-muted">{{ row.email or '—' }}</td>
-        <td>
+        <td class="adm-muted" data-label="Email">{{ row.email or '—' }}</td>
+        <td data-label="Status">
           {% if row.user_id is none %}
             <span class="adm-badge adm-badge-warn">No account</span>
           {% elif row.is_active %}
@@ -68,7 +70,7 @@
             <span class="adm-badge adm-badge-danger">Inactive</span>
           {% endif %}
         </td>
-        <td>
+        <td class="adm-cell-actions">
           <div class="adm-actions">
             <a href="{{ url_for('admin.company_detail', employer_id=row.id) }}"
                class="adm-btn-icon" title="View employer account"
@@ -100,13 +102,3 @@
 </div>
 {% endblock %}
 
-{% block scripts %}
-<script>
-  // Confirm before any status change (ADM-10).
-  document.addEventListener('submit', function (event) {
-    var form = event.target;
-    if (!form.dataset || !form.dataset.confirm) { return; }
-    if (!window.confirm(form.dataset.confirm)) { event.preventDefault(); }
-  });
-</script>
-{% endblock %}

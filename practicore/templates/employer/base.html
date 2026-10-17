@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Employer{% endblock %} | PractiCore</title>
     <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='employer/style.css') }}?v=2">
+    <link rel="stylesheet" href="{{ url_for('static', filename='employer/style.css') }}?v=3">
     <script src="https://cdn.jsdelivr.net/npm/lucide@0.469.0/dist/umd/lucide.min.js"></script>
     {% block head %}{% endblock %}
 </head>
@@ -20,11 +20,15 @@
     ] %}
 
     <div class="emp-shell">
-        <!-- GOLDEN YELLOW SIDEBAR -->
-        <aside class="emp-sidebar">
+        <!-- GOLDEN YELLOW SIDEBAR (off-canvas drawer, opened via the burger button) -->
+        <aside class="emp-sidebar" id="emp-sidebar">
             <div class="emp-brand">
                 <img class="brand-cap-icon" src="{{ url_for('static', filename='img/logo-icon.png') }}" alt="">
                 <span>PractiCore</span>
+                <button type="button" class="emp-sidebar-close" id="sidebar-close"
+                        aria-label="Close navigation" aria-controls="emp-sidebar">
+                    <i data-lucide="x"></i>
+                </button>
             </div>
 
             <nav class="emp-nav">
@@ -49,33 +53,12 @@
             </div>
         </aside>
 
+        <!-- Dimmed backdrop shown while the sidebar drawer is open -->
+        <div class="emp-sidebar-overlay" id="sidebar-overlay" hidden></div>
+
         <!-- MAIN AREA -->
         <div class="emp-main">
-            <!-- TOPBAR WITH SEARCH & HR PROFILE CHIP -->
-            <header class="emp-topbar">
-                <div class="emp-search-wrap">
-                    <i data-lucide="search" class="search-icon"></i>
-                    <input type="text" placeholder="Search anything..." class="emp-search-input">
-                </div>
-
-                <div class="emp-topbar-right">
-                    <button type="button" class="emp-bell" aria-label="Notifications" title="Notifications">
-                        <i data-lucide="bell"></i>
-                        <span class="emp-bell-dot"></span>
-                    </button>
-
-                    <div class="emp-user-chip">
-                        <div class="emp-avatar emp-avatar-brand">
-                            <span>{{ employer.display_name[:1]|upper }}</span>
-                        </div>
-                        <div class="emp-user-meta">
-                            <strong class="emp-user-name">{{ employer.display_name }}</strong>
-                            <span class="emp-user-role">{{ employer.display_role }}</span>
-                        </div>
-                        <i data-lucide="chevron-down" class="emp-dropdown-icon"></i>
-                    </div>
-                </div>
-            </header>
+            {% include "employer/_header.html" %}
 
             <main class="emp-content">
                 {% block content %}{% endblock %}
@@ -89,6 +72,52 @@
         if (window.lucide) {
             lucide.createIcons();
         }
+
+        // Burger menu: slide the golden sidebar drawer in over a dimmed
+        // backdrop. Closed via the dimmed area, the x button, or Escape.
+        (function () {
+            var toggleBtn = document.getElementById('sidebar-toggle');
+            var closeBtn = document.getElementById('sidebar-close');
+            var sidebar = document.getElementById('emp-sidebar');
+            var overlay = document.getElementById('sidebar-overlay');
+
+            function setOpen(open) {
+                if (!sidebar) {
+                    return;
+                }
+                sidebar.classList.toggle('open', open);
+                if (overlay) {
+                    overlay.hidden = !open;
+                }
+                if (toggleBtn) {
+                    toggleBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
+                }
+                if (open && closeBtn) {
+                    closeBtn.focus();
+                }
+            }
+
+            if (toggleBtn && sidebar) {
+                toggleBtn.addEventListener('click', function () {
+                    setOpen(!sidebar.classList.contains('open'));
+                });
+            }
+            if (closeBtn) {
+                closeBtn.addEventListener('click', function () {
+                    setOpen(false);
+                });
+            }
+            if (overlay) {
+                overlay.addEventListener('click', function () {
+                    setOpen(false);
+                });
+            }
+            document.addEventListener('keydown', function (event) {
+                if (event.key === 'Escape') {
+                    setOpen(false);
+                }
+            });
+        })();
 
         // A logged-out page can still be restored from the browser cache on Back,
         // so re-check the session and send the user to login if it has gone.

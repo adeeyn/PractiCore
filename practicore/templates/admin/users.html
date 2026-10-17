@@ -62,7 +62,7 @@
 </form>
 
 <div class="adm-panel">
-  <table class="adm-table">
+  <table class="adm-table adm-table-users">
     <thead>
       <tr>
         <th>Name</th><th>Email</th><th>Username</th>
@@ -72,20 +72,20 @@
     <tbody>
     {% for row in users %}
       <tr>
-        <td>
-          {{ row.display_name or '—' }}
+        <td class="adm-cell-main">
+          <strong>{{ row.display_name or '—' }}</strong>
           {% if row.company_name %}<div class="adm-sub-cell">{{ row.company_name }}</div>{% endif %}
         </td>
-        <td class="adm-muted">{{ row.email }}</td>
-        <td class="adm-muted">{{ row.username or '—' }}</td>
-        <td><span class="adm-badge adm-badge-role-{{ row.role }}">{{ row.role|capitalize }}</span></td>
-        <td>
+        <td class="adm-muted" data-label="Email">{{ row.email }}</td>
+        <td class="adm-muted" data-label="Username">{{ row.username or '—' }}</td>
+        <td data-label="Role"><span class="adm-badge adm-badge-role-{{ row.role }}">{{ row.role|capitalize }}</span></td>
+        <td data-label="Status">
           <span class="adm-badge {{ 'adm-badge-ok' if row.is_active else 'adm-badge-off' }}">
             {{ 'Active' if row.is_active else 'Inactive' }}
           </span>
         </td>
-        <td class="adm-muted">{{ row.created_at.strftime('%b %d, %Y') }}</td>
-        <td>
+        <td class="adm-muted" data-label="Registered">{{ row.created_at.strftime('%b %d, %Y') }}</td>
+        <td class="adm-cell-actions">
           {% if row.role != 'admin' %}
           <form method="post" class="adm-inline-form"
                 action="{{ url_for('admin.user_status', user_id=row.id) }}"
@@ -108,12 +108,3 @@
 </div>
 {% endblock %}
 
-{% block scripts %}
-<script>
-  document.addEventListener('submit', function (event) {
-    var form = event.target;
-    if (!form.dataset || !form.dataset.confirm) { return; }
-    if (!window.confirm(form.dataset.confirm)) { event.preventDefault(); }
-  });
-</script>
-{% endblock %}

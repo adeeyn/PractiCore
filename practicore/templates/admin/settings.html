@@ -10,7 +10,7 @@
   </div>
 </div>
 
-<div class="adm-panel-grid">
+<div class="adm-panel-grid adm-settings">
   <section class="adm-panel">
     <header class="adm-panel-head"><h2>Account</h2></header>
     <dl class="adm-detail">
@@ -35,7 +35,7 @@
     <header class="adm-panel-head"><h2>Change Password</h2></header>
     <form method="post" class="adm-form adm-panel-narrow" novalidate>
       {% if error %}
-      <div class="adm-flashes" style="margin:14px 0 0">
+      <div class="adm-flashes adm-flashes-inline">
         <div class="adm-flash adm-flash-error">
           <i data-lucide="alert-circle"></i><span>{{ error }}</span>
         </div>

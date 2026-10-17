@@ -3,7 +3,9 @@
   display: flex;
   flex-direction: column;
   gap: 20px;
+  width: 100%;
   max-width: 900px;
+  margin-inline: auto; /* centre the page content in the main area */
 }
 
 /* Header Profile Card */
@@ -107,7 +109,9 @@
 
 .form-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  /* minmax(0, 1fr) lets the columns shrink below the inputs' intrinsic width,
+     otherwise a narrow phone screen pushes the right column off-screen */
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 20px;
 }
 
@@ -129,6 +133,8 @@
 }
 
 .form-input {
+  width: 100%;
+  box-sizing: border-box;
   background: #f8fafc;
   border: 1px solid #e2e8f0;
   border-radius: 10px;
@@ -379,5 +385,36 @@
   opacity: 0.6;
   cursor: default;
   transform: none;
+}
+
+/* ============ Responsive ============ */
+@media (max-width: 640px) {
+  .profile-header-card {
+    flex-wrap: wrap;
+    padding: 20px;
+    gap: 16px;
+  }
+
+  .profile-summary {
+    min-width: 0;
+  }
+
+  .academic-details {
+    flex-wrap: wrap;
+    gap: 8px 16px;
+  }
+
+  .profile-form-card {
+    padding: 20px;
+  }
+
+  /* One field per row so nothing is pushed off-screen */
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .form-group.full-width {
+    grid-column: auto;
+  }
 }
 

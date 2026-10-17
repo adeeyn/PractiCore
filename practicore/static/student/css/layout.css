@@ -12,17 +12,36 @@
   background: #f8fafc;
 }
 
-/* ---------- Sidebar ---------- */
+/* ---------- Sidebar (off-canvas drawer, opened via the burger button) ---------- */
 .sidebar {
   width: 250px;
+  max-width: 84vw;
   background: #7a1122;
   color: #ffffff;
   display: flex;
   flex-direction: column;
   position: fixed;
   inset: 0 auto 0 0;
-  z-index: 40;
+  z-index: 60;
   box-shadow: 2px 0 12px rgba(0, 0, 0, 0.05);
+  transform: translateX(-102%);
+  transition: transform 0.25s ease;
+}
+
+.sidebar.open {
+  transform: translateX(0);
+}
+
+/* Dimmed backdrop behind the open drawer; tapping it closes the sidebar */
+.sidebar-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(17, 24, 39, 0.45);
+  z-index: 50;
+}
+
+.sidebar-overlay[hidden] {
+  display: none;
 }
 
 .sidebar-brand {
@@ -35,6 +54,31 @@
   font-weight: 800;
   color: #ffffff;
   letter-spacing: -0.3px;
+}
+
+/* x button inside the drawer header */
+.sidebar-close {
+  margin-left: auto;
+  background: none;
+  border: 0;
+  padding: 6px;
+  color: rgba(255, 255, 255, 0.85);
+  cursor: pointer;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.sidebar-close:hover {
+  background: rgba(255, 255, 255, 0.12);
+  color: #ffffff;
+}
+
+.sidebar-close svg {
+  width: 20px;
+  height: 20px;
 }
 
 .brand-cap-icon {
@@ -124,14 +168,20 @@
   height: 16px;
 }
 
-/* ---------- Main area ---------- */
+/* ---------- Main area (full width: the sidebar is now a drawer) ----------
+   .main has no padding so the sticky header (header.css) can span the full
+   width; the page content gets its padding from .content-body instead. */
 .main {
-  margin-left: 250px;
-  width: calc(100% - 250px);
+  margin-left: 0;
+  width: 100%;
   min-height: 100vh;
-  padding: 32px 40px;
+  padding: 0;
   box-sizing: border-box;
   background: #f8fafc;
+}
+
+.content-body {
+  padding: 32px 40px;
 }
 
 /* ---------- Topbar ---------- */
@@ -140,6 +190,37 @@
   justify-content: space-between;
   align-items: flex-start;
   margin-bottom: 28px;
+}
+
+/* Burger button shown in the topbar while the sidebar drawer is closed */
+.sidebar-toggle {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  border: 1px solid #e2e8f0;
+  background: #ffffff;
+  color: #1e293b;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.sidebar-toggle:hover {
+  background: #f1f5f9;
+}
+
+.sidebar-toggle svg {
+  width: 20px;
+  height: 20px;
+}
+
+.topbar-left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
 }
 
 .welcome-greeting {
@@ -268,12 +349,7 @@
 
 /* Responsive Media Queries */
 @media (max-width: 1024px) {
-  .sidebar {
-    width: 210px;
-  }
-  .main {
-    margin-left: 210px;
-    width: calc(100% - 210px);
+  .content-body {
     padding: 24px;
   }
 }
@@ -282,19 +358,11 @@
   .app-shell {
     flex-direction: column;
   }
-  .sidebar {
-    position: static;
-    width: 100%;
-    height: auto;
-  }
   .main {
     margin-left: 0;
     width: 100%;
-    padding: 20px 16px;
   }
-  .nav {
-    flex-direction: row;
-    overflow-x: auto;
-    padding: 8px;
+  .content-body {
+    padding: 20px 16px;
   }
 }

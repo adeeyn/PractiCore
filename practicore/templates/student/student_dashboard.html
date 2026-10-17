@@ -155,10 +155,10 @@
                     <span class="match-split-value">{{ job.resume_match_percent }}%</span>
                   </div>
                   <div class="match-split-row"
-                       title="Your score on the objective assessment items for this posting's track. The primary evidence of capability.">
+                       title="Your overall assessment result, the primary evidence of capability.">
                     <span class="match-split-name">Assessment</span>
-                    <span class="match-split-track"><span class="match-split-fill assessment" style="width: {{ job.assessment_match_percent }}%"></span></span>
-                    <span class="match-split-value">{{ job.assessment_match_percent }}%</span>
+                    <span class="match-split-track"><span class="match-split-fill assessment" style="width: {{ job.assessment_overall }}%"></span></span>
+                    <span class="match-split-value">{{ job.assessment_overall }}%</span>
                   </div>
                 </div>
                 {% else %}

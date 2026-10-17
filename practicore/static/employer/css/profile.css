@@ -2,11 +2,86 @@
    COMPANY PROFILE
    ========================================== */
 
+/* ---------- Page layout: stacked section cards + sticky save bar ---------- */
+.profile-layout {
+  display: grid;
+  gap: 20px;
+  max-width: 980px;
+}
+
+.form-section {
+  padding: 26px 28px;
+}
+
+.form-section__head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 22px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--border-soft);
+}
+
+.form-section__icon {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: var(--amber-soft);
+  color: var(--primary-ink);
+}
+
+.form-section__icon svg {
+  width: 18px;
+  height: 18px;
+}
+
+.form-section__head h2 {
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.form-section__head p {
+  margin-top: 1px;
+  font-size: 12.5px;
+  color: var(--text-muted);
+}
+
+.form-section .form-group:last-child {
+  margin-bottom: 0;
+}
+
+.save-bar {
+  position: sticky;
+  bottom: 16px;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 20px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(10px);
+  box-shadow: var(--shadow-hover);
+}
+
+.save-bar .check-row {
+  margin: 0;
+}
+
 .logo-row {
   display: flex;
   align-items: center;
-  gap: 16px;
-  margin-bottom: 22px;
+  gap: 18px;
+  margin-bottom: 24px;
+  padding: 16px;
+  border: 1px dashed #e0d8c8;
+  border-radius: 14px;
+  background: var(--surface-alt);
 }
 
 .logo-row-label {
@@ -17,18 +92,18 @@
 }
 
 /* ---------- Uploaded company logo ----------
-   Same 56px box as the .avatar-xl initials, so swapping between the two never
+   Same 72px box as the .avatar-xl initials, so swapping between the two never
    shifts the row. The image is contained rather than cropped: a company logo is
    usually not square, and cutting the edges off would cut the wordmark. */
 .logo-preview {
   display: grid;
   place-items: center;
   flex-shrink: 0;
-  width: 56px;
-  height: 56px;
+  width: 72px;
+  height: 72px;
   overflow: hidden;
   border: 1px solid var(--border);
-  border-radius: 12px;
+  border-radius: 16px;
   background: #fff;
 }
 
@@ -43,12 +118,12 @@
 
 /* Safety net: the first upload starts from the initials box
    (.avatar.avatar-xl). If an <img> ever lands in there — old cached JS,
-   slow CSS, interrupted swap — it must still stay inside the 56px box
+   slow CSS, interrupted swap — it must still stay inside the 72px box
    instead of bursting over the form at its natural size. */
 #company-logo {
   flex-shrink: 0;
-  width: 56px;
-  height: 56px;
+  width: 72px;
+  height: 72px;
   overflow: hidden;
 }
 
@@ -149,4 +224,15 @@
   color: var(--primary-hover);
   font-size: 14px;
   font-weight: 700;
+}
+
+@media (max-width: 960px) {
+  .form-section {
+    padding: 20px 18px;
+  }
+
+  .save-bar {
+    flex-direction: column;
+    align-items: stretch;
+  }
 }

@@ -1,107 +1,152 @@
 {% extends 'student/base.html' %}
 
-{% block title %}Internship Recommendations — PractiCore{% endblock %}
+{% block title %}My Applications — PractiCore{% endblock %}
+
+{% block body_class %}page-applications{% endblock %}
 
 {% block head %}
-<link rel="stylesheet" href="{{ url_for('static', filename='student/css/recommendation.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='student/css/application.css') }}">
 {% endblock %}
 
 {% block content %}
-<div class="recommendations-viewport">
+{# Status buckets for the summary tiles and the filter tabs #}
+{% set ns = namespace(pending=0, progress=0, closed=0) %}
+{% for a in applications %}
+  {% set s = a.status|lower %}
+  {% if s == 'pending' %}{% set ns.pending = ns.pending + 1 %}
+  {% elif s in ['hired', 'rejected'] %}{% set ns.closed = ns.closed + 1 %}
+  {% else %}{% set ns.progress = ns.progress + 1 %}
+  {% endif %}
+{% endfor %}
 
-  <!-- Page Header -->
-  <header class="rec-top-header">
-    <div class="header-titles">
-      <h1>My Applications</h1>
-      <p>Internships you have applied to, and where each one stands</p>
-    </div>
-  </header>
+<div class="ap-wrap">
+
+  <div class="ap-head">
+    <h1>My Applications</h1>
+    <p>Internships you have applied to, and where each one stands</p>
+  </div>
 
   {% if message %}
   <div class="app-alert app-alert-{{ message_type or 'success' }}">{{ message }}</div>
   {% endif %}
 
-  <div class="search-filter-row">
-    <div class="search-input-wrapper">
-      <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#a0aec0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <circle cx="11" cy="11" r="8"></circle>
-        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-      </svg>
-      <input type="text" placeholder="Search your applications..." class="search-input" id="application-search">
-    </div>
-    <a href="{{ url_for('student.recommendation') }}" class="filter-btn">
-      Browse Internships
-    </a>
+  <div class="ap-stats">
+    <div class="ap-stat is-hi"><b>{{ applications|length }}</b><span>Applications sent</span></div>
+    <div class="ap-stat"><b>{{ ns.pending }}</b><span>Awaiting review</span></div>
+    <div class="ap-stat"><b>{{ ns.progress }}</b><span>In progress</span></div>
   </div>
 
-  <div class="recommendations-list">
+  <div class="ap-bar">
+    <label class="ap-search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#a0aec0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input type="text" id="application-search" placeholder="Search by role or company">
+    </label>
+    <div class="ap-tabs" id="ap-tabs">
+      <button type="button" class="ap-tab is-on" data-filter="all">All {{ applications|length }}</button>
+      <button type="button" class="ap-tab" data-filter="pending">Pending {{ ns.pending }}</button>
+      <button type="button" class="ap-tab" data-filter="progress">In progress {{ ns.progress }}</button>
+      <button type="button" class="ap-tab" data-filter="closed">Closed {{ ns.closed }}</button>
+    </div>
+    <a href="{{ url_for('student.recommendation') }}" class="ap-browse">Browse internships</a>
+  </div>
+
+  <div class="ap-list">
     {% for application in applications %}
-    <div class="internship-card" data-application-row
+    {% set s = application.status|lower %}
+    {% set bucket = 'pending' if s == 'pending' else ('closed' if s in ['hired', 'rejected'] else 'progress') %}
+    <div class="ap-card" data-application-row data-bucket="{{ bucket }}"
          data-name="{{ application.company_name }} {{ application.position }} {{ application.status }}">
-      <div class="card-top-row">
-        <div class="company-info-group">
-          {# Derived from the company name by the repository (migration 014), so this
-           badge agrees with the one on the recommendation card. #}
-        <div class="avatar-badge purple-avatar">{{ application.logo_text or '?' }}</div>
-          <div class="company-details">
-            <h3>{{ application.position }}</h3>
-            <span class="company-name">{{ application.company_name }}</span>
-            <div class="location-tags">
-              <span class="tag-item">Applied {{ application.applied_on }}</span>
-            </div>
-          </div>
+
+      <div class="ap-who">
+        {# logo_path is the company's uploaded logo (normalised to a real uploads/
+           path or None by the repository); logo_text is derived from the company
+           name, so both agree with the badge on the recommendation card. #}
+        <div class="ap-logo">
+          {%- if application.company_logo_path -%}
+          <img src="{{ url_for('static', filename=application.company_logo_path) }}" alt="{{ application.company_name }} logo">
+          {%- else -%}
+          {{ application.logo_text or '?' }}
+          {%- endif -%}
         </div>
-        {# Two labelled meters rather than one "% Match": it is clear which kind of
-           evidence is carrying - or holding back - this application. Styled by
-           css/match-split.css, shared with the dashboard and recommendation page. #}
-        <div class="match-badge">
-          {% if application.resume_match_score is not none and application.assessment_match_score is not none %}
-          <div class="match-split">
-            <div class="match-split-row"
-                 title="Required skills this posting lists that your resume proves. Self-reported, so it only corroborates the assessment.">
-              <span class="match-split-name">Resume</span>
-              <span class="match-split-track"><span class="match-split-fill resume" style="width: {{ application.resume_match_score }}%"></span></span>
-              <span class="match-split-value">{{ application.resume_match_score }}%</span>
-            </div>
-            <div class="match-split-row"
-                 title="Your score on the objective assessment items for this posting's track. The primary evidence of capability.">
-              <span class="match-split-name">Assessment</span>
-              <span class="match-split-track"><span class="match-split-fill assessment" style="width: {{ application.assessment_match_score }}%"></span></span>
-              <span class="match-split-value">{{ application.assessment_match_score }}%</span>
-            </div>
-          </div>
-          {% else %}
-          <span>Not scored yet</span>
-          {% endif %}
+        <div>
+          <h3>{{ application.position }}</h3>
+          <p>{{ application.company_name }} · Applied {{ application.applied_on }}</p>
+          <span class="ap-chip ap-chip-{{ s|replace(' ', '-') }}">{{ application.status }}</span>
         </div>
       </div>
 
-      <div class="card-bottom-row">
-        <span class="app-status app-status-{{ application.status|lower|replace(' ', '-') }}">{{ application.status }}</span>
+      <div class="ap-meters">
+        {% if application.resume_match_score is not none and application.assessment_match_score is not none %}
+        <div class="ap-m" title="Required skills this posting lists that your resume proves. Self-reported, so it only corroborates the assessment.">
+          <span>Resume</span>
+          <div class="ap-track"><i class="ap-fill resume" style="width: {{ application.resume_match_score }}%"></i></div>
+          <b>{{ application.resume_match_score }}%</b>
+        </div>
+        <div class="ap-m" title="Your score on the objective assessment items for this posting's track. The primary evidence of capability.">
+          <span>Assessment</span>
+          <div class="ap-track"><i class="ap-fill assessment" style="width: {{ application.assessment_match_score }}%"></i></div>
+          <b>{{ application.assessment_match_score }}%</b>
+        </div>
+        {% if application.resume_match_score < 100 and s == 'pending' %}
+        <div class="ap-hint">Add the missing skills to your resume to improve your chances</div>
+        {% endif %}
+        {% else %}
+        <span class="ap-unscored">Not scored yet</span>
+        {% endif %}
+      </div>
+
+      <div class="ap-actions">
+        {% if s == 'pending' and application.resume_match_score is not none and application.resume_match_score < 100 %}
+        <a href="{{ url_for('student.resume') }}" class="ap-primary">Update resume</a>
+        {% endif %}
         <form method="POST" action="{{ url_for('student.withdraw', application_id=application.id) }}"
               onsubmit="return confirm('Withdraw your application for {{ application.position }}?');">
-          <button type="submit" class="apply-btn apply-btn-ghost">Withdraw</button>
+          <button type="submit" class="ap-withdraw">Withdraw</button>
         </form>
       </div>
     </div>
     {% else %}
-    <div class="internship-card">
-      <div class="empty-applications">
-        <h3>No applications yet</h3>
-        <p>Apply to an internship and it will show up here with its current status.</p>
-        <a href="{{ url_for('student.recommendation') }}" class="apply-btn">Browse Internships</a>
-      </div>
+    <div class="ap-empty">
+      <h3>No applications yet</h3>
+      <p>Apply to an internship and it will show up here with its current status.</p>
+      <a href="{{ url_for('student.recommendation') }}" class="ap-browse">Browse internships</a>
     </div>
     {% endfor %}
+    <div class="ap-noresult" id="ap-noresult">No applications match your search.</div>
   </div>
 </div>
+{% endblock %}
 
+{% block scripts %}
 <script>
-  document.getElementById('application-search').addEventListener('input', function () {
-    const query = this.value.trim().toLowerCase();
-    document.querySelectorAll('[data-application-row]').forEach(row => {
-      row.hidden = !row.dataset.name.toLowerCase().includes(query);
+  (function () {
+    var search = document.getElementById('application-search');
+    var tabs = document.getElementById('ap-tabs');
+    var rows = document.querySelectorAll('[data-application-row]');
+    var none = document.getElementById('ap-noresult');
+    var filter = 'all';
+
+    function apply() {
+      var q = search.value.trim().toLowerCase();
+      var shown = 0;
+      rows.forEach(function (row) {
+        var ok = (filter === 'all' || row.dataset.bucket === filter) &&
+                 row.dataset.name.toLowerCase().indexOf(q) !== -1;
+        row.hidden = !ok;
+        if (ok) { shown++; }
+      });
+      if (none) { none.style.display = (rows.length && !shown) ? 'block' : 'none'; }
+    }
+
+    search.addEventListener('input', apply);
+    tabs.addEventListener('click', function (e) {
+      var btn = e.target.closest('.ap-tab');
+      if (!btn) { return; }
+      tabs.querySelectorAll('.ap-tab').forEach(function (b) { b.classList.remove('is-on'); });
+      btn.classList.add('is-on');
+      filter = btn.dataset.filter;
+      apply();
     });
-  });
+  })();
 </script>
 {% endblock %}

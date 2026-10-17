@@ -1,0 +1,5 @@
+/* ==========================================
+   PARTNER COMPANY DETAIL (templates/admin/partner_company_detail.html)
+   ========================================== */
+
+.adm-company-detail .adm-detail dd { min-width: 0; }

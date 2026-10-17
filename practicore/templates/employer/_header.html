@@ -1,0 +1,56 @@
+{# Golden header shared by every employer page.
+   Styles live in static/employer/css/header.css (all classes start with emp-header).
+   The burger opens the sidebar drawer; the toggle ids match the student module. #}
+<header class="emp-header">
+  <div class="emp-header__left">
+    <button type="button" class="emp-header__burger" id="sidebar-toggle"
+            aria-label="Open navigation" aria-expanded="false" aria-controls="emp-sidebar">
+      <span></span><span></span><span></span>
+    </button>
+
+    <a class="emp-header__brand" href="{{ url_for('employer.dashboard') }}">
+      <img src="{{ url_for('static', filename='img/logo-icon.png') }}" alt="">
+      <span>PractiCore</span>
+    </a>
+
+    <div class="emp-header__greet">
+      <span id="emp-header-greeting">Hello,</span>
+      <b>{{ employer.display_name }} 👋</b>
+    </div>
+  </div>
+
+  <div class="emp-header__right">
+    <div class="emp-header__search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input type="text" placeholder="Search anything..." class="emp-header__search-input">
+    </div>
+
+    <button type="button" class="emp-header__bell" aria-label="Notifications" title="Notifications">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 10-12 0c0 7-3 9-3 9h18s-3-2-3-9M13.7 21a2 2 0 01-3.4 0"/></svg>
+      <span class="emp-header__dot"></span>
+    </button>
+
+    <a class="emp-header__user" href="{{ url_for('employer.profile') }}" title="View your company profile">
+      {# The uploaded company logo when one exists, otherwise the derived initials.
+         logo_path is normalised to a real uploads/ path or None by context.py. #}
+      <div class="emp-avatar emp-avatar-brand">
+        {%- if employer.logo_path -%}
+        <img src="{{ url_for('static', filename=employer.logo_path) }}" alt="{{ employer.company_name }} logo">
+        {%- else -%}
+        <span>{{ employer.logo_text }}</span>
+        {%- endif -%}
+      </div>
+      <div class="emp-header__who">{{ employer.display_name }}<small>{{ employer.display_role }}</small></div>
+    </a>
+  </div>
+</header>
+
+<script>
+  // Say good morning / afternoon / evening using the visitor's own clock
+  (function () {
+    var el = document.getElementById('emp-header-greeting');
+    if (!el) { return; }
+    var h = new Date().getHours();
+    el.textContent = (h < 12 ? 'Good morning,' : h < 18 ? 'Good afternoon,' : 'Good evening,');
+  })();
+</script>

@@ -13,7 +13,7 @@
   </a>
 </div>
 
-<div class="adm-panel-grid">
+<div class="adm-panel-grid adm-company-detail">
   <section class="adm-panel">
     <header class="adm-panel-head"><h2>Company Information</h2></header>
     <dl class="adm-detail">
@@ -65,12 +65,3 @@
 </div>
 {% endblock %}
 
-{% block scripts %}
-<script>
-  document.addEventListener('submit', function (event) {
-    var form = event.target;
-    if (!form.dataset || !form.dataset.confirm) { return; }
-    if (!window.confirm(form.dataset.confirm)) { event.preventDefault(); }
-  });
-</script>
-{% endblock %}

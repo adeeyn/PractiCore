@@ -34,6 +34,10 @@ def inject_current_employer():
     # The initials are derived from the company name, so the topbar chip and the
     # profile page always show the same two letters for the same company.
     employer.setdefault("logo_text", initials_for(employer.get("company_name")))
+    # The uploaded logo reduced to the form the templates render: a real path
+    # under uploads/ or None (legacy sentinel values fall back to initials).
+    logo_path = employer.get("logo_path")
+    employer["logo_path"] = logo_path if logo_path and logo_path.startswith("uploads/") else None
     employer.setdefault("display_name", employer.get("contact_name")
                         or employer.get("company_name") or "Employer")
     employer.setdefault("display_role", employer.get("contact_position") or "Hiring Manager")

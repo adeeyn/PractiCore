@@ -2,11 +2,59 @@
    APPLICANTS LIST
    ========================================== */
 
+/* ---------- Count tiles above the list ---------- */
+.summary-strip {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.summary-tile {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--card);
+  box-shadow: var(--shadow);
+}
+
+.summary-tile__num {
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.summary-tile__label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.summary-tile__dot {
+  flex: none;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.dot-all         { background: var(--text-dark); }
+.dot-pending     { background: #f59e0b; }
+.dot-reviewed    { background: var(--teal); }
+.dot-shortlisted { background: var(--blue); }
+.dot-rejected    { background: var(--red); }
+
+/* ---------- Toolbar ---------- */
 .list-toolbar {
   display: flex;
-  gap: 10px;
+  gap: 12px;
   padding: 16px 20px;
   border-bottom: 1px solid var(--border-soft);
+  background: var(--surface-alt);
 }
 
 .search-box {
@@ -16,17 +64,17 @@
 
 .search-box svg {
   position: absolute;
-  left: 12px;
+  left: 14px;
   top: 50%;
-  width: 15px;
-  height: 15px;
+  width: 16px;
+  height: 16px;
   color: var(--text-faint);
   transform: translateY(-50%);
 }
 
 .search-box .form-control {
-  padding-left: 36px;
-  background: var(--bg);
+  padding-left: 40px;
+  background: #fff;
 }
 
 .filter-select {
@@ -34,11 +82,33 @@
   min-width: 150px;
 }
 
+/* ---------- Column header + rows share one grid so columns line up ---------- */
+.list-head,
 .applicant-list-row {
-  display: flex;
+  display: grid;
+  grid-template-columns: 32px minmax(200px, 1.2fr) minmax(260px, 1fr) 112px 16px;
   align-items: center;
-  gap: 16px;
-  padding: 14px 20px;
+  gap: 20px;
+  padding-left: 24px;
+  padding-right: 24px;
+}
+
+.list-head {
+  padding-top: 11px;
+  padding-bottom: 11px;
+  border-bottom: 1px solid var(--border-soft);
+  background: var(--surface-alt);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+
+.applicant-list-row {
+  position: relative;
+  padding-top: 15px;
+  padding-bottom: 15px;
   border-bottom: 1px solid var(--border-soft);
   transition: background 0.15s;
 }
@@ -47,20 +117,38 @@
   border-bottom: none;
 }
 
+/* amber accent bar on hover */
+.applicant-list-row::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 10px;
+  bottom: 10px;
+  width: 3px;
+  border-radius: 0 3px 3px 0;
+  background: var(--primary);
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+
 .applicant-list-row:hover {
-  background: var(--bg);
+  background: var(--primary-tint);
+}
+
+.applicant-list-row:hover::before {
+  opacity: 1;
 }
 
 .rank-num {
   display: grid;
   place-items: center;
   flex-shrink: 0;
-  width: 24px;
-  height: 24px;
+  width: 28px;
+  height: 28px;
   border-radius: 50%;
-  background: var(--border-soft);
+  background: #f5f1e8;
   color: var(--text-muted);
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 600;
 }
 
@@ -68,15 +156,74 @@
   flex: 1;
 }
 
+/* the wrapper disappears so match meters, badge and chevron become grid cells */
 .applicant-list-row .applicant-row-right {
-  display: flex;
-  align-items: center;
-  gap: 14px;
+  display: contents;
+}
+
+.applicant-list-row .status {
+  justify-self: start;
+}
+
+.applicant-list-row .row-chevron {
+  width: 16px;
+  height: 16px;
+  color: var(--text-faint);
+  transition: transform 0.15s, color 0.15s;
+}
+
+.applicant-list-row:hover .row-chevron {
+  transform: translateX(3px);
+  color: var(--primary-ink);
 }
 
 .empty-state {
-  padding: 32px 20px;
+  padding: 48px 20px;
   text-align: center;
   color: var(--text-faint);
-  font-size: 13px;
+  font-size: 14px;
+}
+
+/* ---------- Small screens: stack meters under the name ---------- */
+@media (max-width: 960px) {
+  .list-head {
+    display: none;
+  }
+
+  .applicant-list-row {
+    grid-template-columns: 28px 1fr auto;
+    gap: 10px 14px;
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+
+  .applicant-list-row .match-split {
+    grid-column: 2 / 4;
+    grid-row: 2;
+  }
+
+  .applicant-list-row .row-chevron {
+    display: none;
+  }
+
+  .list-toolbar {
+    flex-wrap: wrap;
+  }
+
+  .list-toolbar .search-box {
+    flex: 1 1 100%;
+  }
+
+  .list-toolbar .filter-select {
+    flex: 1 1 140px;
+    min-width: 0;
+  }
+
+  .summary-strip {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .summary-strip .summary-tile:first-child {
+    grid-column: 1 / -1;
+  }
 }
