@@ -1,12 +1,16 @@
-@import url('./css/variables.css');
-@import url('./css/match-split.css');
-@import url('./css/layout.css');
-@import url('./css/header.css');
-@import url('./css/auth.css');
-@import url('./css/dashboard.css');
-@import url('./css/profile.css');
-@import url('./css/resume.css');
-@import url('./css/assessment.css');
-@import url('./css/recommendation.css');
-@import url('./css/application.css');
-@import url('./css/start_assessment.css');
+/* Cache note: nginx serves /static/ with long-lived immutable caching, so a
+   file updated in place is NOT refetched by returning visitors. Every import
+   and stylesheet link therefore carries ?v=N and must be bumped whenever the
+   file changes - ?v=2 (2026-10-18): full student restyle. */
+@import url('./css/variables.css?v=2');
+@import url('./css/match-split.css?v=2');
+@import url('./css/layout.css?v=2');
+@import url('./css/header.css?v=2');
+@import url('./css/auth.css?v=2');
+@import url('./css/dashboard.css?v=2');
+@import url('./css/profile.css?v=2');
+@import url('./css/resume.css?v=2');
+@import url('./css/assessment.css?v=2');
+@import url('./css/recommendation.css?v=2');
+@import url('./css/application.css?v=2');
+@import url('./css/start_assessment.css?v=2');
