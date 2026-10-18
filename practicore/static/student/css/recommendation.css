@@ -115,7 +115,9 @@
 /* Footer */
 .rc-foot { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; border-top: 1px solid #ebe6e8; margin-top: 22px; padding-top: 20px; }
 .rc-foot small { font-size: 14px; color: #6f6a6d; }
-.rc-btns { display: flex; gap: 12px; align-items: center; }
+/* wrap so "My Applications" + "Apply Now" never force horizontal page
+   scroll on ~360px phones (which clipped the page title on the left) */
+.rc-btns { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
 .rc-btns form { margin: 0; }
 .rc-btn { padding: 13px 24px; border-radius: 13px; font-weight: 600; font-size: 15px; border: 1.5px solid #ebe6e8; background: #fff; color: var(--primary); cursor: pointer; display: inline-block; }
 .rc-btn:hover { background: var(--primary-light); }

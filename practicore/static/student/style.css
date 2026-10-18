@@ -3,16 +3,19 @@
    and stylesheet link therefore carries ?v=N and must be bumped whenever the
    file changes - ?v=2 (2026-10-18): full student restyle;
    ?v=3 (2026-10-18): header stops sticking on phones so it cannot cover page
-   titles. */
+   titles;
+   ?v=4 (2026-10-19): stop tabs/button rows from forcing sideways page scroll
+   that clipped page titles on phones (application + recommendation +
+   app-shell overflow guard). */
 @import url('./css/variables.css?v=2');
 @import url('./css/match-split.css?v=2');
-@import url('./css/layout.css?v=2');
+@import url('./css/layout.css?v=3');
 @import url('./css/header.css?v=3');
 @import url('./css/auth.css?v=2');
 @import url('./css/dashboard.css?v=2');
 @import url('./css/profile.css?v=2');
 @import url('./css/resume.css?v=3');
 @import url('./css/assessment.css?v=2');
-@import url('./css/recommendation.css?v=2');
-@import url('./css/application.css?v=2');
+@import url('./css/recommendation.css?v=3');
+@import url('./css/application.css?v=3');
 @import url('./css/start_assessment.css?v=2');

@@ -36,7 +36,9 @@
   background: #fff; padding: 0 16px 0 44px; font-size: 15px; color: #1d1a1c; outline: none;
 }
 .ap-search input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-glow); }
-.ap-tabs { display: flex; gap: 2px; background: #fff; border: 1px solid #ebe6e8; border-radius: 14px; padding: 4px; }
+/* wrap on phones: 4 nowrap tabs overflow ~375px viewports, which made the
+   whole page horizontally scrollable and clipped the page title on the left */
+.ap-tabs { display: flex; flex-wrap: wrap; gap: 2px; background: #fff; border: 1px solid #ebe6e8; border-radius: 14px; padding: 4px; }
 .ap-tab {
   border: 0; background: transparent; padding: 10px 16px; border-radius: 10px;
   font-size: 14px; font-weight: 600; color: #6f6a6d; cursor: pointer; white-space: nowrap;
