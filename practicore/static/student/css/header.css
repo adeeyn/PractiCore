@@ -158,7 +158,9 @@
   .app-header__greet { display: none; }
 }
 @media (max-width: 640px) {
-  .app-header { padding: 0 16px; }
+  /* On phones the header scrolls with the page instead of sticking to the
+     top, so the page title and first section are never hidden behind it. */
+  .app-header { position: static; padding: 0 16px; }
   .app-header__brand span { display: none; }
   .app-header__who { display: none; }
   .app-header__right { gap: 10px; }
