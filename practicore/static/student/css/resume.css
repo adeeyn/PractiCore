@@ -193,6 +193,17 @@
   background: #1d4ed8;
 }
 
+.action-btn.view {
+  background: #f1f5f9;
+  color: #374151;
+  border: 1px solid #e5e7eb;
+}
+
+.action-btn.view:hover {
+  background: #e5e7eb;
+  color: #111827;
+}
+
 .action-btn.delete {
   background: #fef2f2;
   color: #ef4444;
