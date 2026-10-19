@@ -129,8 +129,13 @@
 
 @media (max-width: 700px) {
   .rc-card { padding: 22px 18px; }
-  .rc-scores { width: 100%; }
-  .rc-sc { flex: 1; }
+  .rc-top { gap: 18px; }
+  .rc-title { font-size: 20px; }
+  /* Two score pills side by side only when each has room for its ring + label
+     (190px); on a phone they stack, so neither is pushed past the card edge.
+     min-width:0 lets a pill shrink inside its grid cell. */
+  .rc-scores { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); width: 100%; }
+  .rc-sc { min-width: 0; }
 }
 
 /* ---------- Kept from the old file ----------

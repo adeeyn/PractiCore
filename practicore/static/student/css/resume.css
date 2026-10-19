@@ -161,7 +161,21 @@
   gap: 10px;
   flex-wrap: wrap;
   margin-left: auto;
-  flex-shrink: 0;
+  /* Must be allowed to shrink and wrap: with flex-shrink:0 the three buttons
+     stayed on one line and ran off the edge of the card on phones. */
+  min-width: 0;
+  max-width: 100%;
+}
+
+.file-actions .action-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  text-decoration: none;
+  font-family: inherit;
+  line-height: 1.2;
+  white-space: nowrap;
 }
 
 .action-btn {
@@ -306,6 +320,34 @@
 .no-skills {
   font-size: 13px;
   color: #94a3b8;
+}
+
+/* Phones: the buttons get their own full-width row under the filename,
+   "Change Resume" on top and "View" / "Remove" sharing the line below. */
+@media (max-width: 560px) {
+  .resume-card {
+    padding: 20px 16px;
+  }
+
+  .file-preview {
+    padding: 14px;
+  }
+
+  .file-actions {
+    flex: 1 1 100%;
+    margin-left: 0;
+  }
+
+  .file-actions .action-btn {
+    flex: 1 1 0;
+    min-height: 42px;
+    padding: 10px 12px;
+    font-size: 13px;
+  }
+
+  .file-actions .action-btn.change {
+    flex-basis: 100%;
+  }
 }
 
 @media (max-width: 720px) {

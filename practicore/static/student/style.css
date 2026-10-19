@@ -6,7 +6,10 @@
    titles;
    ?v=4 (2026-10-19): stop tabs/button rows from forcing sideways page scroll
    that clipped page titles on phones (application + recommendation +
-   app-shell overflow guard). */
+   app-shell overflow guard);
+   ?v=5 (2026-10-19): recommendation score pills stack on phones instead of
+   overflowing the card; resume Change/View/Remove buttons get their own
+   wrapped full-width rows on narrow phones. */
 @import url('./css/variables.css?v=2');
 @import url('./css/match-split.css?v=2');
 @import url('./css/layout.css?v=3');
@@ -14,8 +17,8 @@
 @import url('./css/auth.css?v=2');
 @import url('./css/dashboard.css?v=2');
 @import url('./css/profile.css?v=2');
-@import url('./css/resume.css?v=3');
+@import url('./css/resume.css?v=4');
 @import url('./css/assessment.css?v=2');
-@import url('./css/recommendation.css?v=3');
+@import url('./css/recommendation.css?v=4');
 @import url('./css/application.css?v=3');
 @import url('./css/start_assessment.css?v=2');
