@@ -9,7 +9,9 @@
    app-shell overflow guard);
    ?v=5 (2026-10-19): recommendation score pills stack on phones instead of
    overflowing the card; resume Change/View/Remove buttons get their own
-   wrapped full-width rows on narrow phones. */
+   wrapped full-width rows on narrow phones;
+   ?v=6 (2026-10-20): assessment start/results column centred on the page
+   (width: 100% + margin: 0 auto). */
 @import url('./css/variables.css?v=2');
 @import url('./css/match-split.css?v=2');
 @import url('./css/layout.css?v=3');
@@ -21,4 +23,4 @@
 @import url('./css/assessment.css?v=2');
 @import url('./css/recommendation.css?v=4');
 @import url('./css/application.css?v=3');
-@import url('./css/start_assessment.css?v=2');
+@import url('./css/start_assessment.css?v=3');

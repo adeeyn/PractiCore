@@ -1,6 +1,8 @@
 ﻿  /* Container Layout */
   .assessment-container {
+    width: 100%;
     max-width: 900px;
+    margin: 0 auto;            /* centre the column in the page */
     display: flex;
     flex-direction: column;
     gap: 20px;
