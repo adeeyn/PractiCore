@@ -18,7 +18,7 @@ class StudentRegisterView(MethodView):
         self.users = UserRepository()
 
     def get(self):
-        return render_template(self.template)
+        return render_template(self.template, form={})
 
     @staticmethod
     def _read_form():
@@ -36,26 +36,45 @@ class StudentRegisterView(MethodView):
             "agree_terms": form.get("agree_terms", "").strip(),
         }
 
-    def _error(self, message):
-        return render_template(self.template, error=message)
+    @staticmethod
+    def _sticky(data):
+        """Values to refill the form with after a failed sign-up.
+
+        Passwords are deliberately left out: they are never echoed back to the
+        browser, so the student only has to retype those two fields.
+        """
+        return {
+            "name": data["name"],
+            "email": data["email"],
+            "username": data["username"],
+            "studentNo": data["student_no"],
+            "phone": data["phone"],
+            "year_level": data["year_level"],
+            "course": data["course"],
+            "agree_terms": data["agree_terms"],
+        }
+
+    def _error(self, message, data=None):
+        form = self._sticky(data) if data else {}
+        return render_template(self.template, error=message, form=form)
 
     def post(self):
         data = self._read_form()
 
         if not all(data[field] for field in self.REQUIRED_FIELDS):
-            return self._error("Please fill out all required fields.")
+            return self._error("Please fill out all required fields.", data)
         # Consent is required before any personal information is stored (RA 10173)
         if not data["agree_terms"]:
-            return self._error("Please agree to the Terms & Conditions and Privacy Policy to continue.")
+            return self._error("Please agree to the Terms & Conditions and Privacy Policy to continue.", data)
         if not AuthService.is_student_email(data["email"]):
-            return self._error(f"Please use your school email (@{current_app.config['STUDENT_EMAIL_DOMAIN']}).")
+            return self._error(f"Please use your school email (@{current_app.config['STUDENT_EMAIL_DOMAIN']}).", data)
         if data["password"] != data["confirm_password"]:
-            return self._error("Passwords do not match.")
+            return self._error("Passwords do not match.", data)
 
         try:
             if (self.users.exists(data["email"], data["username"])
                     or self.students.exists(data["student_no"], data["username"], data["email"])):
-                return self._error("Student Number, Username, or Email already exists.")
+                return self._error("Student Number, Username, or Email already exists.", data)
 
             self.students.create(
                 name=data["name"],
@@ -68,7 +87,7 @@ class StudentRegisterView(MethodView):
                 password_hash=AuthService.hash_password(data["password"]),
             )
         except mysql.connector.Error as err:
-            return self._error(f"Database error: {err}")
+            return self._error(f"Database error: {err}", data)
 
         # Drop anything left over from a previous session. Registering must
         # never leave an older account's user_id/username in the cookie, or the

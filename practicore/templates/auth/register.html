@@ -22,37 +22,37 @@
     <form method="POST" action="{{ url_for('auth.register') }}">
       <div class="field">
         <label>Full Name</label>
-        <input type="text" name="name" placeholder="Full Name" required>
+        <input type="text" name="name" placeholder="Full Name" value="{{ form.get('name', '') }}" required>
       </div>
 
       <div class="field">
         <label>School Email</label>
-        <input type="email" name="email" placeholder="you@{{ config.STUDENT_EMAIL_DOMAIN }}" required>
+        <input type="email" name="email" placeholder="you@{{ config.STUDENT_EMAIL_DOMAIN }}" value="{{ form.get('email', '') }}" required>
       </div>
 
       <div class="register-grid">
         <div class="field">
           <label>Username</label>
-          <input type="text" name="username" placeholder="Username" required>
+          <input type="text" name="username" placeholder="Username" value="{{ form.get('username', '') }}" required>
         </div>
         <div class="field">
           <label>Student Number</label>
-          <input type="text" name="studentNo" placeholder="Student Number" required>
+          <input type="text" name="studentNo" placeholder="Student Number" value="{{ form.get('studentNo', '') }}" required>
         </div>
       </div>
 
       <div class="register-grid">
         <div class="field">
           <label>Phone Number</label>
-          <input type="tel" name="phone" placeholder="09xxxxxxxxx">
+          <input type="tel" name="phone" placeholder="09xxxxxxxxx" value="{{ form.get('phone', '') }}">
         </div>
         <div class="field">
           <label>Year Level</label>
           <select name="year_level" class="select-field" required>
-            <option value="1st Year">1st Year</option>
-            <option value="2nd Year">2nd Year</option>
-            <option value="3rd Year">3rd Year</option>
-            <option value="4th Year" selected>4th Year</option>
+            <option value="1st Year" {% if form.get('year_level') == '1st Year' %}selected{% endif %}>1st Year</option>
+            <option value="2nd Year" {% if form.get('year_level') == '2nd Year' %}selected{% endif %}>2nd Year</option>
+            <option value="3rd Year" {% if form.get('year_level') == '3rd Year' %}selected{% endif %}>3rd Year</option>
+            <option value="4th Year" {% if form.get('year_level', '4th Year') == '4th Year' %}selected{% endif %}>4th Year</option>
           </select>
         </div>
       </div>
@@ -60,12 +60,12 @@
       <div class="field">
         <label>Course / Program</label>
         <select name="course" class="select-field" required>
-          <option value="" disabled selected>Select your course</option>
-          <option value="BSIT(WMA)">BSIT (Web and Mobile Application)</option>
-          <option value="BSIT(TSM)">BSIT (Technical Support and Management)</option>
-          <option value="BSIT(NA)">BSIT (Network Administration)</option>
-          <option value="BSCS">BSCS (Bachelor of Science in Computer Science)</option>
-          <option value="BSIS">BSIS (Bachelor of Science in Information Systems)</option>
+          <option value="" disabled {% if not form.get('course') %}selected{% endif %}>Select your course</option>
+          <option value="BSIT(WMA)" {% if form.get('course') == 'BSIT(WMA)' %}selected{% endif %}>BSIT (Web and Mobile Application)</option>
+          <option value="BSIT(TSM)" {% if form.get('course') == 'BSIT(TSM)' %}selected{% endif %}>BSIT (Technical Support and Management)</option>
+          <option value="BSIT(NA)" {% if form.get('course') == 'BSIT(NA)' %}selected{% endif %}>BSIT (Network Administration)</option>
+          <option value="BSCS" {% if form.get('course') == 'BSCS' %}selected{% endif %}>BSCS (Bachelor of Science in Computer Science)</option>
+          <option value="BSIS" {% if form.get('course') == 'BSIS' %}selected{% endif %}>BSIS (Bachelor of Science in Information Systems)</option>
         </select>
       </div>
 
@@ -110,7 +110,7 @@
           <button type="button" class="terms-link" data-open-terms="privacy">Privacy Policy</button>.
         </p>
         <label class="consent-check">
-          <input type="checkbox" name="agree_terms" value="yes" required>
+          <input type="checkbox" name="agree_terms" value="yes" {% if form.get('agree_terms') %}checked{% endif %} required>
           <span>I agree to the Terms &amp; Conditions and consent to the collection and processing of my personal information.</span>
         </label>
       </div>
